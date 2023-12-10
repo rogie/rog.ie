@@ -1,0 +1,25 @@
+.tooltip{
+    display: none;
+    position: fixed;
+    background: var(--figma-color-bg-popup);
+    border-radius: var(--control-radius);    
+    z-index: var(--z-index-tooltip);
+    pointer-events: none;
+    white-space: nowrap;
+    padding: 0.25rem 0.5rem;
+    transition: opacity 0.2s ease-in-out;
+    opacity: 0;
+    transform: translateY(-50%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1),inset 0 1px 0.5px 0 rgba(255,255,255,0.1), 0 4px 3px -2px rgba(0,0,0,0.15);
+}
+.figma-light .tooltip{
+    background: rgba(255,255,255,0.6);
+}
+.tooltip--shown{
+    display: block;
+    opacity: 1;
+}
+.tooltip--top,
+.tooltip--bottom{
+    transform: translate(0,0);
+}

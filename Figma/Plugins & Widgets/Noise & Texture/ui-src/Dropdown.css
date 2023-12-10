@@ -1,0 +1,134 @@
+.dropdown{
+    display: inline-flex;
+    justify-content:left;
+}
+.dropdown-trigger:not(.button){
+    display: flex;
+    align-items: center;
+    padding: 1rem 0.5rem;
+    background: none;
+    border-radius: 0;
+    justify-content: center;
+    width: 100%;
+    color: currentColor;
+    margin: 0;
+    box-shadow: none;
+}
+.dropdown-trigger.button{
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    justify-content:space-between;
+}
+.dropdown-trigger:not(.button):hover{
+    background: var(--figma-color-bg-popup);
+    box-shadow: none;
+}
+.dropdown-chevron{
+    margin-left: 0.5rem;
+    transition: transform 0.1s ease-in-out;
+    opacity: 50%;
+}
+.dropdown-trigger:not(.button):hover .dropdown-chevron{
+    transform: translateY(50%);
+}
+.dropdown-trigger:hover .dropdown-chevron{
+    opacity: 100%;
+}
+
+.dropdown-choices {
+    padding: 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 10rem;
+    padding: .5rem;
+    margin: 0;
+    background: var(--figma-color-bg-popup);
+    color: var(--figma-color-text);
+    border: 0;
+    border-radius: var(--control-radius);  
+    overflow: auto;
+    z-index: var(--z-index-tooltip);
+    display: none;
+    max-height: 40vh;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1),inset 0 1px 0.5px 0 rgba(255,255,255,0.1), 0px 10px 24px rgba(0, 0, 0, .25);
+    scroll-behavior: smooth;
+    scroll-padding: 0.5rem 0;
+    overflow-x: hidden;
+  }
+  .dropdown-choices::-webkit-scrollbar {
+    display: none;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+.dropdown-choices.open{
+    display: block;
+}
+.dropdown--up .dropdown-choices{
+    top: auto;
+    bottom: calc(100% + 0.5rem);
+}
+.dropdown--right .dropdown-choices{
+    right: 0;
+    left: auto; 
+}
+.dropdown-choices>ul{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.dropdown--open{
+    position: relative;
+    z-index: 9999;
+}
+
+.dropdown--open .dropdown-trigger:not(.button){
+    background: var(--figma-color-bg-brand);
+    color: var(--figma-color-text-onbrand);
+}
+.dropdown--open .dropdown-choices{
+    display: block;
+}
+.dropdown-item{
+    padding: 0.25rem 1rem 0.25rem 1.5rem;
+    display: flex;
+    width: 100%;
+    align-items: center;
+    white-space: nowrap;
+    position: relative;
+    border-radius: var(--control-radius-sm);  
+}
+.dropdown-item:has(>div){
+    padding: 0;
+}
+.dropdown-item>div{
+    width: 100%;
+    padding: 0.25rem 1rem 0.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+.dropdown-item:hover{
+    cursor: default;
+    background: var(--figma-color-bg-brand);
+    color: var(--figma-color-text-onbrand);
+}
+.dropdown-item-check{
+    position: absolute;
+    left: 0.5rem;
+}
+
+.dropdown-choices .dropdown-separator{
+    border-bottom: 1px solid rgba(255,255,255,0.075);
+    pointer-events: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+.figma-light .dropdown-choices .dropdown-separator{
+    border-bottom: 1px solid rgba(0,0,0,0.075);
+}
+
+.dropdown-item-icon{
+    margin-right: 0.5rem;
+}

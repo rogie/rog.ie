@@ -1,0 +1,10 @@
+dialog.embed-code .field label{
+    text-transform: none;
+}
+dialog.embed-code .field.field--horizontal>label{
+    width: 3em;
+}
+
+dialog.embed-code .field--textarea{
+    margin-bottom: 0.5rem;
+}

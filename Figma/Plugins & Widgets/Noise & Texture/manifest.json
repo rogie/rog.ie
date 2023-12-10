@@ -1,0 +1,16 @@
+{
+  "name": "Noise & Texture",
+  "id": "1138854718618193875",
+  "api": "1.0.0",
+  "editorType": ["figma", "figjam"],
+  "main": "dist/code.js",
+  "ui": "dist/index.html",
+  "permissions": ["currentuser"],
+  "relaunchButtons": [
+    {"command": "open", "name": "Open Noise & Texture"},
+    {"command": "edit", "name": "Edit Noise & Texture"}
+  ],
+  "networkAccess": {
+    "allowedDomains": ["none"]
+  }
+}

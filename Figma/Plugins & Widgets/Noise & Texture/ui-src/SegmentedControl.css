@@ -1,0 +1,60 @@
+.segmented-control{
+  background-color: var(--figma-color-bg-input);
+  display: inline-flex;
+  position: relative;
+  font-size: 11px;
+  border-radius: var(--control-radius);
+}
+.segmented-control.segmented-control--full{
+  display: flex;
+  width: 100%;
+}
+.segmented-control label{
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 0.25rem 0.75rem;
+  font-size: 11px;
+  line-height: 16px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--figma-color-text-secondary);
+}
+.segmented-control.segmented-control--full label{
+  flex-grow: 1;
+}
+.segmented-control-focus{
+  position: absolute;
+  padding: 0.25rem 0.75rem;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  font-size: 11px;
+  border-radius: calc(var(--control-radius));
+  background-color: var(--figma-color-bg-secondary);
+  transition: all var(--transition-duration) var(--transition-timing-function);
+  border: 1px solid var(--figma-color-bg-input);
+}
+.segmented-control--small label,
+.segmented-control--small .segmented-control-focus{
+  padding: 0.125rem 0.5rem;
+  font-size: 9px;
+  font-variant: small-caps;
+}
+.segmented-control--small,
+.segmented-control--small .segmented-control-focus{
+  border-radius: var(--control-radius-sm);
+}
+.figma-light .segmented-control-focus{
+  background-color: var(--color-white);
+}
+.segmented-control [type="radio"]{
+  display: none;
+  position: relative;
+}
+.segmented-control label:hover,
+.segmented-control [type="radio"]:checked + label{
+    color: var(--figma-color-text);
+}

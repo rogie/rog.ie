@@ -1,0 +1,166 @@
+  .range{
+    position: relative;
+    --height: 3px;
+    --total-height: 1.5rem;
+    --transition-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+    --transition-duration: 0;
+    user-select: none;
+    transition: transform var(--transition-duration) var(--transition-timing-function);
+    transform-origin: right center;
+    width: 100%;
+  }
+  .range .range-number-tip{
+    position: absolute; 
+    left: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 0;
+    opacity: 0;
+    display: flex;
+    transition: opacity var(--transition-duration) var(--transition-timing-function);
+    display: inline-block;
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .figma-light .range .range-number-tip{
+  }
+  .range.range--editing .range-number-tip{
+    left: 0;
+    top: 0;
+    bottom: 0; 
+    right: 0;
+    width: 100%;
+    transform: none;   
+  }
+  .range.range--editing .range-number-units{
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .range .range-number-input{
+    width: 100%;  
+    padding-right: 2rem;
+    height: var(--total-height);
+    appearance: none;
+    box-shadow: none;
+    outline: none !important;
+    border-radius: var(--control-radius);
+  }
+  .range.range--editing .range-number-input{
+    pointer-events: all;
+  }
+  .range-number-input:focus{
+    box-shadow: 0 0 0 2px var(--figma-color-bg-brand);
+  }
+  .range-number-value{
+    display: inline-block;
+    pointer-events: none;
+    opacity: 1;
+  }
+  
+  .range.range--editing .range-number-value{
+    opacity: 0;
+    position: absolute;
+    padding: 0.25rem 0.5rem;
+  }
+  .range:not(.range--editing) .range-number-input{
+    display: none;
+  }
+  .range .range-number-tip{
+      display: flex;
+      align-items: baseline;
+      color: var(--figma-color-text);
+  }
+
+
+  input[type=range] {
+    width: 100%; /* Specific width is required for Firefox. */
+    background: transparent; /* Otherwise white in Chrome */
+    height: var(--height);
+    background: var(--figma-color-border);
+    padding: 0;
+    margin: calc((var(--total-height) - var(--height))/2) 0;
+    color: var(--figma-color-text);
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    display: block;
+    cursor: ew-resize;
+    border-radius: var(--control-radius);
+    transition: height var(--transition-duration) var(--transition-timing-function);
+    transition-property: height, margin;
+    transform-origin: 0 center;
+    background: linear-gradient(to right, currentColor 0%, currentColor calc(var(--percent) * 100%),var(--figma-color-border) calc(var(--percent) * 100%), var(--figma-color-border) 100%);
+  }
+  .range.range--editing input[type=range],
+  .range.range--show-labels input[type=range],
+  .range:hover input[type=range]{
+    --height: var(--total-height);
+  }
+  .range.range--show-labels .range-number-tip,
+  .range.range--editing .range-number-tip,
+  .range:hover input[type=range] ~ .range-number-tip{
+    opacity: 1;
+  }
+
+  input[type=range]::-moz-range-thumb{
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    display: none;
+    width: 11px;
+    height: 11px;
+    background: var(--figma-color-text);
+    border: 0 solid var(--figma-color-bg);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 11px;
+    height: 11px;
+    background: var(--figma-color-text);
+    border: 1px solid var(--figma-color-bg);
+    border-radius: 50%;
+    opacity: 0;
+  }
+  input[type=range]::-webkit-slider-container {
+    height: 1px;
+    min-block-size: 0;
+  }
+  input[type=range]:-moz-focusring{
+    outline: 1px solid white;
+    outline-offset: -1px;
+  }
+  .range:focus-within input[type=range],
+  input[type=range]:focus,
+  .range.range--show-labels:hover input[type=range],
+  input[type=range]:hover {
+    outline: none; /* Removes the blue border. You should probably do some kind of focus styling for accessibility reasons though. */
+    color: var(--figma-color-bg-brand);    
+  }
+  .range.range--show-labels:not(:hover) input[type=range]{
+    color: var(--figma-color-text);
+  }
+
+  .range.range--show-labels:not(:hover) .range-number-tip{
+    color: var(--figma-color-bg);
+  }
+
+  input[type=range]::-webkit-slider-thumb{
+    background: currentColor;
+  }
+
+  input[type=range]::-ms-track {
+    width: 100%;
+    cursor: pointer;
+
+    /* Hides the slider so custom styles can be added */
+    background: transparent; 
+    border-color: transparent;
+    color: transparent;
+  }
