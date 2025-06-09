@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport"
+            content="width=device-width, initial-scale=1.0">
+      <meta name="description"
+            content="Your website description">
+      <meta name="keywords"
+            content="your, keywords, here">
+      <meta name="author"
+            content="Your Name">
+      <title>Stroke profiles using border-image</title>
+
+
+      <style>
+            .vwp {
+                  width: 20vw;
+                  border: 5px solid black;
+                  box-sizing: border-box;
+                  border-left-width: 0;
+                  border-right-width: 0;
+
+                  &.uniform {
+                        border-top-width: 3px;
+                        border-bottom-width: 3px;
+                  }
+
+                  &.wedge {
+                        border-image: url("taper-zero.png") 10 0 10 10 stretch stretch;
+                  }
+
+                  &.taper {
+                        border-image: url("taper.png") 10 5 10 10 stretch stretch;
+                  }
+
+                  &.eye {
+                        border-image: url("eye.png") 10 0 10 0 stretch stretch;
+
+                        &.round {
+                              border-left-width: 0;
+                              border-right-width: 0;
+                        }
+                  }
+
+                  &.lens {
+                        border-image: url("center-taper.png") 10 5 10 5 stretch stretch;
+
+                        &.round {
+                              border-left-width: 2px;
+                              border-right-width: 2px;
+                        }
+                  }
+
+                  &.quarter-taper {
+                        border-image: url("quarter-taper.png") 10 5 10 5 stretch stretch;
+                  }
+
+                  &.custom {
+                        border-image: url("custom.png") 10 stretch stretch;
+
+                        &.round {
+                              border-left-width: 5px;
+                              border-right-width: 5px;
+                        }
+                  }
+
+                  &.round {
+                        border-left-width: 5px;
+                        border-right-width: 2px;
+                        border-radius: 5px;
+                  }
+            }
+
+            /* throwaway code for presentation */
+
+            .vwp {
+                  margin: 1rem 0;
+            }
+
+            hr {
+                  margin: 2rem 0;
+
+            }
+
+            h1 {
+                  font-size: 1rem;
+                  color: rgba(0, 0, 0, 0.5);
+                  font-weight: 400;
+                  margin-top: 2rem;
+            }
+
+            html,
+            body {
+                  width: 100%;
+                  height: 100%;
+                  padding: 0;
+                  font-size: 16px;
+                  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+            }
+
+            body {
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+            }
+
+            menu {
+                  display: flex;
+                  width: 144px;
+                  min-width: 80px;
+                  padding: var(--spacer-2, 0.5rem) 0px;
+                  flex-direction: column;
+                  align-items: flex-start;
+                  border-radius: var(--radius-large, 0.8125rem);
+                  background: var(--color-bg-menu, rgba(30, 30, 30, 1));
+
+                  /* light/elevation-400-menu-panel */
+                  box-shadow: 0px 0px 0.5px 0px rgba(0, 0, 0, 0.12), 0px 10px 16px 0px rgba(0, 0, 0, 0.12), 0px 2px 5px 0px rgba(0, 0, 0, 0.15);
+                  box-shadow: 0px 0px 0.5px 0px color(display-p3 0 0 0 / 0.12), 0px 10px 16px 0px color(display-p3 0 0 0 / 0.12), 0px 2px 5px 0px color(display-p3 0 0 0 / 0.15);
+
+                  ul {
+                        list-style-type: none;
+                        padding: 0;
+                        margin: 0;
+                        width: 100%;
+
+                        li {
+                              height: 24px;
+                              align-items: center;
+                              display: flex;
+                              margin: 0 8px;
+                              padding: 0 8px;
+                              flex-direction: column;
+                              gap: 4px;
+                              align-self: stretch;
+                              padding-left: 24px;
+                              justify-content: center;
+
+                              &:hover {
+                                    background-color: rgba(0, 162, 194, 1);
+                                    border-radius: var(--radius-medium, 0.3125rem);
+                              }
+                        }
+
+                        .vwp {
+                              filter: invert(1);
+                              width: 100%;
+                        }
+                  }
+            }
+      </style>
+
+
+
+</head>
+
+<body>
+
+      <main>
+
+            <h1>Uniform</h1>
+            <div class="vwp uniform"></div>
+            <div class="vwp uniform round"></div>
+
+
+
+            <h1>Taper</h1>
+            <div class="vwp taper"></div>
+            <div class="vwp taper round"></div>
+
+            <h1>Quarter Taper</h1>
+            <div class="vwp quarter-taper"></div>
+            <div class="vwp quarter-taper round"></div>
+
+            <h1>Wedge</h1>
+            <div class="vwp wedge"></div>
+            <div class="vwp wedge round"></div>
+
+            <h1>Eye</h1>
+            <div class="vwp eye"></div>
+            <div class="vwp eye round"></div>
+
+            <h1>Lens</h1>
+            <div class="vwp lens"></div>
+            <div class="vwp lens round"></div>
+
+            <hr />
+            <h1>Custom</h1>
+            <div class="vwp custom"></div>
+            <div class="vwp custom round"></div>
+
+
+            <br />
+            <br />
+            <br />
+
+            <h1>In menu</h1>
+            <menu>
+                  <ul>
+                        <li>
+                              <div class="vwp uniform"></div>
+                        </li>
+                        <li>
+                              <div class="vwp custom"></div>
+                        </li>
+                        <li>
+                              <div class="vwp taper"></div>
+                        </li>
+                        <li>
+                              <div class="vwp quarter-taper"></div>
+                        </li>
+                        <li>
+                              <div class="vwp wedge"></div>
+                        </li>
+                        <li>
+                              <div class="vwp eye"></div>
+                        </li>
+                        <li>
+                              <div class="vwp lens"></div>
+                        </li>
+                  </ul>
+            </menu>
+
+      </main>
+
+</body>
+
+</html>
