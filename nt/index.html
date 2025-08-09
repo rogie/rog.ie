@@ -211,7 +211,7 @@
 }`,
                         uniforms: [{
                             u_background: [0, 0, 0, 1],
-                            u_color: [1, 0, 0, 1],
+                            u_color: [1, 1, 1, 1],
                             u_scale: .35,
                             u_speed: 0.6,
                             u_phase: .5,
@@ -286,7 +286,7 @@ void main() {
                     }
                 ];
 
-                let randomShader = shaders[Math.floor(Math.random() * shaders.length)];
+                let randomShader = shaders[1];
                 shader.fragmentShader = [
                     randomShader.fragmentShader
                 ].concat(randomShader.postProcessor)
@@ -1013,14 +1013,14 @@ void main(){
     }
     glFragColor = vec4(u_color, O);
 }'
-                                      uniforms='{"u_color":[0,0,0],"u_scale":0.5,"u_layers":4,"u_distortion":1,"u_thickness":0.004,"u_slope":40,"u_jitter":0.75,"u_sharpness":0.75}'>
+                                      uniforms='{"u_color":[0,0,0],"u_scale":1.25,"u_layers":8,"u_distortion":1,"u_thickness":0.004,"u_slope":40,"u_jitter":0.75,"u_sharpness":0.75}'>
                         </media-shader>
                         <div class="controls">
-                            <fig-slider min="0"
-                                        max="1"
+                            <fig-slider min="0.5"
+                                        max="1.25"
                                         name="u_scale"
                                         step="0.01"
-                                        value="1.125"
+                                        value="1.25"
                                         variant="minimal"></fig-slider>
                         </div>
 
@@ -1061,14 +1061,14 @@ void main(){
                                               col = cos(col * cos(vec3(d, a, 2.5)) * 0.5 + 0.5) * u_color;
                                               glFragColor = vec4(col, 1.0);
                                             }'
-                                      uniforms='{"u_color":[1,1,1],"u_scale":0.9,"u_speed":1}'>
+                                      uniforms='{"u_color":[1,1,1],"u_scale":0.95,"u_speed":1}'>
                         </media-shader>
                         <div class="controls">
                             <fig-slider min="0"
-                                        max="1"
+                                        max="0.95"
                                         name="u_scale"
                                         step="0.01"
-                                        value="0.9"
+                                        value="0.95"
                                         variant="minimal"></fig-slider>
                         </div>
                     </rk-media>
