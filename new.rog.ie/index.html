@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Your website description">
+    <meta name="keywords"
+          content="your, keywords, here">
+    <meta name="author"
+          content="Your Name">
+    <title>Rogie King</title>
+    <link rel="stylesheet"
+          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet"
+          href="/rog.ie.css">
+    <script src="/rog.ie.web-components.js"
+            type="module"></script>
+    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js"></script>
+    <link rel="icon"
+          href="/avatar.svg"
+          type="image/svg+xml">
+
+
+</head>
+
+<body>
+    <header class="home">
+
+        <h1>
+            <img src="avatar.svg"
+                 class="header-icon avatar"
+                 alt="Rogie King Logo">
+            <rk-greeting>Ayo</rk-greeting>, I’m Rogie!
+        </h1>
+        <p> Digital builder and chaos animal. Currently a Product Designer at
+            <a href="https://www.figma.com">
+                <img src="assets/icon-figma-color.svg"
+                     class="figma"
+                     alt="Figma Logo">Figma
+            </a>
+            working on tools for <a href="https://www.figma.com/draw/">
+                <img src="/assets/icon-draw.svg#color"
+                     class="draw"
+                     alt="Figma draw">Illustration</a> and
+            Visual Design.
+        </p>
+        <p>Loves
+            <horror-text>horror</horror-text> movies, electronic music,
+            ass-numbing hot sauce, art shit and code
+            stuff.
+        </p>
+
+
+
+
+    </header>
+
+    <main>
+        <section id="projects">
+
+            <h2>Projects</h2>
+            <ul class="post-list projects">
+
+                <li class="post-item">
+                    <a href="https://www.figma.com/draw/"
+                       class="post-link draw">
+                        <h3 class="post-title">Figma Draw</h3>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li>
+                <li class="post-item">
+                    <a href="/nt/"
+                       class="post-link plugin">
+                        <h3 class="post-title">
+                            Noise &amp; Texture
+                        </h3>
+                        <span class="post-type">Plugin</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li>
+                <li class="post-item">
+                    <a href="https://www.npmjs.com/package/media-shader"
+                       class="post-link script">
+                        <h3 class="post-title">Media Shader
+                        </h3>
+                        <span class="post-type">Web component</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li>
+                <li class="post-item">
+                    <a href="https://www.npmjs.com/package/@rogieking/figui3"
+                       class="post-link script">
+                        <h3 class="post-title">
+                            FigUI3
+                        </h3>
+                        <span class="post-type">Web component library</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li>
+                <li class="post-item">
+                    <a href="https://www.figma.com/community/plugin/1270403910069102271/clippy-add-attachments-to-your-figma-files"
+                       class="post-link plugin">
+                        <h3 class="post-title">Clippy
+                        </h3>
+                        <span class="post-type">Plugin</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2024</span>
+                    </a>
+                </li>
+                <!--li class="post-item">
+                    <a href="/scrambler/"
+                       class="post-link">
+                        <h3 class="post-title">Ducati Scrambler</h3>
+                        <span class="post-type">Motorcycle mods</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2023</span>
+                    </a>
+                </li-->
+            </ul>
+        </section>
+
+        <section id="notes">
+            <h2>Notes</h2>
+            <ul class="post-list notes">
+                <li class="post-item">
+                    <a href="/liquor-cabinet/"
+                       class="post-link">
+                        <img src="/assets/icon-cabinet.svg"
+                             alt="The Liquor Cabinet">
+                        <h3 class="post-title">The Liquor Cabinet</h3>
+                        <span class="post-type">Collab</span>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li>
+                <!--li class="post-item">
+                    <a href=""
+                       class="post-link">
+                        <h3 class="post-title">Being a Designer Advocate</h3>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2025</span>
+                    </a>
+                </li-->
+            </ul>
+        </section>
+
+        <section id="movies">
+            <header>
+                <h2>
+                    Recent flicks
+                </h2>
+            </header>
+            <rogie-movie-list limit="8"></rogie-movie-list>
+        </section>
+        <section id="music">
+            <h2>Recent jams</h2>
+            <rogie-music-list limit="16"
+                              delay="1000"></rogie-music-list>
+        </section>
+    </main>
+
+    <rogie-footer></rogie-footer>
+</body>
+
+</html>

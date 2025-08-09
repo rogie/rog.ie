@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+          content="Your website description">
+    <meta name="keywords"
+          content="your, keywords, here">
+    <meta name="author"
+          content="Your Name">
+    <title>Your Website Title</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet"
+          href="/rog.ie.css">
+    <script src="/rog.ie.web-components.js"
+            type="module"></script>
+    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js"></script>
+
+
+
+</head>
+
+<body>
+    <header>
+        <fig-tooltip text="Home">
+            <fig-button type="link"
+                        class="back"
+                        icon="true"
+                        variant="secondary"
+                        href="/">
+                <img src="/assets/icon-back.svg"
+                     alt="Back">
+            </fig-button>
+        </fig-tooltip>
+        <h1>2015 Ducati Scrambler</h1>
+        <p>During the pandemic, I bought a 2015 Ducati Scrambler. I wanted to make it my own, so I started modding it.
+        </p>
+    </header>
+
+    <main>
+        <section id="overview">
+            <rk-media pull="both">
+                <img src="final.jpg"
+                     is="img-zoomer"
+                     alt="2015 Ducati Scrambler">
+            </rk-media>
+
+        </section>
+        <section id="timeline">
+            <rk-media pull="right">
+                <img src="mid.jpg"
+                     is="img-zoomer"
+                     alt="2015 Ducati Scrambler">
+            </rk-media>
+            <rk-media pull="left">
+                <img src="start.jpg"
+                     is="img-zoomer"
+                     alt="2015 Ducati Scrambler">
+            </rk-media>
+
+        </section>
+
+    </main>
+
+    <rogie-footer></rogie-footer>
+
+</body>
+
+</html>
