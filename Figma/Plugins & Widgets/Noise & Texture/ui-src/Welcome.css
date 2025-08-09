@@ -1,8 +1,0 @@
-.welcome a.signature{
-    display: inline-flex;
-    align-items: center;
-    color: inherit !important;
-}
-.welcome a.signature:hover{
-    color: var(--figma-color-text) !important;
-}
