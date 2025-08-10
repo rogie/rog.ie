@@ -336,12 +336,15 @@ form {
     padding: 0;
   }
   header {
+    h1 {
+      margin-bottom: 0.5rem;
+    }
     .header-icon {
       position: static;
       transform: none;
       width: 2.5rem;
       height: 2.5rem;
-      margin-right: 0.5rem;
+      margin-left: 0;
     }
   }
 }
@@ -358,7 +361,6 @@ form {
 
 .post-list {
   list-style: none;
-  margin-top: -0.5rem;
 }
 .post-item {
   white-space: nowrap;
@@ -431,6 +433,11 @@ form {
         margin-left: 0;
       }
     }
+    &:has(img) {
+      &::before {
+        content: none;
+      }
+    }
     &.plugin {
       &:before {
         background: url(/assets/icon-plugin.svg) no-repeat;
@@ -476,6 +483,10 @@ form {
     z-index: 1;
     color: var(--color-text-white);
     flex-direction: column;
+
+    @media (width < 480px) {
+      padding: 1rem;
+    }
     * {
       color: inherit;
     }
