@@ -6,7 +6,6 @@ let ONE_HOUR = 60 * ONE_MINUTE;
 let ONE_DAY = 24 * ONE_HOUR;
 
 let CACHE = new Cache();
-CACHE.clear();
 let CACHE_TTL = ONE_HOUR;
 
 class Movie extends HTMLElement {
