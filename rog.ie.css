@@ -494,7 +494,7 @@ form {
     @media (width < 480px) {
       padding: 1rem;
     }
-    * {
+    *:not(fig-button) {
       color: inherit;
     }
     img {
@@ -907,6 +907,8 @@ rogie-movie-list {
   align-items: flex-end;
   justify-content: center;
   height: 230px;
+  perspective: 300px;
+  perspective-origin: 50%;
 
   rogie-movie {
     --scale: 1;
@@ -928,6 +930,8 @@ rogie-movie-list {
     margin: 0 calc(-1.5% - (6% * var(--clamped-scale)));
     filter: blur(calc(4px * (1 - var(--clamped-scale))))
       saturate(calc(100% * var(--scale)));
+    transform-style: preserve-3d;
+    transform-origin: center;
     flex-shrink: 0;
     transition: all 0.05s linear;
     .media.media--movie {
