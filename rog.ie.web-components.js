@@ -181,6 +181,8 @@ class Music extends HTMLElement {
     this.artist = this.getAttribute("artist");
     this.link = this.getAttribute("link");
     this.delay = Number(this.getAttribute("delay")) || 0;
+    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
     this.player = new AudioPlayer(
       () => this.onEnded(),
       (e) => this.onTimeUpdate(e),
@@ -263,22 +265,56 @@ class Music extends HTMLElement {
       await this.fetchMusic();
     }
     if (!this.track) {
-      // No track available, can't play
+      // No track available, show error message on iOS
+      if (this.isIOS) {
+        this.showError("Track not available");
+      }
       return;
     }
-    if (
-      this.player.currentUrl !== this.track.previewUrl ||
-      !this.player.isPlaying
-    ) {
-      await this.player.play(this.track.previewUrl);
-      this.playing = true;
-    } else {
-      this.player.pause();
+
+    try {
+      if (
+        this.player.currentUrl !== this.track.previewUrl ||
+        !this.player.isPlaying
+      ) {
+        await this.player.play(this.track.previewUrl);
+        this.playing = true;
+        this.hideError();
+      } else {
+        this.player.pause();
+        this.playing = false;
+      }
+    } catch (error) {
+      console.warn("Track playback failed:", error);
+      if (this.isIOS) {
+        this.showError("Tap to retry");
+      }
       this.playing = false;
     }
   }
 
+  showError(message) {
+    const button = this.querySelector("fig-button.play");
+    if (button) {
+      button.textContent = message;
+      button.style.fontSize = "0.6rem";
+    }
+  }
+
+  hideError() {
+    const button = this.querySelector("fig-button.play");
+    if (button) {
+      button.textContent = this.playing ? "Pause" : "Play";
+      button.style.fontSize = "";
+    }
+  }
+
   async play() {
+    // Initialize audio on iOS with user gesture
+    if (this.isIOS) {
+      this.player.initializeAudio();
+    }
+
     await this.playTrack();
     if (this.playing) {
       this.dispatchEvent(new CustomEvent("playing"));
@@ -335,10 +371,19 @@ class MusicList extends HTMLElement {
     this.loading = false;
     this.setAttribute("loading", this.loading);
     this.style.setProperty("--playback-rate", this.playbackRate);
+
+    // Initialize vinyl crackle sound
+    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     this.vinylCrackle = new Audio("/assets/vinyl-crackle.m4a");
     this.vinylCrackle.volume = 0.5;
     this.vinylCrackle.loop = false;
     this.vinylCrackle.currentTime = 0;
+    this.vinylCrackleReady = false;
+
+    // Preload vinyl crackle on first user interaction for iOS
+    if (this.isIOS) {
+      this.vinylCrackle.load();
+    }
   }
   //preload image
   async preloadTrack(track) {
@@ -387,7 +432,12 @@ class MusicList extends HTMLElement {
       <label>45</label>
     </span>
     <fig-button class="btn next">Next</fig-button>
-    <input type="button" class="turntable-needle" />${this.playlist
+    <input type="button" class="turntable-needle" />
+    ${
+      this.isIOS
+        ? '<div class="ios-notice" style="position: absolute; top: 0.5rem; left: 0.5rem; font-size: 0.6rem; opacity: 0.7; max-width: 100px;">Tap play button to start music</div>'
+        : ""
+    }${this.playlist
       .filter((track) => !track.error)
       .slice(0, this.limit)
       .map((track, index) => {
@@ -405,20 +455,37 @@ class MusicList extends HTMLElement {
         this.style.setProperty("--percent", e.detail.percent);
       });
       musicElement.addEventListener("playing", () => {
-        this.vinylCrackle.volume = 0.3;
-        this.vinylCrackle.loop = false;
-        this.vinylCrackle.currentTime = 0;
-        this.vinylCrackle.play();
-        let toInterval = setInterval(() => {
-          this.vinylCrackle.volume = Math.max(
-            Number(this.vinylCrackle.volume.toFixed(2)) - 0.01,
-            0
-          );
-          if (this.vinylCrackle.volume <= 0) {
-            clearInterval(toInterval);
-            this.vinylCrackle.pause();
+        // Initialize vinyl crackle on first play for iOS
+        if (this.isIOS && !this.vinylCrackleReady) {
+          this.vinylCrackleReady = true;
+          // Don't play vinyl crackle on iOS to avoid gesture issues
+          return;
+        }
+
+        // Play vinyl crackle only on non-iOS devices or if already initialized
+        if (!this.isIOS || this.vinylCrackleReady) {
+          try {
+            this.vinylCrackle.volume = 0.3;
+            this.vinylCrackle.loop = false;
+            this.vinylCrackle.currentTime = 0;
+            this.vinylCrackle.play().catch((error) => {
+              console.warn("Vinyl crackle playback failed:", error);
+            });
+
+            let toInterval = setInterval(() => {
+              this.vinylCrackle.volume = Math.max(
+                Number(this.vinylCrackle.volume.toFixed(2)) - 0.01,
+                0
+              );
+              if (this.vinylCrackle.volume <= 0) {
+                clearInterval(toInterval);
+                this.vinylCrackle.pause();
+              }
+            }, 100);
+          } catch (error) {
+            console.warn("Vinyl crackle initialization failed:", error);
           }
-        }, 100);
+        }
       });
       musicElement.addEventListener("paused", () => {
         this.vinylCrackle.pause();

@@ -157,6 +157,9 @@ class AudioPlayer {
     this.onPause = onPause;
     this.playbackRate = 1;
     this.fadeDuration = 100;
+    this.isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    this.hasUserGesture = false;
+    this.pendingPlay = false;
   }
 
   setFadeDuration(duration = 500) {
@@ -221,7 +224,17 @@ class AudioPlayer {
     const volumeStep = targetVolume / steps;
 
     this.audio.volume = 0;
-    this.audio.play();
+
+    try {
+      await this.audio.play();
+    } catch (error) {
+      console.warn("Audio play failed during fade in:", error);
+      // For iOS, set volume directly and throw error up
+      if (this.isIOS) {
+        this.audio.volume = targetVolume;
+        throw error;
+      }
+    }
 
     return new Promise((resolve) => {
       this.fadeInInterval = setInterval(() => {
@@ -238,7 +251,33 @@ class AudioPlayer {
     });
   }
 
+  // Initialize audio with user gesture (call this on first user interaction)
+  initializeAudio() {
+    if (!this.audio && this.isIOS) {
+      this.audio = new Audio();
+      this.audio.volume = 0;
+      this.audio.playbackRate = this.playbackRate;
+      this.hasUserGesture = true;
+
+      // Set up event listeners once
+      if (this.onEnded) {
+        this.audio.addEventListener("ended", this.onEnded);
+      }
+      if (this.onTimeUpdate) {
+        this.audio.addEventListener("timeupdate", this.onTimeUpdate);
+      }
+      if (this.onPause) {
+        this.audio.addEventListener("pause", this.onPause);
+      }
+    }
+  }
+
   async play(url = null) {
+    // On iOS, ensure we have a user gesture
+    if (this.isIOS && !this.hasUserGesture) {
+      this.initializeAudio();
+    }
+
     if (url && url !== this.currentUrl) {
       // If there's a current track playing, fade it out first
       if (this.audio && this.isPlaying) {
@@ -246,31 +285,59 @@ class AudioPlayer {
       }
 
       this.currentUrl = url;
-      if (this.audio) {
-        this.audio.pause();
+
+      if (!this.audio) {
+        this.audio = new Audio();
+        this.audio.playbackRate = this.playbackRate;
+
+        // Set up event listeners for new audio element
+        if (this.onEnded) {
+          this.audio.addEventListener("ended", this.onEnded);
+        }
+        if (this.onTimeUpdate) {
+          this.audio.addEventListener("timeupdate", this.onTimeUpdate);
+        }
+        if (this.onPause) {
+          this.audio.addEventListener("pause", this.onPause);
+        }
       }
-      this.audio = new Audio(url);
-      this.audio.playbackRate = this.playbackRate;
+
+      // Load the new URL
+      this.audio.src = url;
       this.audio.volume = 0;
 
-      // Set up ended event listener
-      if (this.onEnded) {
-        this.audio.addEventListener("ended", this.onEnded);
+      try {
+        // Preload on non-iOS devices
+        if (!this.isIOS) {
+          await this.audio.load();
+        }
+        await this.fadeIn();
+      } catch (error) {
+        console.warn("Audio playback failed:", error);
+        // Fallback: try direct play for iOS
+        if (this.isIOS) {
+          try {
+            this.audio.volume = this.volume;
+            await this.audio.play();
+            this.isPlaying = true;
+          } catch (iosError) {
+            console.error("iOS audio playback failed:", iosError);
+          }
+        }
       }
-
-      if (this.onTimeUpdate) {
-        this.audio.addEventListener("timeupdate", this.onTimeUpdate);
-      }
-
-      // Set up pause event listener
-      if (this.onPause) {
-        this.audio.addEventListener("pause", this.onPause);
-      }
-
-      await this.fadeIn();
     } else if (this.audio) {
       if (!this.isPlaying) {
-        await this.fadeIn();
+        try {
+          await this.fadeIn();
+        } catch (error) {
+          console.warn("Resume playback failed:", error);
+          // Fallback for iOS
+          if (this.isIOS) {
+            this.audio.volume = this.volume;
+            await this.audio.play();
+            this.isPlaying = true;
+          }
+        }
       }
     }
 
