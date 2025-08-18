@@ -76,7 +76,7 @@ body {
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 3em;
   max-width: 30rem;
   width: 100%;
 }
@@ -337,7 +337,7 @@ form {
 
 @media (width < 480px) {
   html {
-    padding: 1rem;
+    padding: 2rem;
   }
   body {
     padding: 0;
