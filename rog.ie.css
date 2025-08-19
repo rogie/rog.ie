@@ -927,6 +927,7 @@ rogie-movie-list {
   flex-direction: row-reverse;
   align-items: flex-end;
   justify-content: center;
+  height: 257px;
 
   rogie-movie {
     --scale: 1;
