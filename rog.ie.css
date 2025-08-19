@@ -678,7 +678,7 @@ rogie-music-list {
   fig-switch > input[type="checkbox"].switch,
   fig-switch > input[type="checkbox"].switch:checked {
     box-shadow: 0px 1px 0.5px rgba(255, 255, 255, 0.35),
-      inset 0px 0.5px 0.25px rgba(0, 0, 0, 0.15);
+      inset 0px 0.5px 2px rgba(0, 0, 0, 0.15);
   }
   .btn {
     width: 1.5rem;
@@ -707,6 +707,7 @@ rogie-music-list {
         transform: scale(0.75);
         transform-origin: center right;
       }
+      filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
 
       img {
         width: 124px;
