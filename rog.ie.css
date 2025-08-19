@@ -11,6 +11,11 @@
   src: url("/assets/agli.ttf") format("truetype");
 }
 @font-face {
+  font-family: "nan";
+  src: url("/assets/fonts/NaNJauneTRIAL-MidiRegular.woff2") format("woff2");
+  font-style: normal;
+}
+@font-face {
   font-family: "isg";
   src: url("/assets/itc-serif-gothic-extra-bold-588cef7e1f5d9.otf")
     format("opentype");
@@ -40,6 +45,7 @@
   --color-bg-secondary: #fff;
   --color-bg-module: #fff;
   --font-serif: "agl", "plantijn", Georgia, serif;
+  --font-heading: var(--font-serif);
   --font-sans: "Inter", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 }
@@ -64,19 +70,19 @@ body {
   color: var(--color-text-secondary);
 }
 html {
-  padding: 2rem;
   background-color: var(--color-bg);
   -webkit-font-smoothing: subpixel-antialiased;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   text-wrap: balance;
+  padding: 2rem 4em;
 }
 
 body {
   font-size: 0.875rem;
   line-height: 1.6;
   margin: 0 auto;
-  padding: 0 3em;
+  padding: 0;
   max-width: 30rem;
   width: 100%;
 }
@@ -95,13 +101,13 @@ dt {
   color: var(--color-text);
 }
 h1 {
-  font-size: 1.75rem;
-  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-family: var(--font-heading);
   -webkit-font-smoothing: subpixel-antialiased;
 }
 h2 {
   font-size: 1.25rem;
-  font-family: var(--font-serif);
+  font-family: var(--font-heading);
   -webkit-font-smoothing: subpixel-antialiased;
 }
 h1,
@@ -127,10 +133,14 @@ a {
 header {
   text-align: left;
   position: relative;
+  margin-bottom: 0;
 
   h1 {
     display: flex;
     align-items: center;
+  }
+  &.home {
+    margin-bottom: 2rem;
   }
 
   .header-icon {
@@ -419,11 +429,6 @@ form {
       background-color: var(--color-bg-inset);
       box-shadow: var(--shadow-inset);
     }
-    @media (width < 480px) {
-      margin-left: 0;
-      padding-left: 0.5rem;
-      margin: 0 -0.5rem;
-    }
     & > img,
     &:before {
       content: "";
@@ -435,7 +440,13 @@ form {
       margin-right: -0.5rem;
       margin-left: -2rem;
       opacity: 0.35;
-      @media (width < 480px) {
+    }
+    @media (width < 480px) {
+      margin-left: 0;
+      padding-left: 0.5rem;
+      margin: 0 -0.5rem;
+      & > img,
+      &:before {
         margin-left: 0;
       }
     }
@@ -475,6 +486,7 @@ form {
   position: relative;
   background-color: var(--color-bg);
   box-shadow: 0 4px 2px -3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 
   .content {
     position: absolute;
@@ -568,12 +580,23 @@ form {
 .rk-media.plugin-header {
   figure {
     position: absolute;
-    inset: 0 0 0 40%;
+    inset: 0 0 0 50%;
     z-index: 1;
     padding: 2rem 0 0 0;
     img {
       width: 100%;
       filter: drop-shadow(0 1rem 1.5rem rgba(0, 0, 0, 1));
+    }
+    @media (width < 480px) {
+      inset: 0 0 0 50%;
+      img {
+        width: 175%;
+      }
+    }
+  }
+  .media .content {
+    @media (width < 480px) {
+      width: 50%;
     }
   }
   dialog {
@@ -592,7 +615,6 @@ rogie-music-list {
   justify-content: center;
   width: 100%;
   height: 9rem;
-  margin: 1rem 0;
   position: relative;
   border-radius: var(--base-radius);
   background: url(/assets/woodgrain.png) no-repeat, #fed196;
@@ -905,9 +927,6 @@ rogie-movie-list {
   flex-direction: row-reverse;
   align-items: flex-end;
   justify-content: center;
-  height: 230px;
-  perspective: 300px;
-  perspective-origin: 50%;
 
   rogie-movie {
     --scale: 1;
@@ -1096,7 +1115,8 @@ section {
 }
 
 rk-greeting {
-  display: inline;
+  display: inline-block;
+  white-space: nowrap;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
