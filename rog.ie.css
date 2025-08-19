@@ -182,7 +182,7 @@ header {
     &:has(.draw) {
       color: #00a2c2;
       &:hover {
-        cursor: url(/assets/draw-cursor.svg) 10 50, auto;
+        cursor: url(/assets/cursor-pencil.svg) 10 50, auto;
       }
     }
   }
@@ -252,9 +252,8 @@ header {
       }
     }
     &:hover {
+      cursor: url(/assets/cursor-slasher.svg) 10 50, auto;
       filter: url(#roughen-0);
-
-      cursor: url(/assets/slasher-cursor.svg) 12 110, auto;
       b {
         &:after {
           animation-play-state: running;
