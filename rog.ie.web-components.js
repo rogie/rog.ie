@@ -223,11 +223,11 @@ class Music extends HTMLElement {
   }
   async fetchMusic() {
     let term = this.#getSearchTerm();
-
-    let url = `https://itunes.apple.com/search?term=${encodeURIComponent(
+    const proxyUrl = "https://cors.memer.workers.dev/?";
+    const targetUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(
       term
     )}&media=music`;
-    let f = await fetch(url, {
+    let f = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
       headers: {
         "User-Agent": "Mozilla/5.0 (compatible; WebApp/1.0)",
         "X-Requested-With": "XMLHttpRequest",
