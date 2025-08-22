@@ -6,6 +6,9 @@ let ONE_HOUR = 60 * ONE_MINUTE;
 let ONE_DAY = 24 * ONE_HOUR;
 
 let CACHE = new Cache();
+if (document.location.search.includes("clear-cache")) {
+  CACHE.clear();
+}
 let CACHE_TTL = ONE_HOUR;
 
 class Movie extends HTMLElement {
@@ -406,8 +409,8 @@ class MusicList extends HTMLElement {
       };
     });
   }
-  async preloadPlaylist() {
-    return Promise.all(this.playlist.map(this.preloadTrack));
+  async preloadPlaylist(limit = this.limit) {
+    return Promise.all(this.playlist.slice(0, limit).map(this.preloadTrack));
   }
   async fetchMusic() {
     let cachedMusic = CACHE.get("playlist");
@@ -424,10 +427,11 @@ class MusicList extends HTMLElement {
       this.playlist = r.recenttracks.track;
       this.playlist.forEach((track) => {
         track.imageSrc = track.image[3]["#text"];
+        track.artistName = track.artist["#text"];
       });
       CACHE.set("playlist", this.playlist, CACHE_TTL);
     }
-    await this.preloadPlaylist();
+    await this.preloadPlaylist(2);
   }
 
   render() {
@@ -448,10 +452,10 @@ class MusicList extends HTMLElement {
       .slice(0, this.limit)
       .map((track, index) => {
         return `<rogie-music 
-        image="${track.image[3]["#text"]}" 
+        image="${track.imageSrc}" 
         title="${track.name}"
         current="${index === this.currentTrack}"
-        artist="${track.artist["#text"]}"
+        artist="${track.artistName}"
         delay="${this.delay}"
         link="${track.url}"></rogie-music>`;
       })
@@ -569,7 +573,7 @@ class Footer extends HTMLElement {
   render() {
     this.innerHTML = `
     <footer>
-        <fig-tooltip text="Rogie King"><img class="signature" src="/signature.svg" alt="Rogie King"></fig-tooltip>
+        <fig-tooltip text="Rogie King"><a href="/"><img class="signature" src="/signature.svg" alt="Rogie King"></a></fig-tooltip>
         <ul>
             <a href="https://www.figma.com/@rogie">
               <fig-tooltip text="Figma">
