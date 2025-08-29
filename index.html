@@ -12,13 +12,36 @@
     <meta name="author"
           content="Your Name">
     <title>Rogie King</title>
-    <link rel="stylesheet"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
-    <link rel="stylesheet"
-          href="/rog.ie.css">
+    <!-- Preload critical resources -->
+    <link rel="preload"
+          as="style"
+          href="https://unpkg.com/@rogieking/figui3@latest/components.css"
+          onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+        <link rel="stylesheet"
+              href="https://unpkg.com/@rogieking/figui3@latest/components.css">
+    </noscript>
+
+    <link rel="preload"
+          as="style"
+          href="/rog.ie.css"
+          onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+        <link rel="stylesheet"
+              href="/rog.ie.css">
+    </noscript>
+
+    <link rel="preload"
+          as="script"
+          href="/rog.ie.web-components.js" />
+    <link rel="preload"
+          as="script"
+          href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
+
+    <!-- Apply the scripts after preloading -->
     <script src="/rog.ie.web-components.js"
             type="module"></script>
-    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js"></script>
+    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js?"></script>
     <link rel="icon"
           href="/avatar.svg"
           type="image/svg+xml">
@@ -30,9 +53,10 @@
     <header class="home">
 
         <h1>
-            <img src="avatar.svg"
-                 class="header-icon avatar"
-                 alt="Rogie King Logo">
+            <fig-avatar size="large"
+                        class="header-icon avatar"
+                        name="Rogie King"
+                        initials="RK"></fig-avatar>
             <rk-greeting>Ayo</rk-greeting>, I’m Rogie!
         </h1>
         <p>I'm a Product Designer at

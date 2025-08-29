@@ -6,10 +6,33 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title>Dither!</title>
-    <link rel="stylesheet"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
-    <link rel="stylesheet"
-          href="/rog.ie.css">
+    <!-- Preload critical resources -->
+    <link rel="preload"
+          as="style"
+          href="https://unpkg.com/@rogieking/figui3@latest/components.css"
+          onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+        <link rel="stylesheet"
+              href="https://unpkg.com/@rogieking/figui3@latest/components.css">
+    </noscript>
+
+    <link rel="preload"
+          as="style"
+          href="/rog.ie.css"
+          onload="this.onload=null;this.rel='stylesheet'" />
+    <noscript>
+        <link rel="stylesheet"
+              href="/rog.ie.css">
+    </noscript>
+
+    <link rel="preload"
+          as="script"
+          href="/rog.ie.web-components.js" />
+    <link rel="preload"
+          as="script"
+          href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
+
+    <!-- Apply the scripts after preloading -->
     <script src="/rog.ie.web-components.js"
             type="module"></script>
     <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js?"></script>
@@ -83,7 +106,17 @@
 </head>
 
 <body>
+
+    <rk-chat>
+        <rk-chat-message from="me"
+                         style="green">
+            While lots of dithering algorithms are easy to implement via shaders, error diffusion dithering is not
+            easily
+            parallelizable. So I made this handy little tool for that.
+        </rk-chat-message>
+    </rk-chat>
     <main class="full-width">
+
         <figure class="dither-app">
 
             <fig-image upload="true"
@@ -94,7 +127,6 @@
             </fig-image>
 
             <div class="controls">
-                <h1>Dither</h1>
                 <fig-field direction="horizontal">
                     <label for="ditheringAlgorithm">Algorithm</label>
                     <fig-dropdown id="ditheringAlgorithm"

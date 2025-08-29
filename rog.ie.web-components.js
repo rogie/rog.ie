@@ -21,7 +21,7 @@ class Movie extends HTMLElement {
     this.render();
   }
   render() {
-    this.innerHTML = `
+    /*this.innerHTML = `
      
     <a href="${this.link}" target="_blank">
         <figure class="movie">
@@ -39,7 +39,27 @@ class Movie extends HTMLElement {
         </figure>
     </a>
     
-    `;
+    `;*/
+    this.innerHTML = `
+    <fig-tooltip text="${this.title} — ${this.rating}" position="top" delay="300">
+      <div class="cover box" style="--cover: url(${this.image})">
+        <div class="front"></div>
+        <div class="back"></div>
+        <div class="left"><div>${this.title}</div></div>
+        <div class="right"></div>
+        <div class="top"></div>
+        <div class="bottom"></div>
+        
+        <div class="tape box">
+          <div class="front"></div>
+          <div class="back"></div>
+          <div class="left"></div>
+          <div class="right"></div>
+          <div class="top"></div>
+          <div class="bottom"></div>
+        </div>
+      </div>
+    </fig-tooltip>`;
     this.querySelector("img").addEventListener("mouseenter", () => {
       this.title = "";
     });
@@ -927,3 +947,30 @@ class HorrorText extends HTMLElement {
 }
 
 customElements.define("horror-text", HorrorText);
+
+class Chat extends HTMLElement {
+  constructor() {
+    super();
+  }
+}
+
+customElements.define("rk-chat", Chat);
+
+class ChatMessage extends HTMLElement {
+  constructor() {
+    super();
+  }
+  connectedCallback() {
+    this.render();
+  }
+  render() {
+    this.innerHTML = `
+     <fig-avatar size="large" name="Rogie King"></fig-avatar>
+      <div class="rk-chat-message-content">
+        ${this.innerHTML}
+      </div>
+    `;
+  }
+}
+
+customElements.define("rk-chat-message", ChatMessage);

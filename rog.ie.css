@@ -30,6 +30,12 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: "louize";
+  src: url("/assets/fonts/LouizeDisplayTrial-Regular.otf") format("opentype");
+  font-style: normal;
+}
+
 /* Reset default styles */
 * {
   margin: 0;
@@ -52,7 +58,7 @@
     0 1px 0.5px rgba(255, 255, 255, 1);
   --color-bg-secondary: #fff;
   --color-bg-module: #fff;
-  --font-serif: "Instrument Serif", "plantijn", Georgia, serif;
+  --font-serif: "louize", "Instrument Serif", "plantijn", Georgia, serif;
   --font-heading: var(--font-serif);
   --font-sans: "Inter", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
@@ -175,6 +181,22 @@ header {
     height: 3rem;
     margin-left: -3.5rem;
     margin-right: 0.5rem;
+    flex-shrink: 0;
+    overflow: visible;
+    &:after {
+      content: "" !important;
+      display: block;
+      width: 120%;
+      height: 120%;
+      margin: -13% -10% 0 0;
+      background-image: url("/assets/avatar-rogie.png");
+      background-size: contain;
+      background-position: center;
+    }
+  }
+  fig-avatar.header-icon {
+    background-color: var(--color-bg-inset);
+    box-shadow: var(--shadow-inset);
   }
 
   fig-button.back[variant="secondary"] {
@@ -778,7 +800,7 @@ rogie-music-list {
             rgba(255, 255, 255, 0) 40deg,
             rgba(255, 255, 255, 0) 360deg
           ),
-          url(/assets/vinyl.png) no-repeat;
+          url(/assets/vinyl.webp) no-repeat;
         background-size: contain;
         background-blend-mode: soft-light, soft-light, normal;
         border-radius: 50%;
@@ -890,7 +912,7 @@ rogie-music-list {
     transform-origin: center 22px;
     transform: scaleX(-1);
     aspect-ratio: 16 / 86;
-    background: url(/assets/turntable-needle.png) no-repeat;
+    background: url(/assets/turntable-needle.webp) no-repeat;
     background-size: contain;
     background-position: center;
     cursor: pointer;
@@ -958,6 +980,75 @@ rogie-movie-list {
     --scale: 1;
     --hover-scale: var(--scale);
     --hover-scale-min: 0.55;
+    --hover-scale-max: 1.1;
+    --clamped-scale: calc(
+      var(--hover-scale-min) +
+        (
+          var(--hover-scale) *
+            (
+              var(--hover-scale) *
+                (var(--hover-scale-max) - var(--hover-scale-min))
+            )
+        )
+    );
+    z-index: calc(80 * var(--hover-scale));
+    display: block;
+    perspective: 1000px;
+    perspective-origin: 50% 50%;
+    width: calc((100% / 3.5) * var(--clamped-scale));
+    z-index: calc(80 * var(--hover-scale));
+    margin: 0 calc(-1.5% - (6% * var(--clamped-scale)));
+    /*filter: blur(calc(4px * (1 - var(--clamped-scale))))
+      saturate(calc(100% * var(--scale)));*/
+    transform-style: preserve-3d;
+    transform-origin: center;
+    flex-shrink: 0;
+
+    transition: all 0.05s linear;
+    .cover.box {
+      transform-style: preserve-3d;
+      transform: rotateY(0turn);
+      transform-origin: -25% 95%;
+      scale: calc(var(--clamped-scale) * 0.8);
+      transform: rotateY(calc(45deg * ((1 - var(--clamped-scale)) - 0.5)));
+      & > .front,
+      & > .back,
+      .tape.box > .front,
+      .tape.box > .back {
+        border-radius: 0.25rem;
+      }
+      * {
+        border-radius: 0.25rem;
+      }
+
+      /*
+      --width: calc(150 * var(--hover-scale));
+      --height: calc(225 * var(--hover-scale));
+      --depth: calc(26 * var(--hover-scale));
+      .tape.box {
+        --width: calc(144 * var(--hover-scale));
+        --height: calc(221 * var(--hover-scale));
+        --depth: calc(20 * var(--hover-scale));
+      }*/
+    }
+  }
+}
+
+/*
+rogie-movie-list {
+  display: flex;
+  width: 100%;
+  gap: 0;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  justify-content: center;
+  aspect-ratio: 2 / 1.1;
+  margin-top: -0.75rem;
+
+  rogie-movie {
+    --scale: 1;
+    --hover-scale: var(--scale);
+    --hover-scale-min: 0.55;
     --hover-scale-max: 1.2;
     --clamped-scale: calc(
       var(--hover-scale-min) +
@@ -1008,6 +1099,7 @@ rogie-movie {
     }
   }
 }
+*/
 
 /* Mailing List */
 rogie-signup-form {
@@ -1181,6 +1273,52 @@ rk-greeting {
   }
 }
 
+/* Chat message */
+rk-chat-message {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 0.5rem;
+  .rk-chat-message-content {
+    border-width: 8px 8px 8px 16px;
+    border-style: solid;
+    font-size: 0.75rem;
+    border-image: url(/assets/chat-bubble-stroke.svg) 8 8 8 16;
+    background-clip: content-box;
+  }
+  &[style="blue"] {
+    .rk-chat-message-content {
+      background-color: #0d99ff;
+      border-image: url(/assets/chat-bubble.svg) 8 8 8 16;
+      color: white;
+    }
+  }
+  &[style="green"] {
+    .rk-chat-message-content {
+      color: #000;
+      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+      background-color: #c7fb9b;
+      border-image: url(/assets/chat-bubble-green.svg) 8 8 8 16;
+    }
+  }
+  fig-avatar {
+    flex-shrink: 0;
+    background-color: var(--color-bg-inset);
+    box-shadow: var(--shadow-inset);
+    overflow: visible;
+    &:after {
+      content: "" !important;
+      display: block;
+      width: 120%;
+      height: 120%;
+      margin: -13% -10% 0 0;
+      background-image: url("/assets/avatar-rogie.png");
+      background-size: contain;
+      background-position: center;
+    }
+  }
+}
+
 /* Image Zoomer */
 .img-zoomer {
   --darken: 0.85;
@@ -1196,6 +1334,164 @@ rk-greeting {
     inset: var(--inset) !important;
     width: calc(100vw - calc(2 * var(--inset))) !important;
     height: calc(100vh - calc(2 * var(--inset))) !important;
+  }
+}
+
+/* CSS 3D box */
+.box {
+  --width: 300;
+  --height: 300;
+  --depth: 90;
+  --cover: none;
+  width: calc(var(--width) * 1px);
+  height: calc(var(--height) * 1px);
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: 50% 50%;
+  animation: rot 8s linear infinite;
+
+  & > * {
+    position: absolute;
+    backface-visibility: visible;
+    background: rgba(255, 0, 0, 0.5);
+  }
+  /* before and after are top and bottom */
+  & > .top,
+  & > .bottom {
+    inset: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--depth) * 1px);
+  }
+  & > .top {
+    top: 0%;
+    translate: 0% -100%;
+    transform-origin: 50% 100%;
+    transform: rotateX(0.25turn);
+  }
+  & > .bottom {
+    top: 100%;
+    transform-origin: 50% 0%;
+    transform: rotateX(-0.25turn);
+  }
+  & > .front,
+  & > .back {
+    inset: 0;
+  }
+  & > .back {
+    transform: rotateY(0.5turn) translateZ(calc(var(--depth) * 1px));
+  }
+
+  & > .left,
+  & > .right {
+    width: calc(var(--depth) * 1px);
+    height: 100%;
+    left: 0;
+    top: 0;
+    transform-origin: 100% 50%;
+    transform: translateX(-100%) rotateY(-0.25turn);
+  }
+  & > .right {
+    width: calc(var(--depth) * 1px);
+    right: 0;
+    left: auto;
+    transform-origin: 0% 50%;
+    transform: translateX(100%) rotateY(0.25turn);
+  }
+}
+
+/* CSS 3D VHS tape/box cover */
+.tape.box {
+  --width: 144;
+  --height: 221;
+  --depth: 22;
+  animation: none;
+  transform: translate3D(2px, 2px, -2px);
+  & > *,
+  &::before,
+  &::after {
+    background: linear-gradient(to bottom right, #444, #000);
+  }
+  & > .front,
+  & > .back {
+    background: url(/assets/tape.webp);
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+}
+
+.cover.box {
+  --width: 150;
+  --height: 225;
+  --depth: 26;
+  --cover: url(https://a.ltrbxd.com/resized/film-poster/8/5/0/4/5/9/850459-alien-romulus-0-600-0-900-crop.jpg?v=acabb7fd83);
+  perspective-origin: 50vw 50vh;
+
+  & > .front {
+    background: var(--cover);
+    background-color: black;
+    background-size: cover;
+    mask-image: url(/assets/tape-cover-cutout.svg);
+    filter: drop-shadow(0 1px 2px 2xp rgba(0, 0, 0, 1));
+  }
+  & > .back {
+    background: var(--cover);
+    background-position: 50% 50%;
+    background-size: calc(var(--height) * 2px);
+    mask-image: url(/assets/tape-cover-cutout.svg);
+    scale: -1 1;
+    &:after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(5px);
+    }
+  }
+  & > .right {
+    display: none;
+  }
+  & > .left,
+  & > .top,
+  & > .bottom {
+    background: var(--cover);
+    background-position: 100% 0%;
+    background-size: 300px 100%;
+    background-repeat: no-repeat;
+    & > div {
+      backdrop-filter: blur(5px);
+      transform-origin: 0% 0%;
+      transform: translateX(calc(var(--depth) * 1px)) rotateZ(90deg);
+      color: white;
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: calc(var(--height) * 1px);
+      height: calc(var(--depth) * 1px);
+      padding: 0 4rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      mix-blend-mode: plus-darker;
+    }
+  }
+  & > .left {
+    &::before {
+      content: "";
+      display: block;
+      width: calc(var(--depth) * 1px - 16px);
+      margin: 8px;
+      mask-image: url(http://127.0.0.1:5500/assets/betamax.svg);
+      mask-size: 100%;
+      border-radius: 2px;
+      position: absolute;
+      z-index: 1;
+      background: white;
+      aspect-ratio: 1/1;
+    }
   }
 }
 
