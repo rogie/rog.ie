@@ -127,11 +127,19 @@ h1 {
   font-size: 1.5rem;
   font-family: var(--font-heading);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.025em;
+  font-variant-ligatures: discretionary-ligatures;
+  font-feature-settings: "case" on, "dlig" on, "calt" on, "liga" on, "pnum" on,
+    "zero" on, "cpsp" on;
 }
 h2 {
   font-size: 1.25rem;
   font-family: var(--font-heading);
   -webkit-font-smoothing: antialiased;
+  letter-spacing: -0.025em;
+  font-variant-ligatures: discretionary-ligatures;
+  font-feature-settings: "case" on, "dlig" on, "calt" on, "liga" on, "pnum" on,
+    "zero" on, "cpsp" on;
 }
 h1,
 h2,
