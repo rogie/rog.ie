@@ -452,8 +452,39 @@ var Utils = (function () {
         active = false;
         leave(object);
       };
+
+      const touchMove = (e) => {
+        if (e.touches.length === 0) return;
+
+        active = true;
+        cancelAnimationFrame(frameId);
+        frameId = requestAnimationFrame(() => {
+          const touch = e.touches[0];
+          var data = {
+            rect: object.getBoundingClientRect(),
+            mouseX: touch.clientX,
+            mouseY: touch.clientY,
+          };
+          data.xPercent =
+            (Math.abs(data.rect.x - data.mouseX) / data.rect.width) * 100;
+          data.yPercent =
+            (Math.abs(data.rect.y - data.mouseY) / data.rect.height) * 100;
+          if (active) {
+            move(object, data, e);
+          }
+        });
+      };
+
+      const touchEnd = (e) => {
+        active = false;
+        leave(object);
+      };
+
       object.addEventListener("mousemove", mouseMove);
       object.addEventListener("mouseleave", mouseLeave);
+      object.addEventListener("touchmove", touchMove);
+      object.addEventListener("touchend", touchEnd);
+      object.addEventListener("touchcancel", touchEnd);
     },
   };
 })();

@@ -60,10 +60,10 @@ class Movie extends HTMLElement {
         </div>
       </div>
     </fig-tooltip>`;
-    this.querySelector("img").addEventListener("mouseenter", () => {
+    this.querySelector(".cover").addEventListener("mouseenter", () => {
       this.title = "";
     });
-    this.querySelector("img").addEventListener("mouseleave", () => {
+    this.querySelector(".cover").addEventListener("mouseleave", () => {
       this.title = this.title;
     });
   }
@@ -77,6 +77,7 @@ class MovieList extends HTMLElement {
     this.movies = [];
     this.loading = true;
     this.tmdb = new TMDB("7664ae5d990fb544f070d6a090befec5");
+    this.selected = null;
   }
   async connectedCallback() {
     this.limit = this.getAttribute("limit") || 8;
@@ -187,7 +188,18 @@ class MovieList extends HTMLElement {
       },
       initMovies
     );
-    this.querySelectorAll("rogie-movie").forEach((movie) => {});
+    this.querySelectorAll("rogie-movie").forEach((movie) => {
+      movie.addEventListener("click", () => {
+        this.selected = movie;
+        console.log("selected", this.selected);
+        this.selected.classList.add("selected");
+        this.querySelectorAll("rogie-movie").forEach((movie) => {
+          if (movie !== this.selected) {
+            movie.classList.remove("selected");
+          }
+        });
+      });
+    });
   }
 }
 
@@ -967,7 +979,7 @@ class ChatMessage extends HTMLElement {
     this.innerHTML = `
      <fig-avatar size="large" name="Rogie King"></fig-avatar>
       <div class="rk-chat-message-content">
-        ${this.innerHTML}
+        <div>${this.innerHTML}</div>
       </div>
     `;
   }

@@ -32,8 +32,13 @@
 
 @font-face {
   font-family: "louize";
-  src: url("/assets/fonts/LouizeDisplayTrial-Regular.otf") format("opentype");
+  src: url("/assets/fonts/LouizeTrial-Regular.otf") format("opentype");
   font-style: normal;
+}
+@font-face {
+  font-family: "louize";
+  src: url("/assets/fonts/LouizeTrial-Italic.otf") format("opentype");
+  font-style: italic;
 }
 
 /* Reset default styles */
@@ -92,7 +97,7 @@ html {
   -webkit-font-smoothing: subpixel-antialiased;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  text-wrap: balance;
+  text-wrap: pretty;
   padding: 2rem 4em;
 }
 
@@ -506,6 +511,11 @@ form {
     &.plugin {
       &:before {
         background: url(/assets/icon-plugin.svg) no-repeat;
+      }
+    }
+    &.tool {
+      &:before {
+        background: url(/assets/icon-hammer.svg) no-repeat;
       }
     }
     &.script {
@@ -998,13 +1008,15 @@ rogie-movie-list {
     width: calc((100% / 3.5) * var(--clamped-scale));
     z-index: calc(80 * var(--hover-scale));
     margin: 0 calc(-1.5% - (6% * var(--clamped-scale)));
-    /*filter: blur(calc(4px * (1 - var(--clamped-scale))))
-      saturate(calc(100% * var(--scale)));*/
+    filter: blur(calc(3px * (1 - var(--clamped-scale))))
+      drop-shadow(
+        0 calc(2px * var(--clamped-scale)) calc(3px * var(--clamped-scale))
+          rgba(0, 0, 0, calc(0.25 * var(--clamped-scale)))
+      );
     transform-style: preserve-3d;
     transform-origin: center;
     flex-shrink: 0;
 
-    transition: all 0.05s linear;
     .cover.box {
       transform-style: preserve-3d;
       transform: rotateY(0turn);
@@ -1030,6 +1042,26 @@ rogie-movie-list {
         --height: calc(221 * var(--hover-scale));
         --depth: calc(20 * var(--hover-scale));
       }*/
+    }
+  }
+
+  &:has(rogie-movie.selected) {
+    rogie-movie {
+      &:not(.selected) {
+        filter: blur(10px);
+        opacity: 0.25;
+      }
+      &.selected {
+        z-index: 1000 !important;
+        .cover.box {
+          transform: rotateY(-45deg);
+          scale: 1;
+
+          .tape.box {
+            translate: 40px 0;
+          }
+        }
+      }
     }
   }
 }
@@ -1277,19 +1309,24 @@ rk-greeting {
 rk-chat-message {
   display: flex;
   flex-direction: row;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 0.5rem;
   .rk-chat-message-content {
-    border-width: 8px 8px 8px 16px;
+    border-width: 14px;
     border-style: solid;
     font-size: 0.75rem;
-    border-image: url(/assets/chat-bubble-stroke.svg) 8 8 8 16;
+    border-image: url(/assets/chat-bubble-stroke.svg);
+    border-image-slice: 14 14 14 14;
+    border-image-repeat: stretch repeat;
     background-clip: content-box;
+    & > div {
+      margin: -0.5rem calc(0.25rem - 2px);
+    }
   }
   &[style="blue"] {
     .rk-chat-message-content {
       background-color: #0d99ff;
-      border-image: url(/assets/chat-bubble.svg) 8 8 8 16;
+      border-image-source: url(/assets/chat-bubble.svg);
       color: white;
     }
   }
@@ -1297,8 +1334,8 @@ rk-chat-message {
     .rk-chat-message-content {
       color: #000;
       filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
-      background-color: #c7fb9b;
-      border-image: url(/assets/chat-bubble-green.svg) 8 8 8 16;
+      background-color: #b3fa75;
+      border-image-source: url(/assets/chat-bubble-green.svg);
     }
   }
   fig-avatar {
@@ -1512,8 +1549,32 @@ input,
 input[type="email"] {
   color: var(--color-text);
 }
-fig-input-text,
-input[type="email"] {
-  background-color: var(--color-bg-inset);
-  box-shadow: var(--shadow-inset);
+fig-field {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+fig-button[variant="primary"] {
+  box-shadow: inset 0 0 0 1px rgba(97, 183, 41, 0.6),
+    0 2px 0px 0 rgba(255, 255, 255, 0.85) inset,
+    0 1px 1.5px 0 rgba(0, 0, 0, 0.05);
+  &:active {
+    translate: 0 1px;
+  }
+  &:focus,
+  &:hover:active,
+  &:hover:focus {
+    &,
+    &:not(:active) {
+      box-shadow: inset 0 0 0 1px rgba(97, 183, 41, 0.6),
+        0 2px 0px 0 rgba(255, 255, 255, 0.5) inset;
+    }
+  }
+}
+:root {
+  --figma-color-bg-brand: #b3fa75;
+  --figma-color-border-selected-strong: #61b729;
+  --figma-color-border-selected: #61b729;
+  --figma-color-text-onbrand: #000;
+  --figma-color-icon-onbrand: #000;
+  --figma-color-bg-brand-pressed: #9bf34f;
 }
