@@ -125,6 +125,7 @@
         <figure class="dither-app">
 
             <fig-image upload="true"
+                       download="true"
                        label="Change image"
                        aspect-ratio="auto"
                        src="http://127.0.0.1:5500/dither/charli.jpeg"
@@ -210,11 +211,6 @@
                            style="display: none;">
                     <label for="invertColors">Invert</label>
                     <fig-checkbox id="invertColors"></fig-checkbox>
-                </fig-field>
-                <fig-field direction="horizontal">
-                    <label></label>
-                    <fig-button variant="primary"
-                                id="downloadButton">Download</fig-button>
                 </fig-field>
             </div>
             </div>
@@ -707,6 +703,7 @@
                             URL.revokeObjectURL(oldSrc);
                         }
                         chit.style.setProperty('--src', `url(${objectURL})`);
+                        ditheredImage.blob = objectURL;
                     } catch (error) {
                         console.error('Error converting canvas to blob:', error);
                     }
@@ -839,25 +836,6 @@
                     updateDithering();
                 });
 
-                // Add download functionality
-                const downloadButton = document.getElementById('downloadButton');
-                if (downloadButton) {
-                    downloadButton.addEventListener('click', (e) => {
-                        if (objectURL) {
-                            // Create a temporary anchor element for downloading
-                            const link = document.createElement('a');
-                            link.href = objectURL;
-                            link.download = `dithered-image-${Date.now()}.png`;
-
-                            // Append to body, click, and remove
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        } else {
-                            console.warn('No dithered image available to download');
-                        }
-                    });
-                }
             });
 
         </script>

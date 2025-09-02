@@ -24,20 +24,23 @@
 }
 
 @font-face {
-  font-family: "garamond-condensed";
-  src: url("/assets/fonts/ITC Garamond Std Light Condensed.otf")
-    format("opentype");
-  font-style: normal;
-}
-
-@font-face {
   font-family: "louize";
-  src: url("/assets/fonts/LouizeTrial-Regular.otf") format("opentype");
+  src: url("/assets/fonts/205TF-Louize-Regular.woff") format("woff");
   font-style: normal;
 }
 @font-face {
   font-family: "louize";
-  src: url("/assets/fonts/LouizeTrial-Italic.otf") format("opentype");
+  src: url("/assets/fonts/205TF-Louize-Regular.woff2") format("woff2");
+  font-style: normal;
+}
+@font-face {
+  font-family: "louize";
+  src: url("/assets/fonts/205TF-Louize-Italic.woff") format("woff");
+  font-style: italic;
+}
+@font-face {
+  font-family: "louize";
+  src: url("/assets/fonts/205TF-Louize-Italic.woff2") format("woff2");
   font-style: italic;
 }
 
@@ -176,6 +179,12 @@ a {
   margin-right: -50vw;
 }
 
+.svgfx {
+  display: none !important;
+  position: absolute;
+  pointer-events: none;
+}
+
 header {
   text-align: left;
   position: relative;
@@ -236,9 +245,7 @@ header {
       left: -6rem;
     }
   }
-  .svgfx {
-    display: none;
-  }
+
   a {
     font-weight: 500;
     &:has(.draw) {
@@ -1028,9 +1035,9 @@ rogie-movie-list {
     .cover.box {
       transform-style: preserve-3d;
       transform: rotateY(0turn);
-      transform-origin: -25% 95%;
+      transform-origin: -25% 80%;
       scale: calc(var(--clamped-scale) * 0.8);
-      transform: rotateY(calc(45deg * ((1 - var(--clamped-scale)) - 0.5)));
+      transform: rotateY(calc(20deg * var(--clamped-scale) * -1));
       & > .front,
       & > .back,
       .tape.box > .front,
