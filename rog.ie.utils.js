@@ -382,10 +382,13 @@ class TMDB {
     this.apiKey = apiKey;
     this.baseImageUrl = "https://image.tmdb.org/t/p/w500";
   }
+  getYoutubeUrl(videoId) {
+    return encodeURI("https://www.youtube.com/watch?v=" + videoId);
+  }
 
   async getMovie(id) {
     const response = await fetch(
-      `https://api.themoviedb.org/3/movie/${id}?api_key=${this.apiKey}`
+      `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${this.apiKey}`
     );
     return response.json();
   }
@@ -406,6 +409,9 @@ class TMDB {
         }
         return movie;
       });
+      //get movie
+      console.log(data);
+
       this.#CACHE.set(querySlug, data);
       return data;
     }

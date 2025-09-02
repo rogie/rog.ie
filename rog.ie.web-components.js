@@ -7,6 +7,7 @@ let ONE_DAY = 24 * ONE_HOUR;
 
 let CACHE = new Cache();
 if (document.location.search.includes("clear-cache")) {
+  console.log("CLEARED CACHE");
   CACHE.clear();
 }
 let CACHE_TTL = ONE_HOUR;
@@ -163,6 +164,7 @@ class MovieList extends HTMLElement {
       .map((movie) => {
         return `<rogie-movie 
         title="${movie.title}" 
+        id="${movie.tmdb.id}"
         link="${movie.link}"
         ${movie.rating ? `rating="${movie.rating}"` : ""} 
         image="${movie.thumbnail}"></rogie-movie>`;
@@ -189,9 +191,14 @@ class MovieList extends HTMLElement {
       initMovies
     );
     this.querySelectorAll("rogie-movie").forEach((movie) => {
-      movie.addEventListener("click", () => {
+      movie.addEventListener("click", async () => {
         this.selected = movie;
-        console.log("selected", this.selected);
+        let tmdbMovie = await this.tmdb.getMovie(
+          this.selected.getAttribute("id")
+        );
+        console.log("selected", this.selected, tmdbMovie);
+        let youtubeUrl = this.tmdb.getYoutubeUrl(tmdbMovie.results[0].key);
+        console.log("youtubeUrl", youtubeUrl);
         this.selected.classList.add("selected");
         this.querySelectorAll("rogie-movie").forEach((movie) => {
           if (movie !== this.selected) {

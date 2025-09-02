@@ -850,7 +850,7 @@ rogie-music-list {
       position: absolute;
       top: 1rem;
       left: 1rem;
-      width: 150px;
+      width: 35%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -993,14 +993,14 @@ rogie-movie-list {
   flex-direction: row-reverse;
   align-items: flex-end;
   justify-content: center;
-  aspect-ratio: 2 / 1.1;
+  aspect-ratio: 2 / 1;
   margin-top: -0.75rem;
 
   rogie-movie {
     --scale: 1;
     --hover-scale: var(--scale);
-    --hover-scale-min: 0.55;
-    --hover-scale-max: 1.1;
+    --hover-scale-min: 0.6;
+    --hover-scale-max: 1;
     --clamped-scale: calc(
       var(--hover-scale-min) +
         (
@@ -1015,23 +1015,31 @@ rogie-movie-list {
     display: block;
     perspective: 1000px;
     perspective-origin: 50% 50%;
-    width: calc((100% / 3.5) * var(--clamped-scale));
+    width: calc((100% / 3.35) * var(--clamped-scale));
     z-index: calc(80 * var(--hover-scale));
     margin: 0 calc(-1.5% - (6% * var(--clamped-scale)));
     filter: blur(calc(3px * (1 - var(--clamped-scale))))
       drop-shadow(
-        0 calc(2px * var(--clamped-scale)) calc(3px * var(--clamped-scale))
-          rgba(0, 0, 0, calc(0.25 * var(--clamped-scale)))
+        0 calc(2px * var(--scale)) calc(3px * var(--scale))
+          rgba(0, 0, 0, calc(0.25 * var(--scale)))
       );
     transform-style: preserve-3d;
     transform-origin: center;
     flex-shrink: 0;
 
     .cover.box {
+      --width: 120;
+      --height: calc(var(--width) * 225 / 150);
+      .tape.box {
+        --width: 114;
+        --height: calc(var(--width) * 221 / 144);
+      }
+    }
+    .cover.box {
       transform-style: preserve-3d;
       transform: rotateY(0turn);
       transform-origin: -25% 80%;
-      scale: calc(var(--clamped-scale) * 0.8);
+      scale: var(--clamped-scale);
       transform: rotateY(calc(20deg * var(--clamped-scale) * -1));
       & > .front,
       & > .back,
@@ -1063,9 +1071,11 @@ rogie-movie-list {
       }
       &.selected {
         z-index: 1000 !important;
+        filter: none;
+        opacity: 1;
         .cover.box {
-          transform: rotateY(-45deg);
-          scale: 1;
+          scale: 0.8;
+          transform: rotateY(-20deg);
 
           .tape.box {
             translate: 40px 0;
@@ -1479,6 +1489,7 @@ rk-chat-message {
     background-color: black;
     background-size: cover;
     mask-image: url(/assets/tape-cover-cutout.svg);
+    mask-size: cover;
     filter: drop-shadow(0 1px 2px 2xp rgba(0, 0, 0, 1));
   }
   & > .back {
@@ -1486,6 +1497,7 @@ rk-chat-message {
     background-position: 50% 50%;
     background-size: calc(var(--height) * 2px);
     mask-image: url(/assets/tape-cover-cutout.svg);
+    mask-size: cover;
     scale: -1 1;
     &:after {
       content: "";
