@@ -1,5 +1,4 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
-@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap");
 
 @font-face {
   font-family: "agl";
@@ -25,23 +24,19 @@
 
 @font-face {
   font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Regular.woff") format("woff");
+  src: url("/assets/fonts/205TF-Louize-Regular.woff2") format("woff2"),
+    url("/assets/fonts/205TF-Louize-Regular.woff") format("woff");
   font-style: normal;
+  font-weight: normal;
+  font-display: swap;
 }
 @font-face {
   font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Regular.woff2") format("woff2");
-  font-style: normal;
-}
-@font-face {
-  font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Italic.woff") format("woff");
+  src: url("/assets/fonts/205TF-Louize-Italic.woff2") format("woff2"),
+    url("/assets/fonts/205TF-Louize-Italic.woff") format("woff");
   font-style: italic;
-}
-@font-face {
-  font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Italic.woff2") format("woff2");
-  font-style: italic;
+  font-weight: normal;
+  font-display: swap;
 }
 
 /* Reset default styles */
