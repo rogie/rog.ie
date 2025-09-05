@@ -1033,6 +1033,7 @@ rogie-movie-list {
       .tape.box {
         --width: 114;
         --height: calc(var(--width) * 221 / 144);
+        transform: translate3D(2px, 2px, -4px);
       }
     }
     .cover.box {
