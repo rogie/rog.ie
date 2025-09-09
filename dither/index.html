@@ -481,15 +481,9 @@
                 const width = imageData.width;
                 const height = imageData.height;
 
-                // Generate blue noise pattern (simple approximation)
+                // Generate better blue noise pattern using Mitchell's best-candidate algorithm
                 const noiseSize = 64;
-                const noisePattern = new Array(noiseSize * noiseSize);
-                for (let i = 0; i < noisePattern.length; i++) {
-                    // Simple blue noise approximation using modulated random
-                    const x = i % noiseSize;
-                    const y = Math.floor(i / noiseSize);
-                    noisePattern[i] = (Math.sin(x * 0.1) * Math.cos(y * 0.1) + 1) * 0.5;
-                }
+                const noisePattern = generateBlueNoisePattern(noiseSize);
 
                 const quantizeGamma = (value) => {
                     const linear = Math.pow(value / 255, 2.2);
@@ -501,15 +495,21 @@
                     for (let x = 0; x < width; x++) {
                         const idx = (y * width + x) * 4;
 
-                        // Get noise value
+                        // Get noise value from tiled pattern
                         const noiseX = x % noiseSize;
                         const noiseY = y % noiseSize;
                         const noise = noisePattern[noiseY * noiseSize + noiseX];
-                        const threshold = (noise - 0.5) * 50; // Adjust noise strength
+
+                        // Convert noise to threshold (-1 to 1, then scale)
+                        const threshold = (noise - 0.5) * 64 / colorLevels;
 
                         for (let c = 0; c < 3; c++) {
-                            const oldValue = data[idx + c] + threshold;
-                            const newValue = quantizeGamma(Math.max(0, Math.min(255, oldValue)));
+                            const oldValue = data[idx + c];
+
+                            // Apply threshold for quantization decision
+                            const adjustedValue = oldValue + threshold;
+                            const newValue = quantizeGamma(Math.max(0, Math.min(255, adjustedValue)));
+
                             data[idx + c] = newValue;
                         }
                     }
@@ -518,6 +518,81 @@
                 const endTime = performance.now();
                 console.log(`Blue noise dithering took ${endTime - startTime}ms`);
                 return new ImageData(data, width, height);
+            }
+
+            // Generate blue noise pattern using a simplified void-and-cluster approach
+            function generateBlueNoisePattern(size) {
+                const pattern = new Float32Array(size * size);
+                const occupied = new Array(size * size).fill(false);
+                const numPoints = Math.floor(size * size * 0.5); // About 50% coverage
+
+                // Simple seeded random number generator for consistency
+                let seed = 12345;
+                const random = () => {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    return seed / 233280;
+                };
+
+                // Place points using Mitchell's best-candidate algorithm
+                const points = [];
+                const candidates = 30; // Number of candidates to test per point
+
+                for (let i = 0; i < numPoints; i++) {
+                    let bestCandidate = null;
+                    let bestDistance = -1;
+
+                    // Test multiple random candidates
+                    for (let c = 0; c < candidates; c++) {
+                        const x = Math.floor(random() * size);
+                        const y = Math.floor(random() * size);
+                        const candidate = { x, y };
+
+                        // Find minimum distance to existing points
+                        let minDistance = Infinity;
+                        for (const point of points) {
+                            // Use toroidal distance for seamless tiling
+                            const dx = Math.min(Math.abs(candidate.x - point.x),
+                                size - Math.abs(candidate.x - point.x));
+                            const dy = Math.min(Math.abs(candidate.y - point.y),
+                                size - Math.abs(candidate.y - point.y));
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            minDistance = Math.min(minDistance, distance);
+                        }
+
+                        // Keep the candidate with the largest minimum distance
+                        if (minDistance > bestDistance) {
+                            bestDistance = minDistance;
+                            bestCandidate = candidate;
+                        }
+                    }
+
+                    if (bestCandidate) {
+                        points.push(bestCandidate);
+                        const index = bestCandidate.y * size + bestCandidate.x;
+                        occupied[index] = true;
+                    }
+                }
+
+                // Create smooth distance field from points
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        let minDistance = Infinity;
+
+                        // Find distance to nearest point
+                        for (const point of points) {
+                            const dx = Math.min(Math.abs(x - point.x), size - Math.abs(x - point.x));
+                            const dy = Math.min(Math.abs(y - point.y), size - Math.abs(y - point.y));
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            minDistance = Math.min(minDistance, distance);
+                        }
+
+                        // Convert distance to noise value (0-1)
+                        const maxDistance = Math.sqrt(2) * size / 4;
+                        pattern[y * size + x] = Math.min(minDistance / maxDistance, 1.0);
+                    }
+                }
+
+                return pattern;
             }
 
             // Global variables to store canvas and image data
