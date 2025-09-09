@@ -85,7 +85,6 @@ class MovieList extends HTMLElement {
     this.setAttribute("loading", this.loading);
     await this.fetchMovies();
     this.loading = false;
-    console.log("movies", this.movies);
     this.setAttribute("loading", this.loading);
     this.render();
   }
@@ -196,9 +195,9 @@ class MovieList extends HTMLElement {
         let tmdbMovie = await this.tmdb.getMovie(
           this.selected.getAttribute("id")
         );
-        console.log("selected", this.selected, tmdbMovie);
+        //console.log("selected", this.selected, tmdbMovie);
         let youtubeUrl = this.tmdb.getYoutubeUrl(tmdbMovie.results[0].key);
-        console.log("youtubeUrl", youtubeUrl);
+        //console.log("youtubeUrl", youtubeUrl);
         this.selected.classList.add("selected");
         this.querySelectorAll("rogie-movie").forEach((movie) => {
           if (movie !== this.selected) {

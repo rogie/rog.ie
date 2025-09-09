@@ -127,8 +127,8 @@ h1 {
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.025em;
   font-variant-ligatures: discretionary-ligatures;
-  font-feature-settings: "case" on, "dlig" on, "calt" on, "liga" on, "pnum" on,
-    "zero" on, "cpsp" on;
+  font-feature-settings: "case" on, "calt" on, "liga" on, "pnum" on, "zero" on,
+    "cpsp" on;
 }
 h2 {
   font-size: 1.25rem;
@@ -136,8 +136,8 @@ h2 {
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.025em;
   font-variant-ligatures: discretionary-ligatures;
-  font-feature-settings: "case" on, "dlig" on, "calt" on, "liga" on, "pnum" on,
-    "zero" on, "cpsp" on;
+  font-feature-settings: "case" on, "calt" on, "liga" on, "pnum" on, "zero" on,
+    "cpsp" on;
 }
 h1,
 h2,
@@ -993,8 +993,7 @@ rogie-movie-list {
   flex-direction: row-reverse;
   align-items: flex-end;
   justify-content: center;
-  aspect-ratio: 2 / 1;
-  margin-top: -0.75rem;
+  margin-top: 0.125rem;
 
   rogie-movie {
     --scale: 1;
@@ -1046,10 +1045,10 @@ rogie-movie-list {
       & > .back,
       .tape.box > .front,
       .tape.box > .back {
-        border-radius: 0.25rem;
+        border-radius: 0.125rem;
       }
       * {
-        border-radius: 0.25rem;
+        border-radius: 0.125rem;
       }
 
       /*
@@ -1063,7 +1062,7 @@ rogie-movie-list {
       }*/
     }
   }
-
+  /*
   &:has(rogie-movie.selected) {
     rogie-movie {
       &:not(.selected) {
@@ -1084,7 +1083,7 @@ rogie-movie-list {
         }
       }
     }
-  }
+  }*/
 }
 
 /*
