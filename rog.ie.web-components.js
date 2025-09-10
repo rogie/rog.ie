@@ -653,20 +653,6 @@ class Footer extends HTMLElement {
             </a>
         </ul>
     </footer>
-    <script type="text/javascript">
-      var _gauges = _gauges || [];
-      (function() {
-        var t   = document.createElement('script');
-        t.type  = 'text/javascript';
-        t.async = true;
-        t.id    = 'gauges-tracker';
-        t.setAttribute('data-site-id', '4d596a1f6bb4ba2c48000001');
-        t.setAttribute('data-track-path', 'https://track.gaug.es/track.gif');
-        t.src = 'https://d2fuc4clr7gvcn.cloudfront.net/track.js';
-        var s = document.getElementsByTagName('script')[0];
-        s.parentNode.insertBefore(t, s);
-      })();
-  </script>  
 `;
   }
 }
@@ -1006,3 +992,16 @@ class ChatMessage extends HTMLElement {
 }
 
 customElements.define("rk-chat-message", ChatMessage);
+
+var _gauges = _gauges || [];
+(function () {
+  var t = document.createElement("script");
+  t.type = "text/javascript";
+  t.async = true;
+  t.id = "gauges-tracker";
+  t.setAttribute("data-site-id", "4d596a1f6bb4ba2c48000001");
+  t.setAttribute("data-track-path", "https://track.gaug.es/track.gif");
+  t.src = "https://d2fuc4clr7gvcn.cloudfront.net/track.js";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(t, s);
+})();
