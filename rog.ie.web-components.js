@@ -942,7 +942,7 @@ class HorrorText extends HTMLElement {
     super();
   }
   connectedCallback() {
-    this.innerHTML = `<span class="horror"><b>H</b><b>o</b><b>r</b><b>r</b><b>o</b><b>r</b></span>
+    this.innerHTML = `<a class="horror" href="https://letterboxd.com/rogieking/list/horror-3/"><b>H</b><b>o</b><b>r</b><b>r</b><b>o</b><b>r</b></a>
     <svg class="svgfx" xmlns="http://www.w3.org/2000/svg">
       <defs class="svgfx">
         <filter id="roughen-0" name="roughen" x="-20%" y="-20%" width="140%" height="140%" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
