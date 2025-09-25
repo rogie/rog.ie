@@ -185,6 +185,13 @@ class MovieList extends HTMLElement {
           let distFromXCenter = Math.abs(data.mouseX - xCenter);
           let scale = 1 - distFromXCenter / data.rect.width;
           movie.style.setProperty("--scale", scale);
+
+          const posX = data.mouseX - rect.x;
+          const posY = data.mouseY - rect.y;
+          const ratioX = posX / rect.width;
+          const ratioY = posY / rect.height;
+          movie.style.setProperty("--ratio-x", ratioX);
+          movie.style.setProperty("--ratio-y", ratioY);
         });
       },
       initMovies
