@@ -53,6 +53,18 @@
 </head>
 
 <body>
+    <svg class="svgfx">
+        <filter id="smooth">
+            <feGaussianBlur in="SourceAlpha"
+                            stdDeviation="0.5"></feGaussianBlur>
+            <feComponentTransfer>
+                <feFuncA type="table"
+                         tableValues="-2 1"></feFuncA>
+            </feComponentTransfer>
+            <feComposite in="SourceGraphic"
+                         operator="in"></feComposite>
+        </filter>
+    </svg>
     <header class="home">
 
         <h1>

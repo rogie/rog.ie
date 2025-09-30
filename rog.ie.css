@@ -1025,6 +1025,11 @@ rogie-movie-list {
     transform-style: preserve-3d;
     transform-origin: center;
     flex-shrink: 0;
+    filter: blur(calc(3px * (1 - var(--clamped-scale)))) url(#smooth)
+      drop-shadow(
+        0 calc(1px * var(--scale)) calc(1px * var(--scale))
+          rgba(0, 0, 0, calc(0.1 * var(--scale)))
+      );
 
     .cover.box {
       --width: 120;
