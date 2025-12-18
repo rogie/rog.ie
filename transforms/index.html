@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Matrix3D Transform Canvas</title>
+    <link rel="preconnect"
+          href="https://fonts.googleapis.com">
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #f5f5f5;
+            --bg-surface: #ffffff;
+            --bg-elevated: #fafafa;
+            --bg-hover: #eeeeee;
+            --border-subtle: #e0e0e0;
+            --border-active: #bdbdbd;
+            --text-primary: #212121;
+            --text-secondary: #616161;
+            --text-muted: #9e9e9e;
+            --accent-primary: #1976d2;
+            --accent-secondary: #0288d1;
+            --accent-tertiary: #7b1fa2;
+            --accent-success: #388e3c;
+            --accent-warning: #f57c00;
+            --handle-size: 10px;
+            --origin-size: 14px;
+            --canvas-grid: #e8e8e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-primary);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .tool-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .tool-btn.active {
+            background: var(--accent-primary);
+            color: var(--bg-deep);
+        }
+
+        .tool-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-subtle);
+            margin: 0 8px;
+        }
+
+        .zoom-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-secondary);
+            min-width: 60px;
+            text-align: center;
+            padding: 8px 12px;
+            background: var(--bg-elevated);
+            border-radius: 6px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        /* Main Layout */
+        .main-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-section {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .sidebar-section#transform-section {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .shape-btn {
+            padding: 16px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shape-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--border-active);
+            color: var(--text-primary);
+        }
+
+        .shape-btn svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .shape-btn span {
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .paste-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, var(--accent-tertiary), var(--accent-secondary));
+            border: none;
+            border-radius: 8px;
+            color: var(--bg-deep);
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-top: 8px;
+        }
+
+        .paste-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(180, 74, 255, 0.3);
+        }
+
+        /* Preset Grid */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .preset-btn {
+            padding: 10px 6px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .preset-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-secondary);
+            color: var(--text-primary);
+        }
+
+        .preset-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .preset-btn span {
+            font-size: 9px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Transform Panel */
+        .transform-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .transform-group {
+            margin-bottom: 16px;
+        }
+
+        .transform-label {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .transform-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .transform-label.translate::before {
+            background: var(--accent-primary);
+        }
+
+        .transform-label.scale::before {
+            background: var(--accent-secondary);
+        }
+
+        .transform-label.rotate::before {
+            background: var(--accent-tertiary);
+        }
+
+        .transform-label.skew::before {
+            background: var(--accent-warning);
+        }
+
+        .transform-label.perspective::before {
+            background: var(--accent-success);
+        }
+
+        .transform-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .transform-inputs.single {
+            grid-template-columns: 1fr;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .input-group:focus-within {
+            border-color: var(--accent-primary);
+        }
+
+        .input-prefix {
+            padding: 0 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            background: var(--bg-surface);
+            height: 32px;
+            display: flex;
+            align-items: center;
+        }
+
+        .transform-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            padding: 8px;
+            width: 100%;
+            outline: none;
+        }
+
+        .transform-input::-webkit-inner-spin-button,
+        .transform-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background:
+                linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+                linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px),
+                var(--bg-deep);
+            background-size: 20px 20px;
+            cursor: grab;
+        }
+
+        .canvas-container.grabbing {
+            cursor: grabbing;
+        }
+
+        .canvas-container.crosshair {
+            cursor: crosshair;
+        }
+
+        .canvas {
+            position: absolute;
+            transform-origin: 0 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Canvas Objects */
+        .canvas-object {
+            position: absolute;
+            cursor: move;
+            transform-style: preserve-3d;
+        }
+
+        /* Selection box - SVG path connecting corners */
+        .selection-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .selection-path {
+            fill: none;
+            stroke: var(--accent-primary);
+            stroke-width: 2;
+        }
+
+        .canvas-object svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Transform Handles - positioned in canvas container, always 2D */
+        .transform-handles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Edge scaling areas - positioned dynamically */
+        .edge {
+            position: absolute;
+            pointer-events: auto;
+            background: transparent;
+            transform-origin: center center;
+        }
+
+        .edge:hover {
+            background: rgba(74, 228, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .handle {
+            position: absolute;
+            width: var(--handle-size);
+            height: var(--handle-size);
+            background: var(--bg-deep);
+            border: 2px solid var(--accent-primary);
+            border-radius: 2px;
+            pointer-events: auto;
+            cursor: pointer;
+            transform: translate(-50%, -50%);
+            transition: background 0.1s ease;
+        }
+
+        .handle:hover {
+            background: var(--accent-primary);
+        }
+
+        /* Corner handles for free distort - round and solid */
+        .handle-nw,
+        .handle-ne,
+        .handle-se,
+        .handle-sw {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent-primary);
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            cursor: move;
+        }
+
+        .handle-nw:hover,
+        .handle-ne:hover,
+        .handle-se:hover,
+        .handle-sw:hover {
+            background: white;
+            border-color: var(--accent-primary);
+        }
+
+        /* Edge handles for skew - square, positioned dynamically */
+        .handle-n,
+        .handle-e,
+        .handle-s,
+        .handle-w {
+            border-color: var(--accent-warning);
+        }
+
+        .handle-n,
+        .handle-s {
+            cursor: ew-resize;
+        }
+
+        .handle-e,
+        .handle-w {
+            cursor: ns-resize;
+        }
+
+        .handle-n:hover,
+        .handle-e:hover,
+        .handle-s:hover,
+        .handle-w:hover {
+            background: var(--accent-warning);
+        }
+
+        /* Rotation handle */
+        .handle-rotate {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border-color: var(--accent-tertiary);
+            cursor: grab;
+        }
+
+        .handle-rotate:hover {
+            background: var(--accent-tertiary);
+        }
+
+        .rotation-line {
+            position: absolute;
+            width: 1px;
+            background: var(--accent-tertiary);
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        /* Perspective handles */
+        .handle-perspective-x,
+        .handle-perspective-y {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border-color: var(--accent-success);
+            border-style: dashed;
+        }
+
+        .handle-perspective-x {
+            cursor: col-resize;
+        }
+
+        .handle-perspective-y {
+            cursor: row-resize;
+        }
+
+        .handle-perspective-x:hover,
+        .handle-perspective-y:hover {
+            background: var(--accent-success);
+        }
+
+        /* Transform Origin */
+        .transform-origin {
+            position: absolute;
+            width: var(--origin-size);
+            height: var(--origin-size);
+            pointer-events: auto;
+            cursor: crosshair;
+            z-index: 10;
+        }
+
+        .transform-origin::before,
+        .transform-origin::after {
+            content: '';
+            position: absolute;
+            background: var(--accent-secondary);
+        }
+
+        .transform-origin::before {
+            width: 100%;
+            height: 2px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        .transform-origin::after {
+            width: 2px;
+            height: 100%;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .transform-origin-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid var(--accent-secondary);
+            border-radius: 50%;
+            top: 0;
+            left: 0;
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-subtle);
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            gap: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-item span {
+            color: var(--text-secondary);
+        }
+
+        /* Help Tooltip */
+        .help-tooltip {
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 280px;
+            font-size: 12px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .help-tooltip.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .help-tooltip h4 {
+            color: var(--text-primary);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .help-tooltip kbd {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-surface);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-active);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 4px;
+            min-width: 160px;
+            z-index: 2000;
+            display: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .context-menu.visible {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .context-menu-item.danger {
+            color: #d32f2f;
+        }
+
+        .context-menu-item.danger:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        /* Matrix Display */
+        .matrix-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            color: var(--text-muted);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 8px;
+            margin-top: 12px;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .no-selection {
+            color: var(--text-muted);
+            font-style: italic;
+            font-size: 13px;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* Drag cursor overrides */
+        body.dragging-nwse * {
+            cursor: nwse-resize !important;
+        }
+
+        body.dragging-nesw * {
+            cursor: nesw-resize !important;
+        }
+
+        body.dragging-ew * {
+            cursor: ew-resize !important;
+        }
+
+        body.dragging-ns * {
+            cursor: ns-resize !important;
+        }
+
+        body.dragging-move * {
+            cursor: move !important;
+        }
+
+        body.dragging-crosshair * {
+            cursor: crosshair !important;
+        }
+
+        body.dragging-grabbing * {
+            cursor: grabbing !important;
+        }
+
+        body.dragging-col * {
+            cursor: col-resize !important;
+        }
+
+        body.dragging-row * {
+            cursor: row-resize !important;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-family: 'Outfit', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            margin-top: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .reset-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .reset-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">Transform3D</div>
+        <div class="toolbar">
+            <div class="toolbar-group">
+                <button class="tool-btn active"
+                        data-tool="select"
+                        title="Select (V)">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+                    </svg>
+                </button>
+                <button class="tool-btn"
+                        data-tool="pan"
+                        title="Pan (H)">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+                        <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+                        <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+                        <path
+                              d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
+                    </svg>
+                </button>
+            </div>
+            <div class="divider"></div>
+            <div class="toolbar-group">
+                <button class="tool-btn"
+                        id="zoom-out"
+                        title="Zoom Out (-)">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <circle cx="11"
+                                cy="11"
+                                r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                        <path d="M8 11h6" />
+                    </svg>
+                </button>
+                <div class="zoom-display"
+                     id="zoom-display">100%</div>
+                <button class="tool-btn"
+                        id="zoom-in"
+                        title="Zoom In (+)">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <circle cx="11"
+                                cy="11"
+                                r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                        <path d="M11 8v6" />
+                        <path d="M8 11h6" />
+                    </svg>
+                </button>
+                <button class="tool-btn"
+                        id="zoom-reset"
+                        title="Reset Zoom (0)">
+                    <svg viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="currentColor"
+                         stroke-width="2">
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                    </svg>
+                </button>
+            </div>
+            <div class="divider"></div>
+            <button class="tool-btn"
+                    id="help-btn"
+                    title="Help (?)">
+                <svg viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2">
+                    <circle cx="12"
+                            cy="12"
+                            r="10" />
+                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                    <path d="M12 17h.01" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Add Shape</div>
+                <div class="shape-grid">
+                    <button class="shape-btn"
+                            data-shape="rect">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <rect x="4"
+                                  y="4"
+                                  width="24"
+                                  height="24"
+                                  rx="2" />
+                        </svg>
+                        <span>Rectangle</span>
+                    </button>
+                    <button class="shape-btn"
+                            data-shape="circle">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <circle cx="16"
+                                    cy="16"
+                                    r="12" />
+                        </svg>
+                        <span>Circle</span>
+                    </button>
+                    <button class="shape-btn"
+                            data-shape="triangle">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <polygon points="16,4 28,28 4,28" />
+                        </svg>
+                        <span>Triangle</span>
+                    </button>
+                    <button class="shape-btn"
+                            data-shape="star">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <polygon points="16,2 20,12 30,12 22,18 25,28 16,22 7,28 10,18 2,12 12,12" />
+                        </svg>
+                        <span>Star</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-title">Transform Presets</div>
+                <div class="preset-grid">
+                    <button class="preset-btn"
+                            data-preset="iso-top"
+                            title="Isometric Top View">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M16 6 L28 13 L16 20 L4 13 Z" />
+                            <path d="M4 13 L4 19 L16 26 L16 20"
+                                  opacity="0.5" />
+                            <path d="M28 13 L28 19 L16 26 L16 20"
+                                  opacity="0.7" />
+                        </svg>
+                        <span>Iso Top</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="iso-left"
+                            title="Isometric Left View">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M8 6 L8 22 L20 28 L20 12 Z" />
+                            <path d="M8 6 L20 12 L28 8 L16 2 Z"
+                                  opacity="0.5" />
+                        </svg>
+                        <span>Iso Left</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="iso-right"
+                            title="Isometric Right View">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M24 6 L24 22 L12 28 L12 12 Z" />
+                            <path d="M24 6 L12 12 L4 8 L16 2 Z"
+                                  opacity="0.5" />
+                        </svg>
+                        <span>Iso Right</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="iso-front"
+                            title="Isometric Front View">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M6 10 L16 4 L26 10 L26 22 L16 28 L6 22 Z" />
+                            <path d="M16 4 L16 16 L6 22"
+                                  opacity="0.3" />
+                            <path d="M16 16 L26 22"
+                                  opacity="0.3" />
+                        </svg>
+                        <span>Iso Front</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="flat"
+                            title="Reset to Flat">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <rect x="6"
+                                  y="6"
+                                  width="20"
+                                  height="20"
+                                  rx="2" />
+                        </svg>
+                        <span>Flat</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="perspective"
+                            title="Perspective View">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <path d="M4 8 L28 4 L28 28 L4 24 Z" />
+                        </svg>
+                        <span>Perspective</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-section"
+                 id="transform-section">
+                <div class="sidebar-title">Transform Properties</div>
+                <div class="transform-panel"
+                     id="transform-panel">
+                    <div class="no-selection">Select an object to edit transforms</div>
+                </div>
+            </div>
+        </aside>
+
+        <div class="canvas-container"
+             id="canvas-container">
+            <div class="canvas"
+                 id="canvas"></div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-item">Objects: <span id="object-count">0</span></div>
+        <div class="status-item">Position: <span id="cursor-pos">0, 0</span></div>
+        <div class="status-item">Selected: <span id="selected-info">None</span></div>
+    </div>
+
+    <div class="help-tooltip"
+         id="help-tooltip">
+        <h4>Keyboard Shortcuts</h4>
+        <p><kbd>V</kbd> Select tool</p>
+        <p><kbd>H</kbd> Pan tool</p>
+        <p><kbd>Space</kbd> + Drag to pan</p>
+        <p><kbd>Scroll</kbd> Zoom in/out</p>
+        <p><kbd>Delete</kbd> Delete selected</p>
+        <p><kbd>Ctrl</kbd>+<kbd>C</kbd> Copy object</p>
+        <p><kbd>Ctrl</kbd>+<kbd>V</kbd> Paste object/SVG</p>
+        <p><kbd>Ctrl</kbd>+<kbd>D</kbd> Duplicate</p>
+        <p style="margin-top: 12px; border-top: 1px solid var(--border-subtle); padding-top: 12px;">
+            <strong>Handles:</strong><br>
+            Corners = Scale<br>
+            Edges = Skew<br>
+            Top circle = Rotate<br>
+            Right/Bottom = Perspective<br>
+            Crosshair = Transform Origin
+        </p>
+    </div>
+
+    <div class="context-menu"
+         id="context-menu">
+        <div class="context-menu-item"
+             data-action="duplicate">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:16px;height:16px;">
+                <rect x="9"
+                      y="9"
+                      width="13"
+                      height="13"
+                      rx="2"
+                      ry="2" />
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+            </svg>
+            Duplicate
+        </div>
+        <div class="context-menu-item"
+             data-action="bring-front">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:16px;height:16px;">
+                <polyline points="17 11 12 6 7 11" />
+                <polyline points="17 18 12 13 7 18" />
+            </svg>
+            Bring to Front
+        </div>
+        <div class="context-menu-item"
+             data-action="send-back">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:16px;height:16px;">
+                <polyline points="7 13 12 18 17 13" />
+                <polyline points="7 6 12 11 17 6" />
+            </svg>
+            Send to Back
+        </div>
+        <div class="context-menu-item"
+             data-action="reset-transform">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:16px;height:16px;">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+            </svg>
+            Reset Transform
+        </div>
+        <div class="context-menu-item danger"
+             data-action="delete">
+            <svg viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 style="width:16px;height:16px;">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+            Delete
+        </div>
+    </div>
+
+    <script>
+        // =====================================================
+        // Matrix3D Transform Canvas Application
+        // =====================================================
+
+        class TransformCanvas {
+            constructor() {
+                // Canvas state
+                this.zoom = 1;
+                this.panX = 0;
+                this.panY = 0;
+                this.objects = [];
+                this.selectedObject = null;
+                this.currentTool = 'select';
+                this.isDragging = false;
+                this.isPanning = false;
+                this.dragType = null;
+                this.dragStartX = 0;
+                this.dragStartY = 0;
+                this.objectIdCounter = 0;
+                this.zIndexCounter = 1;
+                this.clipboardObject = null;
+
+                // DOM references
+                this.canvasContainer = document.getElementById('canvas-container');
+                this.canvas = document.getElementById('canvas');
+                this.zoomDisplay = document.getElementById('zoom-display');
+                this.objectCountDisplay = document.getElementById('object-count');
+                this.cursorPosDisplay = document.getElementById('cursor-pos');
+                this.selectedInfoDisplay = document.getElementById('selected-info');
+                this.transformPanel = document.getElementById('transform-panel');
+                this.contextMenu = document.getElementById('context-menu');
+                this.helpTooltip = document.getElementById('help-tooltip');
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.centerCanvas();
+                this.updateDisplay();
+            }
+
+            setupEventListeners() {
+                // Canvas events
+                this.canvasContainer.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
+                this.canvasContainer.addEventListener('mousedown', this.handleMouseDown.bind(this));
+                window.addEventListener('mousemove', this.handleMouseMove.bind(this));
+                window.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                this.canvasContainer.addEventListener('contextmenu', this.handleContextMenu.bind(this));
+
+                // Tool buttons
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+                    btn.addEventListener('click', () => this.setTool(btn.dataset.tool));
+                });
+
+                // Zoom buttons
+                document.getElementById('zoom-in').addEventListener('click', () => this.zoomBy(0.1));
+                document.getElementById('zoom-out').addEventListener('click', () => this.zoomBy(-0.1));
+                document.getElementById('zoom-reset').addEventListener('click', () => this.resetZoom());
+
+                // Shape buttons
+                document.querySelectorAll('.shape-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
+                });
+
+                // Preset buttons
+                document.querySelectorAll('.preset-btn').forEach(btn => {
+                    btn.addEventListener('click', () => this.applyPreset(btn.dataset.preset));
+                });
+
+                // Paste SVG button removed (keyboard paste still supported)
+
+                // Help button
+                document.getElementById('help-btn').addEventListener('click', () => {
+                    this.helpTooltip.classList.toggle('visible');
+                });
+
+                // Context menu actions
+                this.contextMenu.querySelectorAll('.context-menu-item').forEach(item => {
+                    item.addEventListener('click', () => this.handleContextAction(item.dataset.action));
+                });
+
+                // Keyboard shortcuts
+                document.addEventListener('keydown', this.handleKeyDown.bind(this));
+                document.addEventListener('keyup', this.handleKeyUp.bind(this));
+
+                // Close context menu on click outside
+                document.addEventListener('click', (e) => {
+                    if (!this.contextMenu.contains(e.target)) {
+                        this.contextMenu.classList.remove('visible');
+                    }
+                });
+
+                // Clipboard paste
+                document.addEventListener('paste', this.handlePaste.bind(this));
+            }
+
+            // =====================================================
+            // Canvas Navigation
+            // =====================================================
+
+            centerCanvas() {
+                const rect = this.canvasContainer.getBoundingClientRect();
+                this.panX = rect.width / 2;
+                this.panY = rect.height / 2;
+                this.updateCanvasTransform();
+            }
+
+            handleWheel(e) {
+                e.preventDefault();
+                const rect = this.canvasContainer.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+
+                const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+                const newZoom = Math.min(Math.max(this.zoom * zoomFactor, 0.1), 10);
+
+                // Zoom towards mouse position
+                this.panX = mouseX - (mouseX - this.panX) * (newZoom / this.zoom);
+                this.panY = mouseY - (mouseY - this.panY) * (newZoom / this.zoom);
+                this.zoom = newZoom;
+
+                this.updateCanvasTransform();
+                this.updateDisplay();
+                this.updateHandles();
+            }
+
+            zoomBy(delta) {
+                const rect = this.canvasContainer.getBoundingClientRect();
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+
+                const newZoom = Math.min(Math.max(this.zoom + delta, 0.1), 10);
+                this.panX = centerX - (centerX - this.panX) * (newZoom / this.zoom);
+                this.panY = centerY - (centerY - this.panY) * (newZoom / this.zoom);
+                this.zoom = newZoom;
+
+                this.updateCanvasTransform();
+                this.updateDisplay();
+                this.updateHandles();
+            }
+
+            resetZoom() {
+                this.zoom = 1;
+                this.centerCanvas();
+                this.updateDisplay();
+                this.updateHandles();
+            }
+
+            updateCanvasTransform() {
+                this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
+            }
+
+            screenToCanvas(screenX, screenY) {
+                const rect = this.canvasContainer.getBoundingClientRect();
+                return {
+                    x: (screenX - rect.left - this.panX) / this.zoom,
+                    y: (screenY - rect.top - this.panY) / this.zoom
+                };
+            }
+
+            // =====================================================
+            // Mouse Handling
+            // =====================================================
+
+            handleMouseDown(e) {
+                if (e.button === 2) return; // Right click handled by context menu
+
+                const pos = this.screenToCanvas(e.clientX, e.clientY);
+                this.dragStartX = e.clientX;
+                this.dragStartY = e.clientY;
+
+                // Check if clicking on a handle
+                if (this.selectedObject) {
+                    const handleType = this.getClickedHandle(e.target);
+                    if (handleType) {
+                        this.isDragging = true;
+                        this.dragType = handleType;
+                        // Deep copy transform including nested corner objects
+                        this.dragStartTransform = {
+                            ...this.selectedObject.transform,
+                            cornerNW: this.selectedObject.transform.cornerNW ? { ...this.selectedObject.transform.cornerNW } : { x: 0, y: 0 },
+                            cornerNE: this.selectedObject.transform.cornerNE ? { ...this.selectedObject.transform.cornerNE } : { x: 0, y: 0 },
+                            cornerSE: this.selectedObject.transform.cornerSE ? { ...this.selectedObject.transform.cornerSE } : { x: 0, y: 0 },
+                            cornerSW: this.selectedObject.transform.cornerSW ? { ...this.selectedObject.transform.cornerSW } : { x: 0, y: 0 }
+                        };
+                        // Set cursor class on body to persist during drag
+                        this.clearDragCursor();
+                        document.body.classList.add(this.getCursorClassForHandle(handleType));
+                        return;
+                    }
+                }
+
+                // Pan mode or middle button or space held
+                if (this.currentTool === 'pan' || e.button === 1 || this.spaceHeld) {
+                    this.isPanning = true;
+                    this.panStartX = this.panX;
+                    this.panStartY = this.panY;
+                    this.canvasContainer.classList.add('grabbing');
+                    return;
+                }
+
+                // Check if clicking on an object
+                const clickedObject = this.getObjectAtPosition(e.target);
+                if (clickedObject) {
+                    this.selectObject(clickedObject);
+                    this.isDragging = true;
+                    this.dragType = 'move';
+                    // Deep copy transform including nested corner objects
+                    this.dragStartTransform = {
+                        ...this.selectedObject.transform,
+                        cornerNW: this.selectedObject.transform.cornerNW ? { ...this.selectedObject.transform.cornerNW } : { x: 0, y: 0 },
+                        cornerNE: this.selectedObject.transform.cornerNE ? { ...this.selectedObject.transform.cornerNE } : { x: 0, y: 0 },
+                        cornerSE: this.selectedObject.transform.cornerSE ? { ...this.selectedObject.transform.cornerSE } : { x: 0, y: 0 },
+                        cornerSW: this.selectedObject.transform.cornerSW ? { ...this.selectedObject.transform.cornerSW } : { x: 0, y: 0 }
+                    };
+                    this.clearDragCursor();
+                    document.body.classList.add('dragging-move');
+                } else {
+                    this.selectObject(null);
+                }
+            }
+
+            handleMouseMove(e) {
+                const pos = this.screenToCanvas(e.clientX, e.clientY);
+                this.cursorPosDisplay.textContent = `${Math.round(pos.x)}, ${Math.round(pos.y)}`;
+
+                if (this.isPanning) {
+                    this.panX = this.panStartX + (e.clientX - this.dragStartX);
+                    this.panY = this.panStartY + (e.clientY - this.dragStartY);
+                    this.updateCanvasTransform();
+                    this.updateHandles();
+                    return;
+                }
+
+                if (this.isDragging && this.selectedObject) {
+                    const dx = (e.clientX - this.dragStartX) / this.zoom;
+                    const dy = (e.clientY - this.dragStartY) / this.zoom;
+
+                    switch (this.dragType) {
+                        case 'move':
+                            this.selectedObject.transform.translateX = this.dragStartTransform.translateX + dx;
+                            this.selectedObject.transform.translateY = this.dragStartTransform.translateY + dy;
+                            break;
+                        case 'origin':
+                            this.handleOriginDrag(e);
+                            break;
+                        case 'rotate':
+                            this.handleRotateDrag(e);
+                            break;
+                        case 'scale-nw':
+                        case 'scale-ne':
+                        case 'scale-se':
+                        case 'scale-sw':
+                            this.handleFreeTransformDrag(this.dragType, dx, dy, e.shiftKey);
+                            break;
+                        case 'skew-n':
+                        case 'skew-e':
+                        case 'skew-s':
+                        case 'skew-w':
+                            this.handleSkewDrag(this.dragType, dx, dy);
+                            break;
+                        case 'perspective-x':
+                            let rotateY = this.dragStartTransform.rotateY + dx * 0.5;
+                            if (e.shiftKey) {
+                                rotateY = Math.round(rotateY / 15) * 15;
+                            }
+                            this.selectedObject.transform.rotateY = rotateY;
+                            break;
+                        case 'perspective-y':
+                            let rotateX = this.dragStartTransform.rotateX - dy * 0.5;
+                            if (e.shiftKey) {
+                                rotateX = Math.round(rotateX / 15) * 15;
+                            }
+                            this.selectedObject.transform.rotateX = rotateX;
+                            break;
+                        case 'edge-scale-n':
+                        case 'edge-scale-s':
+                        case 'edge-scale-e':
+                        case 'edge-scale-w':
+                            this.handleEdgeScaleDrag(this.dragType, dx, dy, e.shiftKey);
+                            break;
+                    }
+
+                    this.updateObjectTransform(this.selectedObject);
+                    this.updateTransformPanel();
+                }
+            }
+
+            handleMouseUp(e) {
+                this.isDragging = false;
+                this.isPanning = false;
+                this.dragType = null;
+                this.canvasContainer.classList.remove('grabbing');
+                this.clearDragCursor();
+            }
+
+            getClickedHandle(target) {
+                if (!target.classList.contains('handle') &&
+                    !target.classList.contains('transform-origin') &&
+                    !target.classList.contains('edge')) {
+                    return null;
+                }
+
+                if (target.classList.contains('transform-origin')) return 'origin';
+                if (target.classList.contains('handle-rotate')) return 'rotate';
+                if (target.classList.contains('handle-nw')) return 'scale-nw';
+                if (target.classList.contains('handle-ne')) return 'scale-ne';
+                if (target.classList.contains('handle-se')) return 'scale-se';
+                if (target.classList.contains('handle-sw')) return 'scale-sw';
+                if (target.classList.contains('handle-n')) return 'skew-n';
+                if (target.classList.contains('handle-e')) return 'skew-e';
+                if (target.classList.contains('handle-s')) return 'skew-s';
+                if (target.classList.contains('handle-w')) return 'skew-w';
+                if (target.classList.contains('handle-perspective-x')) return 'perspective-x';
+                if (target.classList.contains('handle-perspective-y')) return 'perspective-y';
+
+                // Edge scaling
+                if (target.classList.contains('edge-n')) return 'edge-scale-n';
+                if (target.classList.contains('edge-e')) return 'edge-scale-e';
+                if (target.classList.contains('edge-s')) return 'edge-scale-s';
+                if (target.classList.contains('edge-w')) return 'edge-scale-w';
+
+                return null;
+            }
+
+            getCursorClassForHandle(handleType) {
+                switch (handleType) {
+                    case 'origin': return 'dragging-crosshair';
+                    case 'rotate': return 'dragging-grabbing';
+                    case 'scale-nw':
+                    case 'scale-se': return 'dragging-nwse';
+                    case 'scale-ne':
+                    case 'scale-sw': return 'dragging-nesw';
+                    case 'skew-n':
+                    case 'skew-s': return 'dragging-ew';
+                    case 'skew-e':
+                    case 'skew-w': return 'dragging-ns';
+                    case 'edge-scale-n':
+                    case 'edge-scale-s': return 'dragging-ns';
+                    case 'edge-scale-e':
+                    case 'edge-scale-w': return 'dragging-ew';
+                    case 'perspective-x': return 'dragging-col';
+                    case 'perspective-y': return 'dragging-row';
+                    case 'move': return 'dragging-move';
+                    default: return '';
+                }
+            }
+
+            clearDragCursor() {
+                document.body.classList.remove(
+                    'dragging-nwse', 'dragging-nesw', 'dragging-ew', 'dragging-ns',
+                    'dragging-move', 'dragging-crosshair', 'dragging-grabbing',
+                    'dragging-col', 'dragging-row'
+                );
+            }
+
+            getObjectAtPosition(target) {
+                let el = target;
+                while (el && el !== this.canvas) {
+                    if (el.classList && el.classList.contains('canvas-object')) {
+                        return this.objects.find(obj => obj.element === el);
+                    }
+                    el = el.parentElement;
+                }
+                return null;
+            }
+
+            // =====================================================
+            // Transform Handle Operations
+            // =====================================================
+
+            handleOriginDrag(e) {
+                const obj = this.selectedObject;
+
+                // Get the current bounding rect of the object
+                const rect = obj.element.getBoundingClientRect();
+
+                // Calculate mouse position as percentage within the bounding rect
+                const mouseX = e.clientX;
+                const mouseY = e.clientY;
+
+                const localX = ((mouseX - rect.left) / rect.width) * 100;
+                const localY = ((mouseY - rect.top) / rect.height) * 100;
+
+                // Clamp to 0-100
+                const newOriginX = Math.max(0, Math.min(100, localX));
+                const newOriginY = Math.max(0, Math.min(100, localY));
+
+                // Store current bounding rect before changing origin
+                const beforeLeft = rect.left;
+                const beforeTop = rect.top;
+
+                // Update origin
+                obj.transform.originX = newOriginX;
+                obj.transform.originY = newOriginY;
+
+                // Apply transform to see where element moves
+                this.updateObjectTransform(obj);
+
+                // Get new bounding rect
+                const afterRect = obj.element.getBoundingClientRect();
+
+                // Compensate translation for the shift
+                obj.transform.translateX -= (afterRect.left - beforeLeft) / this.zoom;
+                obj.transform.translateY -= (afterRect.top - beforeTop) / this.zoom;
+
+                // Apply final transform with compensation
+                this.updateObjectTransform(obj);
+            }
+
+            handleRotateDrag(e) {
+                const obj = this.selectedObject;
+                const rect = obj.element.getBoundingClientRect();
+                const centerX = rect.left + rect.width * (obj.transform.originX / 100);
+                const centerY = rect.top + rect.height * (obj.transform.originY / 100);
+
+                const startAngle = Math.atan2(
+                    this.dragStartY - centerY,
+                    this.dragStartX - centerX
+                );
+                const currentAngle = Math.atan2(
+                    e.clientY - centerY,
+                    e.clientX - centerX
+                );
+
+                let angleDiff = (currentAngle - startAngle) * (180 / Math.PI);
+                let newRotation = this.dragStartTransform.rotateZ + angleDiff;
+
+                // Snap to 15 degree increments when shift is held
+                if (e.shiftKey) {
+                    newRotation = Math.round(newRotation / 15) * 15;
+                }
+
+                obj.transform.rotateZ = newRotation;
+            }
+
+            handleFreeTransformDrag(handle, dx, dy, shiftKey) {
+                const obj = this.selectedObject;
+                const t = obj.transform;
+
+                // Initialize corner offsets if they don't exist in dragStartTransform
+                if (!this.dragStartTransform.cornerNW) {
+                    this.dragStartTransform.cornerNW = { x: 0, y: 0 };
+                    this.dragStartTransform.cornerNE = { x: 0, y: 0 };
+                    this.dragStartTransform.cornerSE = { x: 0, y: 0 };
+                    this.dragStartTransform.cornerSW = { x: 0, y: 0 };
+                }
+
+                // Ensure obj has corner offsets
+                if (!obj.transform.cornerNW) {
+                    obj.transform.cornerNW = { x: 0, y: 0 };
+                    obj.transform.cornerNE = { x: 0, y: 0 };
+                    obj.transform.cornerSE = { x: 0, y: 0 };
+                    obj.transform.cornerSW = { x: 0, y: 0 };
+                }
+
+                // Transform dx/dy from screen space to object space
+                // by applying the inverse of the standard transforms (scale, skew, rotate)
+                // The standard transforms in CSS are: scale → skew → rotateZ (right to left)
+                // The inverse is: rotateZ^-1 → skew^-1 → scale^-1 (left to right)
+
+                // Build the standard transform matrix
+                const matrix = new DOMMatrix();
+                matrix.scaleSelf(t.scaleX, t.scaleY);
+                matrix.skewXSelf(t.skewX);
+                matrix.skewYSelf(t.skewY);
+                matrix.rotateSelf(t.rotateZ);
+
+                // Get the inverse matrix and transform the delta
+                const inverseMatrix = matrix.inverse();
+                const transformedDelta = inverseMatrix.transformPoint(new DOMPoint(dx, dy));
+                const localDx = transformedDelta.x;
+                const localDy = transformedDelta.y;
+
+                // Determine if drag is more horizontal or vertical (use screen space)
+                const isHorizontal = Math.abs(dx) > Math.abs(dy);
+
+                // Move the dragged corner, and if shift is held, mirror in the drag direction
+                // Use localDx/localDy (transformed to object space) for corner offsets
+                switch (handle) {
+                    case 'scale-nw':
+                        obj.transform.cornerNW = {
+                            x: this.dragStartTransform.cornerNW.x + localDx,
+                            y: this.dragStartTransform.cornerNW.y + localDy
+                        };
+                        if (shiftKey) {
+                            if (isHorizontal) {
+                                // Mirror NE horizontally (opposite x movement)
+                                obj.transform.cornerNE = {
+                                    x: this.dragStartTransform.cornerNE.x - localDx,
+                                    y: this.dragStartTransform.cornerNE.y
+                                };
+                            } else {
+                                // Mirror SW vertically (opposite y movement)
+                                obj.transform.cornerSW = {
+                                    x: this.dragStartTransform.cornerSW.x,
+                                    y: this.dragStartTransform.cornerSW.y - localDy
+                                };
+                            }
+                        }
+                        break;
+                    case 'scale-ne':
+                        obj.transform.cornerNE = {
+                            x: this.dragStartTransform.cornerNE.x + localDx,
+                            y: this.dragStartTransform.cornerNE.y + localDy
+                        };
+                        if (shiftKey) {
+                            if (isHorizontal) {
+                                // Mirror NW horizontally
+                                obj.transform.cornerNW = {
+                                    x: this.dragStartTransform.cornerNW.x - localDx,
+                                    y: this.dragStartTransform.cornerNW.y
+                                };
+                            } else {
+                                // Mirror SE vertically
+                                obj.transform.cornerSE = {
+                                    x: this.dragStartTransform.cornerSE.x,
+                                    y: this.dragStartTransform.cornerSE.y - localDy
+                                };
+                            }
+                        }
+                        break;
+                    case 'scale-se':
+                        obj.transform.cornerSE = {
+                            x: this.dragStartTransform.cornerSE.x + localDx,
+                            y: this.dragStartTransform.cornerSE.y + localDy
+                        };
+                        if (shiftKey) {
+                            if (isHorizontal) {
+                                // Mirror SW horizontally
+                                obj.transform.cornerSW = {
+                                    x: this.dragStartTransform.cornerSW.x - localDx,
+                                    y: this.dragStartTransform.cornerSW.y
+                                };
+                            } else {
+                                // Mirror NE vertically
+                                obj.transform.cornerNE = {
+                                    x: this.dragStartTransform.cornerNE.x,
+                                    y: this.dragStartTransform.cornerNE.y - localDy
+                                };
+                            }
+                        }
+                        break;
+                    case 'scale-sw':
+                        obj.transform.cornerSW = {
+                            x: this.dragStartTransform.cornerSW.x + localDx,
+                            y: this.dragStartTransform.cornerSW.y + localDy
+                        };
+                        if (shiftKey) {
+                            if (isHorizontal) {
+                                // Mirror SE horizontally
+                                obj.transform.cornerSE = {
+                                    x: this.dragStartTransform.cornerSE.x - localDx,
+                                    y: this.dragStartTransform.cornerSE.y
+                                };
+                            } else {
+                                // Mirror NW vertically
+                                obj.transform.cornerNW = {
+                                    x: this.dragStartTransform.cornerNW.x,
+                                    y: this.dragStartTransform.cornerNW.y - localDy
+                                };
+                            }
+                        }
+                        break;
+                }
+            }
+
+            handleSkewDrag(handle, dx, dy) {
+                const obj = this.selectedObject;
+                const sensitivity = 0.3;
+
+                switch (handle) {
+                    case 'skew-n':
+                        obj.transform.skewX = this.dragStartTransform.skewX - dx * sensitivity;
+                        break;
+                    case 'skew-s':
+                        obj.transform.skewX = this.dragStartTransform.skewX + dx * sensitivity;
+                        break;
+                    case 'skew-w':
+                        obj.transform.skewY = this.dragStartTransform.skewY - dy * sensitivity;
+                        break;
+                    case 'skew-e':
+                        obj.transform.skewY = this.dragStartTransform.skewY + dy * sensitivity;
+                        break;
+                }
+            }
+
+            handleEdgeScaleDrag(handle, dx, dy, shiftKey) {
+                const obj = this.selectedObject;
+                const sensitivity = 0.01;
+
+                let scaleX = this.dragStartTransform.scaleX;
+                let scaleY = this.dragStartTransform.scaleY;
+
+                switch (handle) {
+                    case 'edge-scale-n':
+                        // Top edge - scale Y (dragging up = larger)
+                        scaleY -= dy * sensitivity;
+                        break;
+                    case 'edge-scale-s':
+                        // Bottom edge - scale Y (dragging down = larger)
+                        scaleY += dy * sensitivity;
+                        break;
+                    case 'edge-scale-w':
+                        // Left edge - scale X (dragging left = larger)
+                        scaleX -= dx * sensitivity;
+                        break;
+                    case 'edge-scale-e':
+                        // Right edge - scale X (dragging right = larger)
+                        scaleX += dx * sensitivity;
+                        break;
+                }
+
+                // Uniform scaling when shift is held
+                if (shiftKey) {
+                    const avgScale = (scaleX + scaleY) / 2;
+                    scaleX = avgScale;
+                    scaleY = avgScale;
+                }
+
+                obj.transform.scaleX = Math.max(0.1, scaleX);
+                obj.transform.scaleY = Math.max(0.1, scaleY);
+            }
+
+            // =====================================================
+            // Object Management
+            // =====================================================
+
+            addShape(type) {
+                const centerPos = this.screenToCanvas(
+                    this.canvasContainer.offsetWidth / 2,
+                    this.canvasContainer.offsetHeight / 2
+                );
+
+                const colors = ['#1976d2', '#388e3c', '#7b1fa2', '#f57c00', '#0288d1'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                let svgContent;
+                const size = 120;
+
+                switch (type) {
+                    case 'rect':
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <rect x="5" y="5" width="90" height="90" rx="8" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        </svg>`;
+                        break;
+                    case 'circle':
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="45" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        </svg>`;
+                        break;
+                    case 'triangle':
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="50,5 95,95 5,95" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        </svg>`;
+                        break;
+                    case 'star':
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        </svg>`;
+                        break;
+                }
+
+                this.createObject(svgContent, centerPos.x - size / 2, centerPos.y - size / 2, size, size);
+            }
+
+            createObject(svgContent, x, y, width, height) {
+                const obj = {
+                    id: ++this.objectIdCounter,
+                    element: document.createElement('div'),
+                    width: width,
+                    height: height,
+                    transform: {
+                        translateX: x,
+                        translateY: y,
+                        scaleX: 1,
+                        scaleY: 1,
+                        rotateX: 0,
+                        rotateY: 0,
+                        rotateZ: 0,
+                        skewX: 0,
+                        skewY: 0,
+                        perspective: 1000,
+                        originX: 50,
+                        originY: 50,
+                        // Corner offsets for free distort (relative to original corners)
+                        cornerNW: { x: 0, y: 0 },
+                        cornerNE: { x: 0, y: 0 },
+                        cornerSE: { x: 0, y: 0 },
+                        cornerSW: { x: 0, y: 0 }
+                    },
+                    zIndex: ++this.zIndexCounter
+                };
+
+                obj.element.className = 'canvas-object';
+                obj.element.innerHTML = svgContent;
+                obj.element.style.width = width + 'px';
+                obj.element.style.height = height + 'px';
+                obj.element.style.zIndex = obj.zIndex;
+
+                this.canvas.appendChild(obj.element);
+                this.objects.push(obj);
+                this.updateObjectTransform(obj);
+                this.selectObject(obj);
+                this.updateDisplay();
+
+                return obj;
+            }
+
+            updateObjectTransform(obj) {
+                const t = obj.transform;
+                const w = obj.width;
+                const h = obj.height;
+
+                // Ensure corner offsets exist
+                const nw = t.cornerNW || { x: 0, y: 0 };
+                const ne = t.cornerNE || { x: 0, y: 0 };
+                const se = t.cornerSE || { x: 0, y: 0 };
+                const sw = t.cornerSW || { x: 0, y: 0 };
+
+                // Calculate the pivot point (origin) in the distorted object's local coordinate system.
+                // We use bilinear interpolation to find where the percentage-based origin lands
+                // within the distorted quadrilateral.
+                const lerp = (a, b, f) => a + (b - a) * f;
+                const Ox = lerp(
+                    lerp(nw.x, w + ne.x, t.originX / 100),
+                    lerp(sw.x, w + se.x, t.originX / 100),
+                    t.originY / 100
+                );
+                const Oy = lerp(
+                    lerp(nw.y, ne.y, t.originX / 100),
+                    lerp(sw.y, h + se.y, t.originX / 100),
+                    t.originY / 100
+                );
+
+                // Check if we have corner distortion
+                const hasCornerDistort = nw.x !== 0 || nw.y !== 0 ||
+                    ne.x !== 0 || ne.y !== 0 ||
+                    se.x !== 0 || se.y !== 0 ||
+                    sw.x !== 0 || sw.y !== 0;
+
+                // Standard transforms (rotate, scale, skew, perspective)
+                // We wrap these so they pivot around the calculated (Ox, Oy) point.
+                const standardTransforms = `
+                    translate(${Ox}px, ${Oy}px)
+                    perspective(${t.perspective}px)
+                    rotateX(${t.rotateX}deg)
+                    rotateY(${t.rotateY}deg)
+                    rotateZ(${t.rotateZ}deg)
+                    skew(${t.skewX}deg, ${t.skewY}deg)
+                    scale(${t.scaleX}, ${t.scaleY})
+                    translate(${-Ox}px, ${-Oy}px)
+                `;
+
+                // Always use 0,0 as the CSS transform-origin. 
+                // Our manual translate() wrapper handles the origin correctly for all cases.
+                obj.element.style.transformOrigin = '0 0';
+
+                if (hasCornerDistort) {
+                    const src = [[0, 0], [w, 0], [w, h], [0, h]];
+                    const dst = [
+                        [nw.x, nw.y],
+                        [w + ne.x, ne.y],
+                        [w + se.x, h + se.y],
+                        [sw.x, h + sw.y]
+                    ];
+
+                    const matrix3d = this.computePerspectiveMatrix(src, dst, w, h);
+
+                    obj.element.style.transform = `
+                        translate(${t.translateX}px, ${t.translateY}px)
+                        ${standardTransforms}
+                        ${matrix3d}
+                    `;
+                } else {
+                    obj.element.style.transform = `
+                        translate(${t.translateX}px, ${t.translateY}px)
+                        ${standardTransforms}
+                    `;
+                }
+
+                if (this.selectedObject === obj) {
+                    this.updateHandles();
+                }
+            }
+
+            computePerspectiveMatrix(src, dst, w, h) {
+                // Compute a perspective transform matrix from 4 corner correspondences
+                // This uses the adjugate method to solve for the homography
+
+                const [x0, y0] = dst[0];
+                const [x1, y1] = dst[1];
+                const [x2, y2] = dst[2];
+                const [x3, y3] = dst[3];
+
+                // Compute the transformation matrix coefficients
+                const dx1 = x1 - x2, dy1 = y1 - y2;
+                const dx2 = x3 - x2, dy2 = y3 - y2;
+                const sx = x0 - x1 + x2 - x3;
+                const sy = y0 - y1 + y2 - y3;
+
+                const g = (sx * dy2 - sy * dx2) / (dx1 * dy2 - dy1 * dx2);
+                const hh = (dx1 * sy - dy1 * sx) / (dx1 * dy2 - dy1 * dx2);
+
+                const a = x1 - x0 + g * x1;
+                const b = x3 - x0 + hh * x3;
+                const c = x0;
+                const d = y1 - y0 + g * y1;
+                const e = y3 - y0 + hh * y3;
+                const f = y0;
+
+                // Create the 3x3 homography matrix and convert to 4x4 matrix3d
+                // The CSS matrix3d is column-major order
+                const H = [
+                    a / w, d / w, 0, g / w,
+                    b / h, e / h, 0, hh / h,
+                    0, 0, 1, 0,
+                    c, f, 0, 1
+                ];
+
+                return `matrix3d(${H.join(',')})`;
+            }
+
+            selectObject(obj) {
+                // Deselect previous
+                if (this.selectedObject) {
+                    this.selectedObject.element.classList.remove('selected');
+                    this.removeHandles();
+                }
+
+                this.selectedObject = obj;
+
+                if (obj) {
+                    obj.element.classList.add('selected');
+                    this.createHandles();
+                    this.selectedInfoDisplay.textContent = `Object #${obj.id}`;
+                } else {
+                    this.selectedInfoDisplay.textContent = 'None';
+                }
+
+                this.updateTransformPanel();
+            }
+
+            deleteObject(obj) {
+                const index = this.objects.indexOf(obj);
+                if (index > -1) {
+                    obj.element.remove();
+                    this.objects.splice(index, 1);
+                    if (this.selectedObject === obj) {
+                        this.selectObject(null);
+                    }
+                    this.updateDisplay();
+                }
+            }
+
+            duplicateObject(obj) {
+                const newObj = this.createObject(
+                    obj.element.innerHTML,
+                    obj.transform.translateX + 20,
+                    obj.transform.translateY + 20,
+                    obj.width,
+                    obj.height
+                );
+                newObj.transform = {
+                    ...obj.transform,
+                    cornerNW: { ...obj.transform.cornerNW },
+                    cornerNE: { ...obj.transform.cornerNE },
+                    cornerSE: { ...obj.transform.cornerSE },
+                    cornerSW: { ...obj.transform.cornerSW }
+                };
+                newObj.transform.translateX += 20;
+                newObj.transform.translateY += 20;
+                this.updateObjectTransform(newObj);
+                this.selectObject(newObj);
+            }
+
+            copyObject(obj) {
+                // Store a deep copy of the object data for pasting
+                this.clipboardObject = {
+                    svgContent: obj.element.innerHTML,
+                    width: obj.width,
+                    height: obj.height,
+                    transform: {
+                        ...obj.transform,
+                        cornerNW: { ...obj.transform.cornerNW },
+                        cornerNE: { ...obj.transform.cornerNE },
+                        cornerSE: { ...obj.transform.cornerSE },
+                        cornerSW: { ...obj.transform.cornerSW }
+                    }
+                };
+            }
+
+            pasteObject() {
+                if (!this.clipboardObject) return false;
+
+                const clip = this.clipboardObject;
+                const newObj = this.createObject(
+                    clip.svgContent,
+                    clip.transform.translateX + 20,
+                    clip.transform.translateY + 20,
+                    clip.width,
+                    clip.height
+                );
+                newObj.transform = {
+                    ...clip.transform,
+                    cornerNW: { ...clip.transform.cornerNW },
+                    cornerNE: { ...clip.transform.cornerNE },
+                    cornerSE: { ...clip.transform.cornerSE },
+                    cornerSW: { ...clip.transform.cornerSW }
+                };
+                newObj.transform.translateX += 20;
+                newObj.transform.translateY += 20;
+                this.updateObjectTransform(newObj);
+                this.selectObject(newObj);
+                return true;
+            }
+
+            bringToFront(obj) {
+                obj.zIndex = ++this.zIndexCounter;
+                obj.element.style.zIndex = obj.zIndex;
+            }
+
+            sendToBack(obj) {
+                const minZ = Math.min(...this.objects.map(o => o.zIndex));
+                obj.zIndex = minZ - 1;
+                obj.element.style.zIndex = obj.zIndex;
+            }
+
+            resetTransform(obj) {
+                obj.transform = {
+                    translateX: obj.transform.translateX,
+                    translateY: obj.transform.translateY,
+                    scaleX: 1,
+                    scaleY: 1,
+                    rotateX: 0,
+                    rotateY: 0,
+                    rotateZ: 0,
+                    skewX: 0,
+                    skewY: 0,
+                    perspective: 1000,
+                    originX: 50,
+                    originY: 50,
+                    cornerNW: { x: 0, y: 0 },
+                    cornerNE: { x: 0, y: 0 },
+                    cornerSE: { x: 0, y: 0 },
+                    cornerSW: { x: 0, y: 0 }
+                };
+                this.updateObjectTransform(obj);
+                this.updateTransformPanel();
+            }
+
+            applyPreset(preset) {
+                if (!this.selectedObject) {
+                    alert('Please select an object first');
+                    return;
+                }
+
+                const obj = this.selectedObject;
+                const t = obj.transform;
+
+                // Keep position, reset other transforms first
+                t.scaleX = 1;
+                t.scaleY = 1;
+                t.rotateX = 0;
+                t.rotateY = 0;
+                t.rotateZ = 0;
+                t.skewX = 0;
+                t.skewY = 0;
+                t.perspective = 1000;
+
+                switch (preset) {
+                    case 'iso-top':
+                        // Isometric top face
+                        t.rotateZ = 210;
+                        t.skewX = -30;
+                        t.scaleY = 0.864;
+                        break;
+                    case 'iso-left':
+                        // Isometric left face
+                        t.rotateZ = 90;
+                        t.skewX = -30;
+                        t.scaleY = 0.864;
+                        break;
+                    case 'iso-right':
+                        // Isometric right face
+                        t.rotateZ = -30;
+                        t.skewX = -30;
+                        t.scaleY = 0.864;
+                        break;
+                    case 'iso-front':
+                        // Isometric front view - combination angle
+                        t.rotateZ = 30;
+                        t.skewX = -30;
+                        t.scaleY = 0.864;
+                        break;
+                    case 'flat':
+                        // Already reset above
+                        break;
+                    case 'perspective':
+                        // Dramatic perspective
+                        t.rotateX = 15;
+                        t.rotateY = -25;
+                        t.perspective = 500;
+                        break;
+                }
+
+                this.updateObjectTransform(obj);
+                this.updateTransformPanel();
+            }
+
+            // =====================================================
+            // Transform Handles UI
+            // =====================================================
+
+            createHandles() {
+                if (!this.selectedObject) return;
+
+                const handles = document.createElement('div');
+                handles.className = 'transform-handles';
+                handles.id = 'transform-handles';
+
+                handles.innerHTML = `
+                    <svg class="selection-box" xmlns="http://www.w3.org/2000/svg">
+                        <path class="selection-path"></path>
+                    </svg>
+                    <div class="rotation-line"></div>
+                    <div class="edge edge-n"></div>
+                    <div class="edge edge-e"></div>
+                    <div class="edge edge-s"></div>
+                    <div class="edge edge-w"></div>
+                    <div class="handle handle-rotate"></div>
+                    <div class="handle handle-nw"></div>
+                    <div class="handle handle-ne"></div>
+                    <div class="handle handle-se"></div>
+                    <div class="handle handle-sw"></div>
+                    <div class="handle handle-n"></div>
+                    <div class="handle handle-e"></div>
+                    <div class="handle handle-s"></div>
+                    <div class="handle handle-w"></div>
+                    <div class="handle handle-perspective-x"></div>
+                    <div class="handle handle-perspective-y"></div>
+                    <div class="transform-origin">
+                        <div class="transform-origin-ring"></div>
+                    </div>
+                `;
+
+                // Add handles to canvas container (not inside object) so they're always 2D
+                this.canvasContainer.appendChild(handles);
+                this.updateHandles();
+            }
+
+            removeHandles() {
+                const handles = document.getElementById('transform-handles');
+                if (handles) {
+                    handles.remove();
+                }
+            }
+
+            updateHandles() {
+                if (!this.selectedObject) return;
+
+                const handles = document.getElementById('transform-handles');
+                if (!handles) return;
+
+                const obj = this.selectedObject;
+                const t = obj.transform;
+                const w = obj.width;
+                const h = obj.height;
+
+                // Get the container rect for coordinate conversion
+                const containerRect = this.canvasContainer.getBoundingClientRect();
+
+                // Calculate corner positions in screen space
+                // Always use the computed transform matrix to get accurate corner positions
+                // This handles ALL transforms: standard (rotate, scale, skew, perspective) 
+                // AND corner distortion (matrix3d) when both are combined
+                const corners = this.getTransformedCorners(obj, containerRect);
+
+                // Position handles container to cover the object area
+                handles.style.position = 'absolute';
+                handles.style.left = '0';
+                handles.style.top = '0';
+                handles.style.width = '100%';
+                handles.style.height = '100%';
+                handles.style.pointerEvents = 'none';
+
+                // Position each handle at its screen position
+                const handleNW = handles.querySelector('.handle-nw');
+                const handleNE = handles.querySelector('.handle-ne');
+                const handleSE = handles.querySelector('.handle-se');
+                const handleSW = handles.querySelector('.handle-sw');
+                const handleN = handles.querySelector('.handle-n');
+                const handleE = handles.querySelector('.handle-e');
+                const handleS = handles.querySelector('.handle-s');
+                const handleW = handles.querySelector('.handle-w');
+                const handleRotate = handles.querySelector('.handle-rotate');
+                const handlePerspectiveX = handles.querySelector('.handle-perspective-x');
+                const handlePerspectiveY = handles.querySelector('.handle-perspective-y');
+                const rotationLine = handles.querySelector('.rotation-line');
+                const origin = handles.querySelector('.transform-origin');
+                const selectionPath = handles.querySelector('.selection-path');
+
+                const handleOffset = 35; // Distance in screen pixels for rotation/perspective handles (constant)
+
+                // Draw selection box as SVG path connecting corners
+                if (selectionPath) {
+                    const pathData = `M ${corners.nw.x} ${corners.nw.y} 
+                                      L ${corners.ne.x} ${corners.ne.y} 
+                                      L ${corners.se.x} ${corners.se.y} 
+                                      L ${corners.sw.x} ${corners.sw.y} Z`;
+                    selectionPath.setAttribute('d', pathData);
+                    selectionPath.style.strokeWidth = '1.5px';
+                }
+
+                // Corner handles (free distort)
+                this.positionHandle(handleNW, corners.nw.x, corners.nw.y);
+                this.positionHandle(handleNE, corners.ne.x, corners.ne.y);
+                this.positionHandle(handleSE, corners.se.x, corners.se.y);
+                this.positionHandle(handleSW, corners.sw.x, corners.sw.y);
+
+                // Edge handles (skew) - positioned at midpoints
+                this.positionHandle(handleN, (corners.nw.x + corners.ne.x) / 2, (corners.nw.y + corners.ne.y) / 2);
+                this.positionHandle(handleE, (corners.ne.x + corners.se.x) / 2, (corners.ne.y + corners.se.y) / 2);
+                this.positionHandle(handleS, (corners.sw.x + corners.se.x) / 2, (corners.sw.y + corners.se.y) / 2);
+                this.positionHandle(handleW, (corners.nw.x + corners.sw.x) / 2, (corners.nw.y + corners.sw.y) / 2);
+
+                // Rotation handle - above top center
+                const topCenterX = (corners.nw.x + corners.ne.x) / 2;
+                const topCenterY = (corners.nw.y + corners.ne.y) / 2;
+                this.positionHandle(handleRotate, topCenterX, topCenterY - handleOffset);
+
+                // Rotation line
+                if (rotationLine) {
+                    rotationLine.style.position = 'absolute';
+                    rotationLine.style.left = topCenterX + 'px';
+                    rotationLine.style.top = (topCenterY - handleOffset) + 'px';
+                    rotationLine.style.width = '1px';
+                    rotationLine.style.height = handleOffset + 'px';
+                    rotationLine.style.transform = 'translateX(-50%)';
+                }
+
+                // Perspective handles
+                const rightCenterX = (corners.ne.x + corners.se.x) / 2;
+                const rightCenterY = (corners.ne.y + corners.se.y) / 2;
+                const bottomCenterX = (corners.sw.x + corners.se.x) / 2;
+                const bottomCenterY = (corners.sw.y + corners.se.y) / 2;
+                this.positionHandle(handlePerspectiveX, rightCenterX + handleOffset * 1.2, rightCenterY);
+                this.positionHandle(handlePerspectiveY, bottomCenterX, bottomCenterY + handleOffset * 1.2);
+
+                // Transform origin - use bilinear interpolation for proper positioning in skewed/rotated rectangles
+                // Lerp along top edge
+                const topX = corners.nw.x + (corners.ne.x - corners.nw.x) * (t.originX / 100);
+                const topY = corners.nw.y + (corners.ne.y - corners.nw.y) * (t.originX / 100);
+                // Lerp along bottom edge
+                const botX = corners.sw.x + (corners.se.x - corners.sw.x) * (t.originX / 100);
+                const botY = corners.sw.y + (corners.se.y - corners.sw.y) * (t.originX / 100);
+                // Lerp between top and bottom
+                const originXPos = topX + (botX - topX) * (t.originY / 100);
+                const originYPos = topY + (botY - topY) * (t.originY / 100);
+                this.positionHandle(origin, originXPos, originYPos);
+
+                // Position edge scaling areas
+                const edges = handles.querySelectorAll('.edge');
+                edges.forEach(edge => {
+                    edge.style.position = 'absolute';
+                    edge.style.pointerEvents = 'auto';
+
+                    if (edge.classList.contains('edge-n')) {
+                        const x1 = corners.nw.x, y1 = corners.nw.y;
+                        const x2 = corners.ne.x, y2 = corners.ne.y;
+                        this.positionEdge(edge, x1, y1, x2, y2, 'horizontal');
+                    } else if (edge.classList.contains('edge-s')) {
+                        const x1 = corners.sw.x, y1 = corners.sw.y;
+                        const x2 = corners.se.x, y2 = corners.se.y;
+                        this.positionEdge(edge, x1, y1, x2, y2, 'horizontal');
+                    } else if (edge.classList.contains('edge-e')) {
+                        const x1 = corners.ne.x, y1 = corners.ne.y;
+                        const x2 = corners.se.x, y2 = corners.se.y;
+                        this.positionEdge(edge, x1, y1, x2, y2, 'vertical');
+                    } else if (edge.classList.contains('edge-w')) {
+                        const x1 = corners.nw.x, y1 = corners.nw.y;
+                        const x2 = corners.sw.x, y2 = corners.sw.y;
+                        this.positionEdge(edge, x1, y1, x2, y2, 'vertical');
+                    }
+                });
+            }
+
+            getTransformedCorners(obj, containerRect) {
+                const w = obj.width;
+                const h = obj.height;
+                const t = obj.transform;
+
+                // Get the computed transform matrix and origin from the element
+                const computedStyle = getComputedStyle(obj.element);
+                const transformStr = computedStyle.transform;
+                const transformOriginStr = computedStyle.transformOrigin;
+
+                // Original corner positions (before transform, relative to element's top-left)
+                const originalCorners = [
+                    { x: 0, y: 0 },     // NW
+                    { x: w, y: 0 },     // NE
+                    { x: w, y: h },     // SE
+                    { x: 0, y: h }      // SW
+                ];
+
+                // Parse the actual computed transform-origin (format: "Xpx Ypx" or "Xpx Ypx Zpx")
+                let originX = w * (t.originX / 100);
+                let originY = h * (t.originY / 100);
+                if (transformOriginStr) {
+                    const originParts = transformOriginStr.split(' ');
+                    if (originParts.length >= 2) {
+                        originX = parseFloat(originParts[0]) || 0;
+                        originY = parseFloat(originParts[1]) || 0;
+                    }
+                }
+
+                let transformedCorners;
+
+                if (transformStr && transformStr !== 'none') {
+                    // Parse the matrix - this includes translate, rotate, scale, skew, perspective
+                    const matrix = new DOMMatrix(transformStr);
+
+                    // Transform each corner through the matrix
+                    // CSS transforms work relative to transform-origin, so we need to:
+                    // 1. Translate corner to be relative to origin
+                    // 2. Apply matrix (which already includes the translate)
+                    // 3. Translate back from origin
+
+                    transformedCorners = originalCorners.map(corner => {
+                        // Translate to origin
+                        const relX = corner.x - originX;
+                        const relY = corner.y - originY;
+
+                        // Create a point and transform it
+                        // For 3D transforms with perspective, we need to handle projection
+                        const point = new DOMPoint(relX, relY, 0, 1);
+                        const transformed = matrix.transformPoint(point);
+
+                        // Apply perspective division if w != 1 (3D perspective projection)
+                        let finalX, finalY;
+                        if (transformed.w !== 0 && transformed.w !== 1) {
+                            finalX = transformed.x / transformed.w;
+                            finalY = transformed.y / transformed.w;
+                        } else {
+                            finalX = transformed.x;
+                            finalY = transformed.y;
+                        }
+
+                        // The matrix already includes the translate, so we just need to:
+                        // - Add back the origin offset (since we subtracted it before)
+                        // - Apply pan and zoom for screen positioning
+                        return {
+                            x: this.panX + (finalX + originX) * this.zoom,
+                            y: this.panY + (finalY + originY) * this.zoom
+                        };
+                    });
+                } else {
+                    // No transform, just position based on translate
+                    transformedCorners = originalCorners.map(corner => ({
+                        x: this.panX + (t.translateX + corner.x) * this.zoom,
+                        y: this.panY + (t.translateY + corner.y) * this.zoom
+                    }));
+                }
+
+                return {
+                    nw: transformedCorners[0],
+                    ne: transformedCorners[1],
+                    se: transformedCorners[2],
+                    sw: transformedCorners[3]
+                };
+            }
+
+            positionHandle(handle, x, y) {
+                if (!handle) return;
+                handle.style.position = 'absolute';
+                handle.style.left = x + 'px';
+                handle.style.top = y + 'px';
+                handle.style.right = 'auto';
+                handle.style.bottom = 'auto';
+                handle.style.transform = 'translate(-50%, -50%)';
+                handle.style.pointerEvents = 'auto';
+            }
+
+            positionEdge(edge, x1, y1, x2, y2, orientation) {
+                const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+                const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+                const midX = (x1 + x2) / 2;
+                const midY = (y1 + y2) / 2;
+
+                // Shorten edge to not overlap with corner handles
+                const shortenedLength = length * 0.6;
+                const edgeHeight = 10;
+
+                edge.style.left = midX + 'px';
+                edge.style.top = midY + 'px';
+                edge.style.width = shortenedLength + 'px';
+                edge.style.height = edgeHeight + 'px';
+                edge.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                edge.style.cursor = orientation === 'horizontal' ? 'ns-resize' : 'ew-resize';
+            }
+
+            // =====================================================
+            // Transform Panel UI
+            // =====================================================
+
+            updateTransformPanel() {
+                if (!this.selectedObject) {
+                    this.transformPanel.innerHTML = '<div class="no-selection">Select an object to edit transforms</div>';
+                    return;
+                }
+
+                const t = this.selectedObject.transform;
+
+                this.transformPanel.innerHTML = `
+                    <div class="transform-group">
+                        <div class="transform-label translate">Translate</div>
+                        <div class="transform-inputs">
+                            <div class="input-group">
+                                <span class="input-prefix">X</span>
+                                <input type="number" class="transform-input" data-prop="translateX" value="${Math.round(t.translateX)}">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-prefix">Y</span>
+                                <input type="number" class="transform-input" data-prop="translateY" value="${Math.round(t.translateY)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transform-group">
+                        <div class="transform-label scale">Scale</div>
+                        <div class="transform-inputs">
+                            <div class="input-group">
+                                <span class="input-prefix">X</span>
+                                <input type="number" step="0.1" class="transform-input" data-prop="scaleX" value="${t.scaleX.toFixed(2)}">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-prefix">Y</span>
+                                <input type="number" step="0.1" class="transform-input" data-prop="scaleY" value="${t.scaleY.toFixed(2)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transform-group">
+                        <div class="transform-label rotate">Rotation</div>
+                        <div class="transform-inputs">
+                            <div class="input-group">
+                                <span class="input-prefix">X</span>
+                                <input type="number" class="transform-input" data-prop="rotateX" value="${Math.round(t.rotateX)}">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-prefix">Y</span>
+                                <input type="number" class="transform-input" data-prop="rotateY" value="${Math.round(t.rotateY)}">
+                            </div>
+                        </div>
+                        <div class="transform-inputs" style="margin-top: 8px;">
+                            <div class="input-group">
+                                <span class="input-prefix">Z</span>
+                                <input type="number" class="transform-input" data-prop="rotateZ" value="${Math.round(t.rotateZ)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transform-group">
+                        <div class="transform-label skew">Skew</div>
+                        <div class="transform-inputs">
+                            <div class="input-group">
+                                <span class="input-prefix">X</span>
+                                <input type="number" class="transform-input" data-prop="skewX" value="${Math.round(t.skewX)}">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-prefix">Y</span>
+                                <input type="number" class="transform-input" data-prop="skewY" value="${Math.round(t.skewY)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transform-group">
+                        <div class="transform-label perspective">Perspective</div>
+                        <div class="transform-inputs single">
+                            <div class="input-group">
+                                <span class="input-prefix">px</span>
+                                <input type="number" class="transform-input" data-prop="perspective" value="${Math.round(t.perspective)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="transform-group">
+                        <div class="transform-label" style="color: var(--accent-secondary);">Origin</div>
+                        <div class="transform-inputs">
+                            <div class="input-group">
+                                <span class="input-prefix">X%</span>
+                                <input type="number" class="transform-input" data-prop="originX" value="${Math.round(t.originX)}">
+                            </div>
+                            <div class="input-group">
+                                <span class="input-prefix">Y%</span>
+                                <input type="number" class="transform-input" data-prop="originY" value="${Math.round(t.originY)}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="matrix-display" id="matrix-display">
+                        ${this.getMatrixString()}
+                    </div>
+                    <button class="reset-btn" id="reset-transform-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                        Reset All Transforms
+                    </button>
+                `;
+
+                // Add input listeners
+                this.transformPanel.querySelectorAll('.transform-input').forEach(input => {
+                    input.addEventListener('change', (e) => {
+                        const prop = e.target.dataset.prop;
+                        const value = parseFloat(e.target.value);
+                        if (!isNaN(value)) {
+                            this.selectedObject.transform[prop] = value;
+                            this.updateObjectTransform(this.selectedObject);
+                            this.updateMatrixDisplay();
+                        }
+                    });
+                });
+
+                // Add reset button listener
+                const resetBtn = document.getElementById('reset-transform-btn');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        if (this.selectedObject) {
+                            this.resetTransform(this.selectedObject);
+                        }
+                    });
+                }
+            }
+
+            getMatrixString() {
+                if (!this.selectedObject) return '';
+                const el = this.selectedObject.element;
+                const style = window.getComputedStyle(el);
+                return `matrix3d: ${style.transform}`;
+            }
+
+            updateMatrixDisplay() {
+                const display = document.getElementById('matrix-display');
+                if (display) {
+                    display.textContent = this.getMatrixString();
+                }
+            }
+
+            // =====================================================
+            // Context Menu
+            // =====================================================
+
+            handleContextMenu(e) {
+                e.preventDefault();
+
+                const clickedObject = this.getObjectAtPosition(e.target);
+                if (clickedObject) {
+                    this.selectObject(clickedObject);
+                    this.contextMenu.style.left = e.clientX + 'px';
+                    this.contextMenu.style.top = e.clientY + 'px';
+                    this.contextMenu.classList.add('visible');
+                }
+            }
+
+            handleContextAction(action) {
+                this.contextMenu.classList.remove('visible');
+                if (!this.selectedObject) return;
+
+                switch (action) {
+                    case 'duplicate':
+                        this.duplicateObject(this.selectedObject);
+                        break;
+                    case 'bring-front':
+                        this.bringToFront(this.selectedObject);
+                        break;
+                    case 'send-back':
+                        this.sendToBack(this.selectedObject);
+                        break;
+                    case 'reset-transform':
+                        this.resetTransform(this.selectedObject);
+                        break;
+                    case 'delete':
+                        this.deleteObject(this.selectedObject);
+                        break;
+                }
+            }
+
+            // =====================================================
+            // Keyboard & Clipboard
+            // =====================================================
+
+            handleKeyDown(e) {
+                // Ignore if typing in input
+                if (e.target.tagName === 'INPUT') return;
+
+                switch (e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        this.spaceHeld = true;
+                        this.canvasContainer.classList.add('crosshair');
+                        break;
+                    case 'h':
+                    case 'H':
+                        this.setTool('pan');
+                        break;
+                    case 'Delete':
+                    case 'Backspace':
+                        if (this.selectedObject) {
+                            this.deleteObject(this.selectedObject);
+                        }
+                        break;
+                    case 'd':
+                    case 'D':
+                        if ((e.ctrlKey || e.metaKey) && this.selectedObject) {
+                            e.preventDefault();
+                            this.duplicateObject(this.selectedObject);
+                        }
+                        break;
+                    case 'c':
+                    case 'C':
+                        if ((e.ctrlKey || e.metaKey) && this.selectedObject) {
+                            e.preventDefault();
+                            this.copyObject(this.selectedObject);
+                        }
+                        break;
+                    case 'v':
+                    case 'V':
+                        if (e.ctrlKey || e.metaKey) {
+                            // Let handlePaste deal with it
+                        } else {
+                            this.setTool('select');
+                        }
+                        break;
+                    case '=':
+                    case '+':
+                        this.zoomBy(0.1);
+                        break;
+                    case '-':
+                        this.zoomBy(-0.1);
+                        break;
+                    case '0':
+                        if (e.ctrlKey || e.metaKey) {
+                            e.preventDefault();
+                            this.resetZoom();
+                        }
+                        break;
+                    case '?':
+                        this.helpTooltip.classList.toggle('visible');
+                        break;
+                    case 'Escape':
+                        this.selectObject(null);
+                        this.helpTooltip.classList.remove('visible');
+                        this.contextMenu.classList.remove('visible');
+                        break;
+                }
+            }
+
+            handleKeyUp(e) {
+                if (e.key === ' ') {
+                    this.spaceHeld = false;
+                    this.canvasContainer.classList.remove('crosshair');
+                }
+            }
+
+            async handlePaste(e) {
+                // First, try to paste a copied object
+                if (this.clipboardObject) {
+                    e.preventDefault();
+                    this.pasteObject();
+                    return;
+                }
+
+                // Otherwise, try to paste SVG from system clipboard
+                const clipboardData = e.clipboardData || window.clipboardData;
+                const text = clipboardData.getData('text');
+
+                if (text && text.trim().startsWith('<svg')) {
+                    e.preventDefault();
+                    this.createSVGFromString(text);
+                }
+            }
+
+            async pasteSVG() {
+                try {
+                    const text = await navigator.clipboard.readText();
+                    if (text && text.trim().startsWith('<svg')) {
+                        this.createSVGFromString(text);
+                    } else {
+                        alert('Clipboard does not contain valid SVG. Please copy an SVG element first.');
+                    }
+                } catch (err) {
+                    alert('Unable to read clipboard. Please use Ctrl+V to paste SVG.');
+                }
+            }
+
+            createSVGFromString(svgString) {
+                // Parse the SVG to get dimensions
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgString, 'image/svg+xml');
+                const svg = doc.querySelector('svg');
+
+                if (!svg) {
+                    alert('Invalid SVG content');
+                    return;
+                }
+
+                let width = 150;
+                let height = 150;
+
+                // Try to get dimensions from viewBox or width/height attributes
+                const viewBox = svg.getAttribute('viewBox');
+                if (viewBox) {
+                    const parts = viewBox.split(/\s+/);
+                    if (parts.length >= 4) {
+                        width = parseFloat(parts[2]) || 150;
+                        height = parseFloat(parts[3]) || 150;
+                    }
+                }
+
+                const widthAttr = svg.getAttribute('width');
+                const heightAttr = svg.getAttribute('height');
+                if (widthAttr) width = parseFloat(widthAttr) || width;
+                if (heightAttr) height = parseFloat(heightAttr) || height;
+
+                // Normalize size if too large or small
+                const maxSize = 300;
+                const minSize = 50;
+                const scale = Math.min(maxSize / Math.max(width, height), 1);
+                width = Math.max(minSize, width * scale);
+                height = Math.max(minSize, height * scale);
+
+                const centerPos = this.screenToCanvas(
+                    this.canvasContainer.offsetWidth / 2,
+                    this.canvasContainer.offsetHeight / 2
+                );
+
+                this.createObject(svgString, centerPos.x - width / 2, centerPos.y - height / 2, width, height);
+            }
+
+            // =====================================================
+            // Tool Management
+            // =====================================================
+
+            setTool(tool) {
+                this.currentTool = tool;
+                document.querySelectorAll('.tool-btn[data-tool]').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.tool === tool);
+                });
+            }
+
+            // =====================================================
+            // Display Updates
+            // =====================================================
+
+            updateDisplay() {
+                this.zoomDisplay.textContent = Math.round(this.zoom * 100) + '%';
+                this.objectCountDisplay.textContent = this.objects.length;
+            }
+        }
+
+        // Initialize the application
+        const app = new TransformCanvas();
+    </script>
+</body>
+
+</html>
