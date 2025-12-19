@@ -48,6 +48,8 @@
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         /* Header */
@@ -524,6 +526,9 @@
             position: absolute;
             cursor: move;
             transform-style: preserve-3d;
+            backface-visibility: visible;
+            -webkit-backface-visibility: visible;
+            will-change: transform;
         }
 
         /* Selection box - SVG path connecting corners */
@@ -549,6 +554,9 @@
             width: 100%;
             height: 100%;
             overflow: visible;
+            shape-rendering: geometricPrecision;
+            image-rendering: -webkit-optimize-contrast;
+            transform: translateZ(0);
         }
 
         /* Transform Handles - positioned in canvas container, always 2D */
@@ -662,18 +670,41 @@
             pointer-events: none !important;
         }
 
+        .axis-line {
+            position: absolute;
+            width: 100vw;
+            height: 1px;
+            background: var(--accent-success);
+            opacity: 0;
+            pointer-events: none !important;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+        }
+
+        body.dragging-col .axis-line,
+        body.dragging-row .axis-line {
+            opacity: 0.5;
+        }
+
         /* Perspective handles */
         .handle-perspective-x,
         .handle-perspective-y {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            border-color: var(--accent-success);
-            border-style: dashed;
+            width: 24px;
+            height: 24px;
+            box-sizing: border-box;
+            padding: 0;
+            border: 0;
+            background: transparent !important;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+
+            &>svg {
+                pointer-events: none;
+            }
         }
 
         .handle-perspective-x {
             cursor: col-resize !important;
+
         }
 
         .handle-perspective-y {
@@ -693,6 +724,9 @@
             pointer-events: auto !important;
             cursor: crosshair !important;
             z-index: 1020;
+            background: white;
+            border-radius: 100%;
+            outline: 2px solid white;
         }
 
         .transform-origin::before,
@@ -1440,6 +1474,7 @@
                 this.snapSizeInput = document.getElementById('snap-size');
 
                 this.cmdHeld = false;
+                this.history = [];
 
                 this.init();
             }
@@ -1457,6 +1492,7 @@
                 this.canvasContainer.addEventListener('mousedown', this.handleMouseDown.bind(this));
                 window.addEventListener('mousemove', this.handleMouseMove.bind(this));
                 window.addEventListener('mouseup', this.handleMouseUp.bind(this));
+                window.addEventListener('dragstart', (e) => e.preventDefault());
                 this.canvasContainer.addEventListener('contextmenu', this.handleContextMenu.bind(this));
 
                 // Tool buttons
@@ -1653,6 +1689,12 @@
             handleMouseDown(e) {
                 if (e.button === 2) return; // Right click handled by context menu
 
+                // Prevent default browser drag behavior (the ghost image/globe icon)
+                // but allow it for input fields so they remain focusable and editable
+                if (e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                }
+
                 const pos = this.screenToCanvas(e.clientX, e.clientY);
                 this.dragStartX = e.clientX;
                 this.dragStartY = e.clientY;
@@ -1661,6 +1703,7 @@
                 if (this.selectedObject) {
                     const handleType = this.getClickedHandle(e.target);
                     if (handleType) {
+                        this.saveHistory();
                         this.isDragging = true;
                         this.dragType = handleType;
                         // Deep copy transform including nested corner objects
@@ -1690,6 +1733,7 @@
                 // Check if clicking on an object
                 const clickedObject = this.getObjectAtPosition(e.target);
                 if (clickedObject) {
+                    this.saveHistory();
                     this.selectObject(clickedObject);
                     this.isDragging = true;
                     this.dragType = 'move';
@@ -1861,6 +1905,7 @@
 
             handleOriginDrag(e) {
                 const obj = this.selectedObject;
+                this.saveHistory();
 
                 // Get the current bounding rect of the object
                 const rect = obj.element.getBoundingClientRect();
@@ -2143,6 +2188,7 @@
             // =====================================================
 
             addShape(type) {
+                this.saveHistory();
                 const centerPos = this.screenToCanvas(
                     this.canvasContainer.offsetWidth / 2,
                     this.canvasContainer.offsetHeight / 2
@@ -2156,27 +2202,27 @@
 
                 switch (type) {
                     case 'rect':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible" draggable="false">
                             <rect x="0" y="0" width="100" height="100" rx="0" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'rounded-rect':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible" draggable="false">
                             <rect x="0" y="0" width="100" height="100" rx="15" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'circle':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible" draggable="false">
                             <circle cx="50" cy="50" r="50" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'triangle':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible" draggable="false">
                             <polygon points="50,0 100,100 0,100" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'star':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible" draggable="false">
                             <polygon points="50,0 61.8,35 100,35 69,57 82,100 50,75 18,100 31,57 0,35 38.2,35" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
@@ -2215,6 +2261,15 @@
 
                 obj.element.className = 'canvas-object';
                 obj.element.innerHTML = svgContent;
+
+                // Ensure SVG is not draggable and doesn't interfere with interaction
+                const svg = obj.element.querySelector('svg');
+                if (svg) {
+                    svg.setAttribute('draggable', 'false');
+                    svg.style.userSelect = 'none';
+                    svg.style.webkitUserSelect = 'none';
+                }
+
                 obj.element.style.width = width + 'px';
                 obj.element.style.height = height + 'px';
                 obj.element.style.zIndex = obj.zIndex;
@@ -2355,6 +2410,7 @@
             }
 
             deleteObject(obj) {
+                this.saveHistory();
                 const index = this.objects.indexOf(obj);
                 if (index > -1) {
                     obj.element.remove();
@@ -2367,6 +2423,7 @@
             }
 
             duplicateObject(obj) {
+                this.saveHistory();
                 const newObj = this.createObject(
                     obj.element.innerHTML,
                     obj.transform.translateX + 20,
@@ -2440,6 +2497,7 @@
             }
 
             resetTransform(obj) {
+                this.saveHistory();
                 obj.transform = {
                     translateX: obj.transform.translateX,
                     translateY: obj.transform.translateY,
@@ -2468,12 +2526,15 @@
                     return;
                 }
 
+                this.saveHistory();
                 const obj = this.selectedObject;
                 const t = obj.transform;
 
-                // Keep position, reset other transforms first
-                t.scaleX = 1;
-                t.scaleY = 1;
+                // Store current scales to preserve them
+                const currentScaleX = t.scaleX;
+                const currentScaleY = t.scaleY;
+
+                // Reset other transforms first
                 t.rotateX = 0;
                 t.rotateY = 0;
                 t.rotateZ = 0;
@@ -2483,31 +2544,40 @@
 
                 switch (preset) {
                     case 'iso-top':
-                        // Isometric top face
-                        t.rotateZ = 210;
+                        // Isometric top face (upright version)
+                        t.rotateZ = 30;
                         t.skewX = -30;
-                        t.scaleY = 0.864;
-                        break;
-                    case 'iso-left':
-                        // Isometric left face
-                        t.rotateZ = 90;
-                        t.skewX = -30;
-                        t.scaleY = 0.864;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleX * 0.864;
                         break;
                     case 'iso-right':
-                        // Isometric right face
+                        // Isometric left face (upright version)
                         t.rotateZ = -30;
                         t.skewX = -30;
-                        t.scaleY = 0.864;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleX * 0.864;
+                        break;
+                    case 'iso-left':
+                        // Isometric right face (upright version)
+                        t.rotateZ = 30;
+                        t.skewX = 30;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleX * 0.864;
                         break;
                     case 'rotate-top':
                         t.rotateX = 45;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleY;
                         break;
-                    case 'rotate-left':
+                    case 'rotate-right':
                         t.rotateY = -45;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleY;
                         break;
                     case 'rotate-right':
                         t.rotateY = 45;
+                        t.scaleX = currentScaleX;
+                        t.scaleY = currentScaleY;
                         break;
                 }
 
@@ -2531,6 +2601,7 @@
                         <path class="selection-path" style="pointer-events: none"></path>
                     </svg>
                     <div class="rotation-line" style="pointer-events: none"></div>
+                    <div class="axis-line"></div>
                     <div class="edge edge-n"></div>
                     <div class="edge edge-e"></div>
                     <div class="edge edge-s"></div>
@@ -2544,8 +2615,18 @@
                     <div class="handle handle-e"></div>
                     <div class="handle handle-s"></div>
                     <div class="handle handle-w"></div>
-                    <div class="handle handle-perspective-x"></div>
-                    <div class="handle handle-perspective-y"></div>
+                    <div class="handle handle-perspective-x">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 6.5C14.7736 6.5 17.3556 6.97046 19.2998 7.78906C20.2686 8.19699 21.15 8.72148 21.8115 9.37988C22.478 10.0435 23 10.9303 23 12C23 13.0697 22.478 13.9565 21.8115 14.6201C21.15 15.2785 20.2686 15.803 19.2998 16.2109C17.6135 16.9209 15.4475 17.3682 13.0928 17.4746C13.61 18.0252 13.6339 18.8695 13.1641 19.4463L13.0605 19.5605C12.4748 20.1461 11.5253 20.1464 10.9395 19.5605L8.43945 17.0605C7.85439 16.475 7.85377 15.5253 8.43945 14.9395L10.9395 12.4395L11.0537 12.3359C11.6428 11.8561 12.5116 11.891 13.0605 12.4395L13.1641 12.5537C13.618 13.111 13.6102 13.9174 13.1436 14.4678C15.1388 14.3596 16.8767 13.9754 18.1357 13.4453C18.8857 13.1295 19.3957 12.7923 19.6953 12.4941C19.9878 12.2029 20 12.037 20 12C20 11.963 19.9878 11.7971 19.6953 11.5059C19.3957 11.2077 18.8857 10.8705 18.1357 10.5547C16.6416 9.92556 14.473 9.5 12 9.5C9.52705 9.5 7.35844 9.92556 5.86426 10.5547C5.11428 10.8705 4.60428 11.2077 4.30469 11.5059C4.0122 11.7971 4 11.963 4 12C4 12.037 4.0122 12.2029 4.30469 12.4941C4.60428 12.7923 5.11428 13.1295 5.86426 13.4453C5.98148 13.4947 6.10453 13.5436 6.23242 13.5908L6.34082 13.6348C6.8714 13.8772 7.24982 14.4078 7.25 15.0322C7.25 16.015 6.28871 16.8029 5.2832 16.4385C5.08418 16.3663 4.88952 16.2907 4.7002 16.2109C3.73144 15.803 2.85001 15.2785 2.18848 14.6201C1.52195 13.9565 1 13.0697 1 12C1 10.9303 1.52195 10.0435 2.18848 9.37988C2.85001 8.72148 3.73144 8.19699 4.7002 7.78906C6.64441 6.97046 9.2264 6.5 12 6.5Z" fill="#007BE5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+                        </div>
+                    <div class="handle handle-perspective-y">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M18.75 12.25C18.75 15.0236 18.2795 17.6056 17.4609 19.5498C17.053 20.5186 16.5285 21.4 15.8701 22.0615C15.2065 22.728 14.3197 23.25 13.25 23.25C12.1802 23.25 11.2934 22.728 10.6298 22.0615C9.97144 21.4 9.44694 20.5186 9.03902 19.5498C8.32903 17.8635 7.88178 15.6975 7.77534 13.3428C7.22478 13.86 6.38045 13.8839 5.80366 13.4141L5.68941 13.3105C5.10388 12.7248 5.10357 11.7753 5.68941 11.1895L8.18941 8.68945C8.77498 8.10439 9.72465 8.10377 10.3105 8.68945L12.8105 11.1895L12.914 11.3037C13.3939 11.8928 13.359 12.7616 12.8105 13.3105L12.6962 13.4141C12.139 13.868 11.3326 13.8602 10.7822 13.3936C10.8904 15.3888 11.2745 17.1267 11.8046 18.3857C12.1205 19.1357 12.4577 19.6457 12.7558 19.9453C13.047 20.2378 13.2129 20.25 13.25 20.25C13.287 20.25 13.4529 20.2378 13.7441 19.9453C14.0422 19.6457 14.3794 19.1357 14.6953 18.3857C15.3244 16.8916 15.75 14.723 15.75 12.25C15.75 9.77705 15.3244 7.60843 14.6953 6.11426C14.3794 5.36428 14.0422 4.85428 13.7441 4.55469C13.4529 4.26219 13.287 4.25 13.25 4.25C13.2129 4.25 13.047 4.26219 12.7558 4.55469C12.4577 4.85428 12.1205 5.36428 11.8046 6.11426C11.7553 6.23148 11.7063 6.35453 11.6591 6.48242L11.6152 6.59082C11.3728 7.1214 10.8422 7.49982 10.2177 7.5C9.23497 7.5 8.44703 6.53871 8.81148 5.5332C8.88364 5.33418 8.9593 5.13952 9.03902 4.95019C9.44694 3.98144 9.97144 3.10001 10.6298 2.43848C11.2934 1.77195 12.1802 1.25 13.25 1.25C14.3197 1.25 15.2065 1.77195 15.8701 2.43848C16.5285 3.10001 17.053 3.98144 17.4609 4.9502C18.2795 6.89441 18.75 9.4764 18.75 12.25Z" fill="#007BE5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+</div>
                     <div class="transform-origin">
                         <div class="transform-origin-ring"></div>
                     </div>
@@ -2604,6 +2685,7 @@
                 const handlePerspectiveX = handles.querySelector('.handle-perspective-x');
                 const handlePerspectiveY = handles.querySelector('.handle-perspective-y');
                 const rotationLine = handles.querySelector('.rotation-line');
+                const axisLine = handles.querySelector('.axis-line');
                 const origin = handles.querySelector('.transform-origin');
                 const selectionPath = handles.querySelector('.selection-path');
 
@@ -2679,6 +2761,21 @@
                 const originXPos = topX + (botX - topX) * (t.originY / 100);
                 const originYPos = topY + (botY - topY) * (t.originY / 100);
                 this.positionHandle(origin, originXPos, originYPos);
+
+                // Axis line - show when dragging perspective handles
+                if (axisLine) {
+                    axisLine.style.left = originXPos + 'px';
+                    axisLine.style.top = originYPos + 'px';
+
+                    // The axis of rotation depends on which handle we are dragging
+                    // perspective-x (rotateY) -> vertical axis (rotated by rotateZ)
+                    // perspective-y (rotateX) -> horizontal axis (rotated by rotateZ)
+                    let axisAngle = t.rotateZ;
+                    if (this.dragType === 'perspective-x') {
+                        axisAngle += 90; // Vertical axis
+                    }
+                    axisLine.style.transform = `translate(-50%, -50%) rotate(${axisAngle}deg)`;
+                }
 
                 // Position edge scaling areas
                 const edges = handles.querySelectorAll('.edge');
@@ -2923,6 +3020,7 @@
 
                 // Add input listeners
                 this.transformPanel.querySelectorAll('.transform-input').forEach(input => {
+                    input.addEventListener('focus', () => this.saveHistory());
                     input.addEventListener('change', (e) => {
                         const prop = e.target.dataset.prop;
                         const value = parseFloat(e.target.value);
@@ -3000,6 +3098,13 @@
                     this.cmdHeld = true;
                 }
 
+                // Undo shortcut
+                if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+                    e.preventDefault();
+                    this.undo();
+                    return;
+                }
+
                 switch (e.key) {
                     case ' ':
                         e.preventDefault();
@@ -3074,6 +3179,7 @@
             }
 
             async handlePaste(e) {
+                this.saveHistory();
                 // First, try to paste a copied object
                 if (this.clipboardObject) {
                     e.preventDefault();
@@ -3166,6 +3272,43 @@
             updateDisplay() {
                 this.zoomDisplay.textContent = Math.round(this.zoom * 100) + '%';
                 this.objectCountDisplay.textContent = this.objects.length;
+            }
+
+            saveHistory() {
+                const state = this.objects.map(obj => ({
+                    id: obj.id,
+                    svgContent: obj.element.innerHTML,
+                    width: obj.width,
+                    height: obj.height,
+                    transform: JSON.parse(JSON.stringify(obj.transform)),
+                    zIndex: obj.zIndex
+                }));
+                this.history.push(JSON.stringify(state));
+                if (this.history.length > 50) this.history.shift();
+            }
+
+            undo() {
+                if (this.history.length === 0) return;
+
+                const stateStr = this.history.pop();
+                const state = JSON.parse(stateStr);
+
+                // Clear current objects
+                this.objects.forEach(obj => obj.element.remove());
+                this.objects = [];
+
+                // Recreate objects from state
+                state.forEach(data => {
+                    const obj = this.createObject(data.svgContent, 0, 0, data.width, data.height);
+                    obj.id = data.id;
+                    obj.transform = data.transform;
+                    obj.zIndex = data.zIndex;
+                    obj.element.style.zIndex = obj.zIndex;
+                    this.updateObjectTransform(obj);
+                });
+
+                this.updateDisplay();
+                this.selectObject(null); // Clear selection to refresh handles
             }
         }
 
