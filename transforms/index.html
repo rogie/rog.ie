@@ -133,6 +133,114 @@
             border: 1px solid var(--border-subtle);
         }
 
+        /* Settings Menu */
+        .settings-container {
+            position: relative;
+        }
+
+        .settings-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: 240px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            padding: 16px;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            z-index: 1000;
+        }
+
+        .settings-menu.visible {
+            display: flex;
+        }
+
+        .settings-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .settings-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-hover);
+            transition: .2s;
+            border-radius: 20px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 2px;
+            bottom: 2px;
+            background-color: var(--text-muted);
+            transition: .2s;
+            border-radius: 50%;
+        }
+
+        input:checked+.toggle-slider {
+            background-color: var(--accent-primary);
+            border-color: var(--accent-primary);
+        }
+
+        input:checked+.toggle-slider:before {
+            transform: translateX(16px);
+            background-color: white;
+        }
+
+        .snap-input {
+            width: 60px;
+            padding: 6px 8px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .snap-input:focus {
+            border-color: var(--accent-primary);
+        }
+
         /* Main Layout */
         .main-container {
             flex: 1;
@@ -371,11 +479,12 @@
             flex: 1;
             position: relative;
             overflow: hidden;
-            background:
+            background: var(--bg-deep);
+            background-image:
                 linear-gradient(var(--canvas-grid) 1px, transparent 1px),
-                linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px),
-                var(--bg-deep);
+                linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
             background-size: 20px 20px;
+            background-position: 0 0;
             cursor: grab;
         }
 
@@ -422,6 +531,7 @@
             display: block;
             width: 100%;
             height: 100%;
+            overflow: visible;
         }
 
         /* Transform Handles - positioned in canvas container, always 2D */
@@ -886,6 +996,44 @@
                         <path d="M3 3v5h5" />
                     </svg>
                 </button>
+                <div class="settings-container">
+                    <button class="tool-btn"
+                            id="settings-btn"
+                            title="Canvas Settings">
+                        <svg viewBox="0 0 24 24"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="2">
+                            <circle cx="12"
+                                    cy="12"
+                                    r="3" />
+                            <path
+                                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                        </svg>
+                    </button>
+                    <div class="settings-menu"
+                         id="settings-menu">
+                        <div class="settings-header">Canvas Settings</div>
+                        <div class="settings-row">
+                            <span class="settings-label">Snap to Grid</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox"
+                                       id="snap-enabled"
+                                       checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-row">
+                            <span class="settings-label">Snap Size (px)</span>
+                            <input type="number"
+                                   id="snap-size"
+                                   class="snap-input"
+                                   value="10"
+                                   min="1"
+                                   max="100">
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="divider"></div>
             <button class="tool-btn"
@@ -908,7 +1056,7 @@
     <div class="main-container">
         <aside class="sidebar">
             <div class="sidebar-section">
-                <div class="sidebar-title">Add Shape</div>
+                <div class="sidebar-title">Add shape (or paste svg)</div>
                 <div class="shape-grid">
                     <button class="shape-btn"
                             data-shape="rect">
@@ -1004,45 +1152,55 @@
                         <span>Iso Right</span>
                     </button>
                     <button class="preset-btn"
-                            data-preset="iso-front"
-                            title="Isometric Front View">
-                        <svg viewBox="0 0 32 32"
-                             fill="none"
-                             stroke="currentColor"
-                             stroke-width="1.5">
-                            <path d="M6 10 L16 4 L26 10 L26 22 L16 28 L6 22 Z" />
-                            <path d="M16 4 L16 16 L6 22"
-                                  opacity="0.3" />
-                            <path d="M16 16 L26 22"
-                                  opacity="0.3" />
-                        </svg>
-                        <span>Iso Front</span>
-                    </button>
-                    <button class="preset-btn"
-                            data-preset="flat"
-                            title="Reset to Flat">
+                            data-preset="rotate-top"
+                            title="Rotate X 45°">
                         <svg viewBox="0 0 32 32"
                              fill="none"
                              stroke="currentColor"
                              stroke-width="1.5">
                             <rect x="6"
-                                  y="6"
+                                  y="12"
                                   width="20"
-                                  height="20"
-                                  rx="2" />
+                                  height="12"
+                                  rx="1"
+                                  opacity="0.3" />
+                            <path d="M6 18 L26 18 L22 10 L10 10 Z" />
                         </svg>
-                        <span>Flat</span>
+                        <span>Rotate Top</span>
                     </button>
                     <button class="preset-btn"
-                            data-preset="perspective"
-                            title="Perspective View">
+                            data-preset="rotate-left"
+                            title="Rotate Y -45°">
                         <svg viewBox="0 0 32 32"
                              fill="none"
                              stroke="currentColor"
                              stroke-width="1.5">
-                            <path d="M4 8 L28 4 L28 28 L4 24 Z" />
+                            <rect x="10"
+                                  y="6"
+                                  width="12"
+                                  height="20"
+                                  rx="1"
+                                  opacity="0.3" />
+                            <path d="M16 6 L16 26 L8 22 L8 10 Z" />
                         </svg>
-                        <span>Perspective</span>
+                        <span>Rotate Left</span>
+                    </button>
+                    <button class="preset-btn"
+                            data-preset="rotate-right"
+                            title="Rotate Y 45°">
+                        <svg viewBox="0 0 32 32"
+                             fill="none"
+                             stroke="currentColor"
+                             stroke-width="1.5">
+                            <rect x="10"
+                                  y="6"
+                                  width="12"
+                                  height="20"
+                                  rx="1"
+                                  opacity="0.3" />
+                            <path d="M16 6 L16 26 L24 22 L24 10 Z" />
+                        </svg>
+                        <span>Rotate Right</span>
                     </button>
                 </div>
             </div>
@@ -1183,6 +1341,10 @@
                 this.zIndexCounter = 1;
                 this.clipboardObject = null;
 
+                // Settings
+                this.snapEnabled = true;
+                this.snapSize = 10;
+
                 // DOM references
                 this.canvasContainer = document.getElementById('canvas-container');
                 this.canvas = document.getElementById('canvas');
@@ -1193,6 +1355,12 @@
                 this.transformPanel = document.getElementById('transform-panel');
                 this.contextMenu = document.getElementById('context-menu');
                 this.helpTooltip = document.getElementById('help-tooltip');
+                this.settingsMenu = document.getElementById('settings-menu');
+                this.settingsBtn = document.getElementById('settings-btn');
+                this.snapEnabledInput = document.getElementById('snap-enabled');
+                this.snapSizeInput = document.getElementById('snap-size');
+
+                this.cmdHeld = false;
 
                 this.init();
             }
@@ -1201,6 +1369,7 @@
                 this.setupEventListeners();
                 this.centerCanvas();
                 this.updateDisplay();
+                this.updateGrid();
             }
 
             setupEventListeners() {
@@ -1256,11 +1425,48 @@
 
                 // Clipboard paste
                 document.addEventListener('paste', this.handlePaste.bind(this));
+
+                // Settings listeners
+                this.settingsBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.settingsMenu.classList.toggle('visible');
+                });
+
+                this.snapEnabledInput.addEventListener('change', () => {
+                    this.snapEnabled = this.snapEnabledInput.checked;
+                    this.updateGrid();
+                });
+
+                this.snapSizeInput.addEventListener('change', () => {
+                    this.snapSize = parseInt(this.snapSizeInput.value) || 10;
+                    this.updateGrid();
+                });
+
+                // Close settings on click outside
+                document.addEventListener('click', (e) => {
+                    if (!this.settingsMenu.contains(e.target) && e.target !== this.settingsBtn) {
+                        this.settingsMenu.classList.remove('visible');
+                    }
+                });
             }
 
             // =====================================================
             // Canvas Navigation
             // =====================================================
+
+            updateGrid() {
+                if (this.snapEnabled) {
+                    const size = this.snapSize * this.zoom;
+                    this.canvasContainer.style.backgroundSize = `${size}px ${size}px`;
+                    this.canvasContainer.style.backgroundPosition = `${this.panX}px ${this.panY}px`;
+                    this.canvasContainer.style.backgroundImage = `
+                        linear-gradient(var(--canvas-grid) 1px, transparent 1px),
+                        linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px)
+                    `;
+                } else {
+                    this.canvasContainer.style.backgroundImage = 'none';
+                }
+            }
 
             centerCanvas() {
                 const rect = this.canvasContainer.getBoundingClientRect();
@@ -1312,6 +1518,7 @@
 
             updateCanvasTransform() {
                 this.canvas.style.transform = `translate(${this.panX}px, ${this.panY}px) scale(${this.zoom})`;
+                this.updateGrid();
             }
 
             screenToCanvas(screenX, screenY) {
@@ -1320,6 +1527,11 @@
                     x: (screenX - rect.left - this.panX) / this.zoom,
                     y: (screenY - rect.top - this.panY) / this.zoom
                 };
+            }
+
+            snap(value) {
+                if (!this.snapEnabled || this.cmdHeld) return value;
+                return Math.round(value / this.snapSize) * this.snapSize;
             }
 
             // =====================================================
@@ -1402,8 +1614,8 @@
 
                     switch (this.dragType) {
                         case 'move':
-                            this.selectedObject.transform.translateX = this.dragStartTransform.translateX + dx;
-                            this.selectedObject.transform.translateY = this.dragStartTransform.translateY + dy;
+                            this.selectedObject.transform.translateX = this.snap(this.dragStartTransform.translateX + dx);
+                            this.selectedObject.transform.translateY = this.snap(this.dragStartTransform.translateY + dy);
                             break;
                         case 'origin':
                             this.handleOriginDrag(e);
@@ -1598,6 +1810,49 @@
                 obj.transform.rotateZ = newRotation;
             }
 
+            // Helper to transform canvas-space mouse deltas into object-local space
+            // This accounts for rotation, skew, and perspective so dragging feels intuitive
+            getLocalDelta(dx, dy) {
+                const t = this.dragStartTransform;
+                const obj = this.selectedObject;
+                const w = obj.width;
+                const h = obj.height;
+
+                let matrix = new DOMMatrix();
+
+                const Ox = w * (t.originX / 100);
+                const Oy = h * (t.originY / 100);
+
+                // Construct the standard transformation chain (excluding corner distortion)
+                // This must match the CSS application order (right-to-left):
+                // translate(Ox, Oy) * perspective * rotateX * rotateY * rotateZ * skew * scale * translate(-Ox, -Oy)
+                matrix.translateSelf(Ox, Oy);
+
+                if (t.perspective && t.perspective !== 0) {
+                    const pMat = new DOMMatrix();
+                    pMat.m43 = -1 / t.perspective; // Correct perspective property is m43
+                    matrix.multiplySelf(pMat);
+                }
+
+                matrix.rotateSelf(t.rotateX, 0, 0);
+                matrix.rotateSelf(0, t.rotateY, 0);
+                matrix.rotateSelf(0, 0, t.rotateZ);
+                matrix.skewXSelf(t.skewX);
+                matrix.skewYSelf(t.skewY);
+                matrix.scaleSelf(t.scaleX, t.scaleY); // Include scale for 1:1 mouse tracking
+                matrix.translateSelf(-Ox, -Oy);
+
+                try {
+                    const inv = matrix.inverse();
+                    // Transform delta as a vector (difference between two transformed points)
+                    const p0 = inv.transformPoint(new DOMPoint(0, 0));
+                    const p1 = inv.transformPoint(new DOMPoint(dx, dy));
+                    return { x: p1.x - p0.x, y: p1.y - p0.y };
+                } catch (e) {
+                    return { x: dx, y: dy };
+                }
+            }
+
             handleFreeTransformDrag(handle, dx, dy, shiftKey) {
                 const obj = this.selectedObject;
                 const t = obj.transform;
@@ -1618,110 +1873,88 @@
                     obj.transform.cornerSW = { x: 0, y: 0 };
                 }
 
-                // Transform dx/dy from screen space to object space
-                // by applying the inverse of the standard transforms (scale, skew, rotate)
-                // The standard transforms in CSS are: scale → skew → rotateZ (right to left)
-                // The inverse is: rotateZ^-1 → skew^-1 → scale^-1 (left to right)
+                // Get local delta to fix "reversed" movement when rotated/flipped
+                const local = this.getLocalDelta(dx, dy);
+                const ldx = local.x;
+                const ldy = local.y;
 
-                // Build the standard transform matrix
-                const matrix = new DOMMatrix();
-                matrix.scaleSelf(t.scaleX, t.scaleY);
-                matrix.skewXSelf(t.skewX);
-                matrix.skewYSelf(t.skewY);
-                matrix.rotateSelf(t.rotateZ);
-
-                // Get the inverse matrix and transform the delta
-                const inverseMatrix = matrix.inverse();
-                const transformedDelta = inverseMatrix.transformPoint(new DOMPoint(dx, dy));
-                const localDx = transformedDelta.x;
-                const localDy = transformedDelta.y;
-
-                // Determine if drag is more horizontal or vertical (use screen space)
+                // Determine if drag is more horizontal or vertical (use screen space for intent)
                 const isHorizontal = Math.abs(dx) > Math.abs(dy);
 
                 // Move the dragged corner, and if shift is held, mirror in the drag direction
-                // Use localDx/localDy (transformed to object space) for corner offsets
                 switch (handle) {
                     case 'scale-nw':
                         obj.transform.cornerNW = {
-                            x: this.dragStartTransform.cornerNW.x + localDx,
-                            y: this.dragStartTransform.cornerNW.y + localDy
+                            x: this.snap(this.dragStartTransform.cornerNW.x + ldx),
+                            y: this.snap(this.dragStartTransform.cornerNW.y + ldy)
                         };
                         if (shiftKey) {
                             if (isHorizontal) {
-                                // Mirror NE horizontally (opposite x movement)
                                 obj.transform.cornerNE = {
-                                    x: this.dragStartTransform.cornerNE.x - localDx,
+                                    x: this.snap(this.dragStartTransform.cornerNE.x - ldx),
                                     y: this.dragStartTransform.cornerNE.y
                                 };
                             } else {
-                                // Mirror SW vertically (opposite y movement)
                                 obj.transform.cornerSW = {
                                     x: this.dragStartTransform.cornerSW.x,
-                                    y: this.dragStartTransform.cornerSW.y - localDy
+                                    y: this.snap(this.dragStartTransform.cornerSW.y - ldy)
                                 };
                             }
                         }
                         break;
                     case 'scale-ne':
                         obj.transform.cornerNE = {
-                            x: this.dragStartTransform.cornerNE.x + localDx,
-                            y: this.dragStartTransform.cornerNE.y + localDy
+                            x: this.snap(this.dragStartTransform.cornerNE.x + ldx),
+                            y: this.snap(this.dragStartTransform.cornerNE.y + ldy)
                         };
                         if (shiftKey) {
                             if (isHorizontal) {
-                                // Mirror NW horizontally
                                 obj.transform.cornerNW = {
-                                    x: this.dragStartTransform.cornerNW.x - localDx,
+                                    x: this.snap(this.dragStartTransform.cornerNW.x - ldx),
                                     y: this.dragStartTransform.cornerNW.y
                                 };
                             } else {
-                                // Mirror SE vertically
                                 obj.transform.cornerSE = {
                                     x: this.dragStartTransform.cornerSE.x,
-                                    y: this.dragStartTransform.cornerSE.y - localDy
+                                    y: this.snap(this.dragStartTransform.cornerSE.y - ldy)
                                 };
                             }
                         }
                         break;
                     case 'scale-se':
                         obj.transform.cornerSE = {
-                            x: this.dragStartTransform.cornerSE.x + localDx,
-                            y: this.dragStartTransform.cornerSE.y + localDy
+                            x: this.snap(this.dragStartTransform.cornerSE.x + ldx),
+                            y: this.snap(this.dragStartTransform.cornerSE.y + ldy)
                         };
                         if (shiftKey) {
                             if (isHorizontal) {
-                                // Mirror SW horizontally
                                 obj.transform.cornerSW = {
-                                    x: this.dragStartTransform.cornerSW.x - localDx,
+                                    x: this.snap(this.dragStartTransform.cornerSW.x - ldx),
                                     y: this.dragStartTransform.cornerSW.y
                                 };
                             } else {
-                                // Mirror NE vertically
                                 obj.transform.cornerNE = {
                                     x: this.dragStartTransform.cornerNE.x,
-                                    y: this.dragStartTransform.cornerNE.y - localDy
+                                    y: this.snap(this.dragStartTransform.cornerNE.y - ldy)
                                 };
                             }
                         }
                         break;
                     case 'scale-sw':
                         obj.transform.cornerSW = {
-                            x: this.dragStartTransform.cornerSW.x + localDx,
-                            y: this.dragStartTransform.cornerSW.y + localDy
+                            x: this.snap(this.dragStartTransform.cornerSW.x + ldx),
+                            y: this.snap(this.dragStartTransform.cornerSW.y + ldy)
                         };
                         if (shiftKey) {
                             if (isHorizontal) {
-                                // Mirror SE horizontally
                                 obj.transform.cornerSE = {
-                                    x: this.dragStartTransform.cornerSE.x - localDx,
+                                    x: this.snap(this.dragStartTransform.cornerSE.x - ldx),
                                     y: this.dragStartTransform.cornerSE.y
                                 };
                             } else {
-                                // Mirror NW vertically
                                 obj.transform.cornerNW = {
                                     x: this.dragStartTransform.cornerNW.x,
-                                    y: this.dragStartTransform.cornerNW.y - localDy
+                                    y: this.snap(this.dragStartTransform.cornerNW.y - ldy)
                                 };
                             }
                         }
@@ -1732,19 +1965,20 @@
             handleSkewDrag(handle, dx, dy) {
                 const obj = this.selectedObject;
                 const sensitivity = 0.3;
+                const local = this.getLocalDelta(dx, dy);
 
                 switch (handle) {
                     case 'skew-n':
-                        obj.transform.skewX = this.dragStartTransform.skewX - dx * sensitivity;
+                        obj.transform.skewX = this.dragStartTransform.skewX - this.snap(local.x) * sensitivity;
                         break;
                     case 'skew-s':
-                        obj.transform.skewX = this.dragStartTransform.skewX + dx * sensitivity;
+                        obj.transform.skewX = this.dragStartTransform.skewX + this.snap(local.x) * sensitivity;
                         break;
                     case 'skew-w':
-                        obj.transform.skewY = this.dragStartTransform.skewY - dy * sensitivity;
+                        obj.transform.skewY = this.dragStartTransform.skewY - this.snap(local.y) * sensitivity;
                         break;
                     case 'skew-e':
-                        obj.transform.skewY = this.dragStartTransform.skewY + dy * sensitivity;
+                        obj.transform.skewY = this.dragStartTransform.skewY + this.snap(local.y) * sensitivity;
                         break;
                 }
             }
@@ -1752,26 +1986,23 @@
             handleEdgeScaleDrag(handle, dx, dy, shiftKey) {
                 const obj = this.selectedObject;
                 const sensitivity = 0.01;
+                const local = this.getLocalDelta(dx, dy);
 
                 let scaleX = this.dragStartTransform.scaleX;
                 let scaleY = this.dragStartTransform.scaleY;
 
                 switch (handle) {
                     case 'edge-scale-n':
-                        // Top edge - scale Y (dragging up = larger)
-                        scaleY -= dy * sensitivity;
+                        scaleY -= this.snap(local.y) * sensitivity;
                         break;
                     case 'edge-scale-s':
-                        // Bottom edge - scale Y (dragging down = larger)
-                        scaleY += dy * sensitivity;
+                        scaleY += this.snap(local.y) * sensitivity;
                         break;
                     case 'edge-scale-w':
-                        // Left edge - scale X (dragging left = larger)
-                        scaleX -= dx * sensitivity;
+                        scaleX -= this.snap(local.x) * sensitivity;
                         break;
                     case 'edge-scale-e':
-                        // Right edge - scale X (dragging right = larger)
-                        scaleX += dx * sensitivity;
+                        scaleX += this.snap(local.x) * sensitivity;
                         break;
                 }
 
@@ -1804,23 +2035,23 @@
 
                 switch (type) {
                     case 'rect':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="5" y="5" width="90" height="90" rx="8" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                            <rect x="0" y="0" width="100" height="100" rx="0" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'circle':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="50" cy="50" r="45" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                            <circle cx="50" cy="50" r="50" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'triangle':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <polygon points="50,5 95,95 5,95" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                            <polygon points="50,0 100,100 0,100" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                     case 'star':
-                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                            <polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
+                        svgContent = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="overflow: visible">
+                            <polygon points="50,0 61.8,35 100,35 69,57 82,100 50,75 18,100 31,57 0,35 38.2,35" fill="${color}" fill-opacity="0.8" stroke="${color}" stroke-width="2"/>
                         </svg>`;
                         break;
                 }
@@ -1882,20 +2113,12 @@
                 const se = t.cornerSE || { x: 0, y: 0 };
                 const sw = t.cornerSW || { x: 0, y: 0 };
 
-                // Calculate the pivot point (origin) in the distorted object's local coordinate system.
-                // We use bilinear interpolation to find where the percentage-based origin lands
-                // within the distorted quadrilateral.
-                const lerp = (a, b, f) => a + (b - a) * f;
-                const Ox = lerp(
-                    lerp(nw.x, w + ne.x, t.originX / 100),
-                    lerp(sw.x, w + se.x, t.originX / 100),
-                    t.originY / 100
-                );
-                const Oy = lerp(
-                    lerp(nw.y, ne.y, t.originX / 100),
-                    lerp(sw.y, h + se.y, t.originX / 100),
-                    t.originY / 100
-                );
+                // Calculate the pivot point (origin) based on ORIGINAL dimensions.
+                // This is critical: using the fixed original pivot ensures that 
+                // dragging one corner doesn't shift the entire coordinate system
+                // and cause the other corners to move on screen.
+                const Ox = w * (t.originX / 100);
+                const Oy = h * (t.originY / 100);
 
                 // Check if we have corner distortion
                 const hasCornerDistort = nw.x !== 0 || nw.y !== 0 ||
@@ -1904,7 +2127,7 @@
                     sw.x !== 0 || sw.y !== 0;
 
                 // Standard transforms (rotate, scale, skew, perspective)
-                // We wrap these so they pivot around the calculated (Ox, Oy) point.
+                // We wrap these so they pivot around the fixed (Ox, Oy) point.
                 const standardTransforms = `
                     translate(${Ox}px, ${Oy}px)
                     perspective(${t.perspective}px)
@@ -2151,20 +2374,14 @@
                         t.skewX = -30;
                         t.scaleY = 0.864;
                         break;
-                    case 'iso-front':
-                        // Isometric front view - combination angle
-                        t.rotateZ = 30;
-                        t.skewX = -30;
-                        t.scaleY = 0.864;
+                    case 'rotate-top':
+                        t.rotateX = 45;
                         break;
-                    case 'flat':
-                        // Already reset above
+                    case 'rotate-left':
+                        t.rotateY = -45;
                         break;
-                    case 'perspective':
-                        // Dramatic perspective
-                        t.rotateX = 15;
-                        t.rotateY = -25;
-                        t.perspective = 500;
+                    case 'rotate-right':
+                        t.rotateY = 45;
                         break;
                 }
 
@@ -2653,6 +2870,10 @@
                 // Ignore if typing in input
                 if (e.target.tagName === 'INPUT') return;
 
+                if (e.key === 'Meta' || e.key === 'Control') {
+                    this.cmdHeld = true;
+                }
+
                 switch (e.key) {
                     case ' ':
                         e.preventDefault();
@@ -2716,6 +2937,10 @@
             }
 
             handleKeyUp(e) {
+                if (e.key === 'Meta' || e.key === 'Control') {
+                    this.cmdHeld = false;
+                }
+
                 if (e.key === ' ') {
                     this.spaceHeld = false;
                     this.canvasContainer.classList.remove('crosshair');
