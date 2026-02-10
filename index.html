@@ -12,35 +12,18 @@
     <meta name="author"
           content="Your Name">
     <title>Rogie King</title>
-    <!-- Preload critical resources -->
-    <link rel="preload"
-          as="style"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css"
-          onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript>
-        <link rel="stylesheet"
-              href="https://unpkg.com/@rogieking/figui3@latest/components.css">
-    </noscript>
+    <!-- Preload hints (start fetching early) -->
+    <link rel="preload" as="style" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="preload" as="style" href="/rog.ie.css" />
+    <link rel="preload" as="script" crossorigin href="/rog.ie.web-components.js" />
+    <link rel="preload" as="script" href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
 
-    <link rel="preload"
-          as="style"
-          href="/rog.ie.css"
-          onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript>
-        <link rel="stylesheet"
-              href="/rog.ie.css">
-    </noscript>
+    <!-- Render-blocking stylesheets (prevents FOUC) -->
+    <link rel="stylesheet" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet" href="/rog.ie.css" />
 
-    <link rel="preload"
-          as="script"
-          href="/rog.ie.web-components.js" />
-    <link rel="preload"
-          as="script"
-          href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
-
-    <!-- Apply the scripts after preloading -->
-    <script src="/rog.ie.web-components.js"
-            type="module"></script>
+    <!-- Scripts -->
+    <script src="/rog.ie.web-components.js" type="module"></script>
     <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js?"></script>
     <link rel="icon"
           href="/assets/avatar.svg"

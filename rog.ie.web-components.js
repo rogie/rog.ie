@@ -7,7 +7,6 @@ let ONE_DAY = 24 * ONE_HOUR;
 
 let CACHE = new Cache();
 if (document.location.search.includes("clear-cache")) {
-  console.log("CLEARED CACHE");
   CACHE.clear();
 }
 let CACHE_TTL = ONE_HOUR;
@@ -143,13 +142,13 @@ class MovieList extends HTMLElement {
       let rssUrl = "https://letterboxd.com/rogieking/rss/";
       let f = await fetch(
         `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(
-          rssUrl
-        )}`
+          rssUrl,
+        )}`,
       );
       let data = await f.json();
       this.movies = data.items;
       this.movies = await Promise.all(
-        this.movies.map(async (movie) => await this.#fillMovieData(movie))
+        this.movies.map(async (movie) => await this.#fillMovieData(movie)),
       );
       CACHE.set("movies", this.movies, CACHE_TTL);
     }
@@ -194,13 +193,13 @@ class MovieList extends HTMLElement {
           movie.style.setProperty("--ratio-y", ratioY);
         });
       },
-      initMovies
+      initMovies,
     );
     this.querySelectorAll("rogie-movie").forEach((movie) => {
       movie.addEventListener("click", async () => {
         this.selected = movie;
         let tmdbMovie = await this.tmdb.getMovie(
-          this.selected.getAttribute("id")
+          this.selected.getAttribute("id"),
         );
         //console.log("selected", this.selected, tmdbMovie);
         let youtubeUrl = this.tmdb.getYoutubeUrl(tmdbMovie.results[0].key);
@@ -237,7 +236,7 @@ class Music extends HTMLElement {
       () => {
         this.playing = false;
         this.setAttribute("playing", "false");
-      }
+      },
     );
     this.player.setVolume(0.5);
     this.playing = false;
@@ -273,7 +272,7 @@ class Music extends HTMLElement {
     let term = this.#getSearchTerm();
     const proxyUrl = "https://cors.memer.workers.dev/?";
     const targetUrl = `https://itunes.apple.com/search?term=${encodeURIComponent(
-      term
+      term,
     )}&media=music`;
     let f = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
       headers: {
@@ -310,7 +309,7 @@ class Music extends HTMLElement {
           duration: this.player.audio.duration,
           percent: percent,
         },
-      })
+      }),
     );
   }
 
@@ -465,7 +464,7 @@ class MusicList extends HTMLElement {
       let f = await fetch(
         `https://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${
           this.limit * 2
-        }&user=komodomedia&api_key=4d8e9cc4b94589a84e209dcd93fbe30b&format=json`
+        }&user=komodomedia&api_key=4d8e9cc4b94589a84e209dcd93fbe30b&format=json`,
       );
 
       let r = await f.json();
@@ -530,7 +529,7 @@ class MusicList extends HTMLElement {
             let toInterval = setInterval(() => {
               this.vinylCrackle.volume = Math.max(
                 Number(this.vinylCrackle.volume.toFixed(2)) - 0.01,
-                0
+                0,
               );
               if (this.vinylCrackle.volume <= 0) {
                 clearInterval(toInterval);
@@ -591,7 +590,7 @@ class MusicList extends HTMLElement {
         //play the current track
         let current = this.querySelector("rogie-music[current='true']");
         current.play();
-      }
+      },
     );
 
     this.querySelector("fig-switch").addEventListener("change", (e) => {
@@ -719,7 +718,7 @@ class SignupForm extends HTMLElement {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
     let responseJson = await response.json();
     if (responseJson.success === true) {
@@ -747,7 +746,7 @@ class SignupForm extends HTMLElement {
         
         <fig-field direction="horizontal">
             <fig-input-text name="firstName" placeholder="Name" required></fig-input-text>
-                <fig-input-combo>
+                <div class="input-combo">
                     <input type="email"
                             name="email"
                             placeholder="the@thing.com"
@@ -757,7 +756,7 @@ class SignupForm extends HTMLElement {
                         <span>-></span>
                         <fig-spinner />
                     </fig-button>
-                </fig-input-combo>
+                </div>
             </fig-field>
         </form>
     `;
@@ -773,8 +772,6 @@ class Media extends HTMLElement {
 
   connectedCallback() {
     this.render();
-
-    console.log("render", this);
   }
 
   render() {
@@ -964,7 +961,7 @@ class HorrorText extends HTMLElement {
     this.addEventListener("mouseover", () => {
       this.turbulence.setAttribute(
         "baseFrequency",
-        `${Math.random() * 0.05} ${Math.random() * 0.05}`
+        `${Math.random() * 0.05} ${Math.random() * 0.05}`,
       );
       this.displacement.setAttribute("scale", Math.random() * 10);
     });

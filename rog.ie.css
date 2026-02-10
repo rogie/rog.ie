@@ -1,5 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
+/* Hide figui3 elements until web components are registered */
+:is(
+  fig-avatar,
+  fig-button,
+  fig-dropdown,
+  fig-slider,
+  fig-checkbox,
+  fig-switch,
+  fig-input-text,
+  fig-input-combo,
+  fig-image,
+  fig-tabs,
+  fig-field,
+  fig-chit,
+  fig-dialog,
+  fig-tooltip,
+  fig-popover
+):not(:defined) {
+  opacity: 0;
+}
+
 @font-face {
   font-family: "agl";
   font-style: normal;
@@ -24,7 +45,8 @@
 
 @font-face {
   font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Regular.woff2") format("woff2"),
+  src:
+    url("/assets/fonts/205TF-Louize-Regular.woff2") format("woff2"),
     url("/assets/fonts/205TF-Louize-Regular.woff") format("woff");
   font-style: normal;
   font-weight: normal;
@@ -32,7 +54,8 @@
 }
 @font-face {
   font-family: "205TF-Louize";
-  src: url("/assets/fonts/205TF-Louize-Italic.woff2") format("woff2"),
+  src:
+    url("/assets/fonts/205TF-Louize-Italic.woff2") format("woff2"),
     url("/assets/fonts/205TF-Louize-Italic.woff") format("woff");
   font-style: italic;
   font-weight: normal;
@@ -55,20 +78,23 @@
   --color-bg: #ededed;
   --color-border: rgba(0, 0, 0, 0.1);
   --base-radius: 0.5rem;
-  --shadow: 0 0 0 1px rgba(0, 0, 0, 0.05), 0 2.5px 2px -1px rgba(0, 0, 0, 0.075);
+  --shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.05), 0 2.5px 2px -1px rgba(0, 0, 0, 0.075);
   --color-bg-inset: rgba(0, 0, 0, 0.05);
-  --shadow-inset: inset 0 0 0 1px rgba(0, 0, 0, 0.05),
-    0 1px 0.5px rgba(255, 255, 255, 1);
+  --shadow-inset:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.05), 0 1px 0.5px rgba(255, 255, 255, 1);
   --color-bg-secondary: #fff;
   --color-bg-module: #fff;
   --font-serif: "205TF-Louize", "Instrument Serif", "plantijn", Georgia, serif;
   --font-heading: var(--font-serif);
-  --font-sans: "Inter", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  --font-sans:
+    "Inter", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   --accent-color: #b9fd8e;
   --figma-color-bg-secondary: var(--color-bg);
   --figma-color-bg-tertiary: #d6d6d6;
   --figma-color-border: #d6d6d6;
+  color-scheme: light only;
 }
 
 ::selection {
@@ -127,7 +153,12 @@ h1 {
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.025em;
   font-variant-ligatures: discretionary-ligatures;
-  font-feature-settings: "case" on, "calt" on, "liga" on, "pnum" on, "zero" on,
+  font-feature-settings:
+    "case" on,
+    "calt" on,
+    "liga" on,
+    "pnum" on,
+    "zero" on,
     "cpsp" on;
 }
 h2 {
@@ -136,7 +167,12 @@ h2 {
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.025em;
   font-variant-ligatures: discretionary-ligatures;
-  font-feature-settings: "case" on, "calt" on, "liga" on, "pnum" on, "zero" on,
+  font-feature-settings:
+    "case" on,
+    "calt" on,
+    "liga" on,
+    "pnum" on,
+    "zero" on,
     "cpsp" on;
 }
 h1,
@@ -246,7 +282,9 @@ header {
     &:has(.draw) {
       color: #00a2c2;
       &:hover {
-        cursor: url(/assets/cursor-pencil.svg) 10 50, auto;
+        cursor:
+          url(/assets/cursor-pencil.svg) 10 50,
+          auto;
       }
     }
   }
@@ -316,7 +354,9 @@ header {
       }
     }
     &:hover {
-      cursor: url(/assets/cursor-slasher.svg) 10 50, auto;
+      cursor:
+        url(/assets/cursor-slasher.svg) 10 50,
+        auto;
       filter: url(#roughen-0);
       b {
         &:after {
@@ -682,9 +722,12 @@ rogie-music-list {
   height: 9rem;
   position: relative;
   border-radius: var(--base-radius);
-  background: url(/assets/woodgrain.png) no-repeat, #fed196;
+  background:
+    url(/assets/woodgrain.png) no-repeat,
+    #fed196;
   background-blend-mode: soft-light, normal;
-  box-shadow: 0px -0.5px 0.5px 0px rgba(193, 130, 67, 1) inset,
+  box-shadow:
+    0px -0.5px 0.5px 0px rgba(193, 130, 67, 1) inset,
     0px 0px 0px 0.75px #cb8d55 inset,
     0px 1px 0.5px 0.5px rgba(255, 255, 255, 0.75) inset,
     0px 3px 3px -2px rgba(0, 0, 0, 0.2);
@@ -695,7 +738,8 @@ rogie-music-list {
   .btn,
   fig-switch > input[type="checkbox"].switch,
   fig-switch > input[type="checkbox"].switch:checked {
-    box-shadow: 0px 1px 0.5px rgba(255, 255, 255, 0.5),
+    box-shadow:
+      0px 1px 0.5px rgba(255, 255, 255, 0.5),
       inset 0 0.5px 0px 0.25px #ffdcbc;
     border: 1px solid rgba(134, 85, 36, 0.3);
     background: rgba(172, 83, 2, 0.3);
@@ -711,14 +755,19 @@ rogie-music-list {
     &:focus,
     &:focus-within {
       &:not(:active) {
-        box-shadow: 0px 1px 0.5px rgba(255, 255, 255, 0.5),
+        box-shadow:
+          0px 1px 0.5px rgba(255, 255, 255, 0.5),
           inset 0 0.5px 0px 0.25px rgba(255, 255, 255, 0.75);
       }
+    }
+    &:hover {
+      background: rgba(172, 83, 2, 0.45) !important;
     }
 
     &:active {
       background: rgba(172, 83, 2, 0.45) !important;
-      box-shadow: 0px 1px 0.5px rgba(255, 255, 255, 0.35),
+      box-shadow:
+        0px 1px 0.5px rgba(255, 255, 255, 0.35),
         inset 0px 0.5px 0.25px rgba(0, 0, 0, 0.15);
     }
     &:before {
@@ -743,7 +792,8 @@ rogie-music-list {
   }
   fig-switch > input[type="checkbox"].switch,
   fig-switch > input[type="checkbox"].switch:checked {
-    box-shadow: 0px 1px 0.5px rgba(255, 255, 255, 0.35),
+    box-shadow:
+      0px 1px 0.5px rgba(255, 255, 255, 0.35),
       inset 0px 0.5px 2px rgba(0, 0, 0, 0.15);
   }
   .btn {
@@ -796,7 +846,8 @@ rogie-music-list {
       }
       &:before {
         content: "";
-        background: conic-gradient(
+        background:
+          conic-gradient(
             from 18deg at 50% 50%,
             rgba(255, 255, 255, 0) 0deg,
             rgba(255, 255, 255, 0.6) 5deg,
@@ -1208,10 +1259,7 @@ rogie-signup-form {
     padding-right: 1rem;
     width: 100%;
     fig-input-text,
-    fig-input-combo {
-      width: 50%;
-    }
-    fig-input-combo {
+    .input-combo {
       width: 50%;
     }
   }
@@ -1587,7 +1635,8 @@ fig-field {
   padding-bottom: 0.25rem;
 }
 fig-button[variant="primary"] {
-  box-shadow: inset 0 0 0 1px rgba(97, 183, 41, 0.6),
+  box-shadow:
+    inset 0 0 0 1px rgba(97, 183, 41, 0.6),
     0 2px 0px 0 rgba(255, 255, 255, 0.85) inset,
     0 1px 1.5px 0 rgba(0, 0, 0, 0.05);
   &:active {
@@ -1598,13 +1647,16 @@ fig-button[variant="primary"] {
   &:hover:focus {
     &,
     &:not(:active) {
-      box-shadow: inset 0 0 0 1px rgba(97, 183, 41, 0.6),
+      box-shadow:
+        inset 0 0 0 1px rgba(97, 183, 41, 0.6),
         0 2px 0px 0 rgba(255, 255, 255, 0.5) inset;
     }
   }
 }
 :root {
   --figma-color-bg-brand: #b3fa75;
+  --figma-color-bg-brand-hover: #90ec40;
+  --figma-color-bg-menu-hover: #61b729;
   --figma-color-border-selected-strong: #61b729;
   --figma-color-border-selected: #61b729;
   --figma-color-text-onbrand: #000;

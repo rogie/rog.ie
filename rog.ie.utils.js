@@ -409,8 +409,6 @@ class TMDB {
         }
         return movie;
       });
-      //get movie
-      console.log(data);
 
       this.#CACHE.set(querySlug, data);
       return data;

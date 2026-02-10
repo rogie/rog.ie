@@ -13,12 +13,19 @@
           content="Your Name">
     <title>Your Website Title</title>
 
-    <link rel="stylesheet"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
-    <link rel="stylesheet"
-          href="/rog.ie.css">
-    <script src="/rog.ie.web-components.js"
-            type="module"></script>
+    <!-- Preload hints (start fetching early) -->
+    <link rel="preload" as="style" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="preload" as="style" href="/rog.ie.css" />
+    <link rel="preload" as="script" crossorigin href="/rog.ie.web-components.js" />
+    <link rel="preload" as="script" href="https://unpkg.com/@rogieking/figui3@latest/fig.js" />
+
+    <!-- Render-blocking stylesheets -->
+    <link rel="stylesheet" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet" href="/rog.ie.css" />
+
+
+    <!-- Scripts -->
+    <script src="/rog.ie.web-components.js" type="module"></script>
     <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js"></script>
 
 

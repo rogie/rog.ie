@@ -6,35 +6,18 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
     <title>Dither!</title>
-    <!-- Preload critical resources -->
-    <link rel="preload"
-          as="style"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css"
-          onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript>
-        <link rel="stylesheet"
-              href="https://unpkg.com/@rogieking/figui3@latest/components.css">
-    </noscript>
+    <!-- Preload hints (start fetching early) -->
+    <link rel="preload" as="style" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="preload" as="style" href="/rog.ie.css" />
+    <link rel="preload" as="script" crossorigin href="/rog.ie.web-components.js" />
+    <link rel="preload" as="script" href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
 
-    <link rel="preload"
-          as="style"
-          href="/rog.ie.css"
-          onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript>
-        <link rel="stylesheet"
-              href="/rog.ie.css">
-    </noscript>
+    <!-- Render-blocking stylesheets (prevents FOUC) -->
+    <link rel="stylesheet" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet" href="/rog.ie.css" />
 
-    <link rel="preload"
-          as="script"
-          href="/rog.ie.web-components.js" />
-    <link rel="preload"
-          as="script"
-          href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
-
-    <!-- Apply the scripts after preloading -->
-    <script src="/rog.ie.web-components.js"
-            type="module"></script>
+    <!-- Scripts -->
+    <script src="/rog.ie.web-components.js" type="module"></script>
     <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js?"></script>
     <link rel="icon"
           href="/assets/avatar.svg"
@@ -136,6 +119,7 @@
                 <fig-field direction="horizontal">
                     <label for="ditheringAlgorithm">Algorithm</label>
                     <fig-dropdown id="ditheringAlgorithm"
+                                  variant="neue"
                                   value="atkinson">
                         <option value="atkinson">Atkinson</option>
                         <option value="floydSteinberg">Floyd-Steinberg</option>
@@ -229,7 +213,7 @@
                 const data = new Uint8ClampedArray(imageData.data);
                 const width = imageData.width;
                 const height = imageData.height;
-                console.log('atkinsonDither', imageData, colorLevels, width, height)
+
 
                 const quantizeGamma = (value) => {
                     // Convert to linear space (inverse gamma)
@@ -289,7 +273,6 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Atkinson dithering took ${endTime - startTime}ms`);
 
                 // Create new ImageData from the modified data
                 return new ImageData(data, width, height);
@@ -344,7 +327,7 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Floyd-Steinberg dithering took ${endTime - startTime}ms`);
+
                 return new ImageData(data, width, height);
             }
 
@@ -413,7 +396,7 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Sierra dithering took ${endTime - startTime}ms`);
+
                 return new ImageData(data, width, height);
             }
 
@@ -471,7 +454,7 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Burkes dithering took ${endTime - startTime}ms`);
+
                 return new ImageData(data, width, height);
             }
 
@@ -546,7 +529,7 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Jarvis dithering took ${endTime - startTime}ms`);
+
                 return new ImageData(data, width, height);
             }
 
@@ -592,7 +575,7 @@
                 }
 
                 const endTime = performance.now();
-                console.log(`Blue noise dithering took ${endTime - startTime}ms`);
+
                 return new ImageData(data, width, height);
             }
 
@@ -680,7 +663,7 @@
                 if (!img || !img.complete) return;
 
                 const scale = parseFloat(document.getElementById('imageScale').value);
-                console.log('resize image', scale);
+
                 width = img.naturalWidth;
                 height = img.naturalHeight;
 
@@ -848,15 +831,13 @@
                 if (ditheredImage) {
                     try {
                         const blob = await canvas.convertToBlob();
+                        // Clean up previous object URL to prevent memory leaks
+                        if (objectURL) {
+                            URL.revokeObjectURL(objectURL);
+                        }
                         objectURL = URL.createObjectURL(blob);
                         const chit = ditheredImage.querySelector('fig-chit');
-                        const oldSrc = chit.style.getPropertyValue('--src');
-
-                        // Clean up previous object URL to prevent memory leaks
-                        if (oldSrc && oldSrc.startsWith('blob:')) {
-                            URL.revokeObjectURL(oldSrc);
-                        }
-                        chit.style.setProperty('--src', `url(${objectURL})`);
+                        chit.setAttribute('background', `url(${objectURL})`);
                         ditheredImage.blob = objectURL;
                     } catch (error) {
                         console.error('Error converting canvas to blob:', error);
@@ -954,7 +935,12 @@
                 // Handle fig-image changes (uploads or src changes)
                 if (figImage) {
                     figImage.addEventListener('loaded', (e) => {
-                        loadImageFromFigImage();
+                        // Use the blob/base64 from the event detail when available (e.g. uploads),
+                        // since the src attribute may not be updated yet when loaded fires
+                        const src = e.detail?.blob || e.detail?.base64 || figImage.getAttribute('src');
+                        if (src) {
+                            img.src = src;
+                        }
                     });
                 }
 

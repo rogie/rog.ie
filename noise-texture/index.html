@@ -13,14 +13,20 @@
           content="Your Name">
     <title>Noise & Texture Figma Plugin</title>
 
-    <link rel="stylesheet"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
-    <link rel="stylesheet"
-          href="/rog.ie.css">
-    <script src="/rog.ie.web-components.js"
-            type="module"></script>
-    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js"
-            type="module"></script>
+    <!-- Preload hints (start fetching early) -->
+    <link rel="preload" as="style" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="preload" as="style" href="/rog.ie.css" />
+    <link rel="preload" as="script" crossorigin href="/rog.ie.web-components.js" />
+    <link rel="preload" as="script" crossorigin href="https://unpkg.com/@rogieking/figui3@latest/fig.js" />
+    <link rel="preload" as="script" href="/media-shader.js" />
+
+    <!-- Render-blocking stylesheets -->
+    <link rel="stylesheet" href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+    <link rel="stylesheet" href="/rog.ie.css" />
+
+    <!-- Scripts -->
+    <script src="/rog.ie.web-components.js" type="module"></script>
+    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js" type="module"></script>
     <script src="/media-shader.js"></script>
     <link rel="icon"
           href="icon.png"
