@@ -1,0 +1,186 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
+FIGUI3_REPO_URL="https://github.com/rogie/figui3.git"
+FIGUI3_TMP_DIR="/tmp/figui3-publish-temp"
+FIGUI3_SOURCE_FILE="$FIGUI3_TMP_DIR/propkit.html"
+TARGET_FILE="$REPO_ROOT/propkit/index.html"
+STATE_FILE="/tmp/new-rogie-publish-state.json"
+
+usage() {
+  cat <<'EOF'
+Usage:
+  ./publish             Sync latest figui3 propkit HTML into propkit/index.html and bump cache-bust version.
+  ./publish sync        Same as default.
+  ./publish confirm     Git add/commit/push after you visually verify the page.
+
+Workflow:
+  1) Run ./publish
+  2) Verify the updated propkit page locally
+  3) Run ./publish confirm
+EOF
+}
+
+ensure_clean_prereqs() {
+  if ! command -v git >/dev/null 2>&1; then
+    echo "Error: git is required."
+    exit 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1; then
+    echo "Error: python3 is required."
+    exit 1
+  fi
+}
+
+sync_figui3() {
+  if [[ -d "$FIGUI3_TMP_DIR/.git" ]]; then
+    git -C "$FIGUI3_TMP_DIR" fetch origin
+    git -C "$FIGUI3_TMP_DIR" reset --hard origin/HEAD
+  else
+    rm -rf "$FIGUI3_TMP_DIR"
+    git clone --depth 1 "$FIGUI3_REPO_URL" "$FIGUI3_TMP_DIR"
+  fi
+}
+
+sync_propkit_html() {
+  if [[ ! -f "$TARGET_FILE" ]]; then
+    echo "Error: target file not found: $TARGET_FILE"
+    exit 1
+  fi
+  if [[ ! -f "$FIGUI3_SOURCE_FILE" ]]; then
+    echo "Error: source file not found: $FIGUI3_SOURCE_FILE"
+    exit 1
+  fi
+
+  local figui3_commit
+  figui3_commit="$(git -C "$FIGUI3_TMP_DIR" rev-parse --short HEAD)"
+
+  python3 - "$FIGUI3_SOURCE_FILE" "$TARGET_FILE" "$STATE_FILE" "$figui3_commit" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+src_path = Path(sys.argv[1])
+dst_path = Path(sys.argv[2])
+state_path = Path(sys.argv[3])
+figui3_commit = sys.argv[4]
+
+src_html = src_path.read_text(encoding="utf-8")
+dst_html = dst_path.read_text(encoding="utf-8")
+
+css_match = re.search(
+    r'https://unpkg\.com/@rogieking/figui3@latest/fig\.css\?v=(\d+)', dst_html
+)
+js_match = re.search(
+    r'https://unpkg\.com/@rogieking/figui3@latest/fig\.js\?v=(\d+)', dst_html
+)
+
+current_css_v = int(css_match.group(1)) if css_match else 0
+current_js_v = int(js_match.group(1)) if js_match else 0
+next_v = max(current_css_v, current_js_v) + 1
+if next_v <= 0:
+    next_v = 1
+
+css_url = f"https://unpkg.com/@rogieking/figui3@latest/fig.css?v={next_v}"
+js_url = f"https://unpkg.com/@rogieking/figui3@latest/fig.js?v={next_v}"
+
+updated_html = re.sub(
+    r'href=["\'][^"\']*fig\.css(?:\?v=\d+)?["\']',
+    f'href="{css_url}"',
+    src_html,
+    count=1,
+)
+updated_html = re.sub(
+    r'src=["\'][^"\']*fig\.js(?:\?v=\d+)?["\']',
+    f'src="{js_url}"',
+    updated_html,
+    count=1,
+)
+
+if css_url not in updated_html:
+    raise SystemExit("Failed to set fig.css unpkg URL in synced HTML.")
+if js_url not in updated_html:
+    raise SystemExit("Failed to set fig.js unpkg URL in synced HTML.")
+
+dst_path.write_text(updated_html, encoding="utf-8")
+
+state = {
+    "next_version": next_v,
+    "figui3_commit": figui3_commit,
+    "target_file": str(dst_path),
+}
+state_path.write_text(json.dumps(state), encoding="utf-8")
+
+print(f"Updated {dst_path}")
+print(f"Set fig.css and fig.js cache-bust version to v={next_v}")
+print(f"Synced from figui3 commit {figui3_commit}")
+PY
+}
+
+confirm_publish() {
+  if [[ ! -f "$STATE_FILE" ]]; then
+    echo "Error: no pending publish state found."
+    echo "Run ./publish first, verify visually, then run ./publish confirm."
+    exit 1
+  fi
+
+  local next_version
+  local figui3_commit
+  next_version="$(python3 - "$STATE_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+state = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(state.get("next_version", ""))
+PY
+)"
+  figui3_commit="$(python3 - "$STATE_FILE" <<'PY'
+import json, sys
+from pathlib import Path
+state = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(state.get("figui3_commit", ""))
+PY
+)"
+
+  git -C "$REPO_ROOT" add -A
+  git -C "$REPO_ROOT" commit -m "$(cat <<EOF
+publish: sync propkit from figui3
+
+Update propkit HTML from figui3 (commit ${figui3_commit}) and bump fig.css/fig.js unpkg cache-bust to v=${next_version}.
+EOF
+)"
+  git -C "$REPO_ROOT" push
+
+  rm -f "$STATE_FILE"
+  echo "Publish complete."
+}
+
+main() {
+  ensure_clean_prereqs
+
+  local command="${1:-sync}"
+  case "$command" in
+    sync)
+      sync_figui3
+      sync_propkit_html
+      echo ""
+      echo "Please verify the PropKit page now."
+      echo "If it looks good, run: ./publish confirm"
+      ;;
+    confirm)
+      confirm_publish
+      ;;
+    -h|--help|help)
+      usage
+      ;;
+    *)
+      echo "Unknown command: $command"
+      echo ""
+      usage
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"
