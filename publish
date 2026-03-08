@@ -4,14 +4,18 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 FIGUI3_REPO_URL="https://github.com/rogie/figui3.git"
 FIGUI3_TMP_DIR="/tmp/figui3-publish-temp"
-FIGUI3_SOURCE_FILE="$FIGUI3_TMP_DIR/propkit.html"
-TARGET_FILE="$REPO_ROOT/propkit/index.html"
+FIGUI3_PROPKIT_DIR="$FIGUI3_TMP_DIR/propkit"
+FIGUI3_DIST_DIR="$FIGUI3_PROPKIT_DIR/dist"
+FIGUI3_DIST_INDEX="$FIGUI3_DIST_DIR/index.html"
+TARGET_DIR="$REPO_ROOT/propkit"
+TARGET_FILE="$TARGET_DIR/index.html"
+TARGET_ASSETS_DIR="$TARGET_DIR/assets"
 STATE_FILE="/tmp/new-rogie-publish-state.json"
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./publish             Sync latest figui3 propkit HTML into propkit/index.html and bump cache-bust version.
+  ./publish             Build latest figui3 propkit app and sync dist output into this repo.
   ./publish sync        Same as default.
   ./publish confirm     Git add/commit/push after you visually verify the page.
 
@@ -31,6 +35,14 @@ ensure_clean_prereqs() {
     echo "Error: python3 is required."
     exit 1
   fi
+  if ! command -v npm >/dev/null 2>&1; then
+    echo "Error: npm is required."
+    exit 1
+  fi
+  if ! command -v npx >/dev/null 2>&1; then
+    echo "Error: npx is required."
+    exit 1
+  fi
 }
 
 sync_figui3() {
@@ -43,20 +55,41 @@ sync_figui3() {
   fi
 }
 
-sync_propkit_html() {
-  if [[ ! -f "$TARGET_FILE" ]]; then
-    echo "Error: target file not found: $TARGET_FILE"
+build_propkit_dist() {
+  if [[ ! -f "$FIGUI3_PROPKIT_DIR/package.json" ]]; then
+    echo "Error: figui3 propkit package not found: $FIGUI3_PROPKIT_DIR/package.json"
     exit 1
   fi
-  if [[ ! -f "$FIGUI3_SOURCE_FILE" ]]; then
-    echo "Error: source file not found: $FIGUI3_SOURCE_FILE"
+
+  if [[ ! -d "$FIGUI3_PROPKIT_DIR/node_modules" ]]; then
+    npm ci --prefix "$FIGUI3_PROPKIT_DIR"
+  fi
+
+  (
+    cd "$FIGUI3_PROPKIT_DIR"
+    npx vite build --outDir dist
+  )
+
+  if [[ ! -f "$FIGUI3_DIST_INDEX" ]]; then
+    echo "Error: missing dist index after build: $FIGUI3_DIST_INDEX"
+    exit 1
+  fi
+  if [[ ! -d "$FIGUI3_DIST_DIR/assets" ]]; then
+    echo "Error: missing dist assets after build: $FIGUI3_DIST_DIR/assets"
+    exit 1
+  fi
+}
+
+sync_propkit_dist() {
+  if [[ ! -d "$TARGET_DIR" ]]; then
+    echo "Error: target directory not found: $TARGET_DIR"
     exit 1
   fi
 
   local figui3_commit
   figui3_commit="$(git -C "$FIGUI3_TMP_DIR" rev-parse --short HEAD)"
 
-  python3 - "$FIGUI3_SOURCE_FILE" "$TARGET_FILE" "$STATE_FILE" "$figui3_commit" <<'PY'
+  python3 - "$FIGUI3_DIST_INDEX" "$TARGET_FILE" "$STATE_FILE" "$figui3_commit" <<'PY'
 import json
 import re
 import sys
@@ -67,56 +100,30 @@ dst_path = Path(sys.argv[2])
 state_path = Path(sys.argv[3])
 figui3_commit = sys.argv[4]
 
-src_html = src_path.read_text(encoding="utf-8")
-dst_html = dst_path.read_text(encoding="utf-8")
+updated_html = src_path.read_text(encoding="utf-8")
+source_used = src_path
 
-css_match = re.search(
-    r'https://unpkg\.com/@rogieking/figui3@latest/fig\.css\?v=(\d+)', dst_html
-)
-js_match = re.search(
-    r'https://unpkg\.com/@rogieking/figui3@latest/fig\.js\?v=(\d+)', dst_html
-)
-
-current_css_v = int(css_match.group(1)) if css_match else 0
-current_js_v = int(js_match.group(1)) if js_match else 0
-next_v = max(current_css_v, current_js_v) + 1
-if next_v <= 0:
-    next_v = 1
-
-css_url = f"https://unpkg.com/@rogieking/figui3@latest/fig.css?v={next_v}"
-js_url = f"https://unpkg.com/@rogieking/figui3@latest/fig.js?v={next_v}"
-
-updated_html = re.sub(
-    r'href=["\'][^"\']*fig\.css(?:\?v=\d+)?["\']',
-    f'href="{css_url}"',
-    src_html,
-    count=1,
-)
-updated_html = re.sub(
-    r'src=["\'][^"\']*fig\.js(?:\?v=\d+)?["\']',
-    f'src="{js_url}"',
-    updated_html,
-    count=1,
-)
-
-if css_url not in updated_html:
-    raise SystemExit("Failed to set fig.css unpkg URL in synced HTML.")
-if js_url not in updated_html:
-    raise SystemExit("Failed to set fig.js unpkg URL in synced HTML.")
+# Vite emits absolute /assets paths by default; rewrite for /propkit hosting.
+updated_html = re.sub(r'(["\'])/assets/', r"\1./assets/", updated_html)
 
 dst_path.write_text(updated_html, encoding="utf-8")
 
 state = {
-    "next_version": next_v,
     "figui3_commit": figui3_commit,
     "target_file": str(dst_path),
+    "source_file": str(source_used),
+    "mode": "react-dist",
 }
 state_path.write_text(json.dumps(state), encoding="utf-8")
 
 print(f"Updated {dst_path}")
-print(f"Set fig.css and fig.js cache-bust version to v={next_v}")
 print(f"Synced from figui3 commit {figui3_commit}")
+print(f"Source file used: {source_used}")
 PY
+
+  rm -rf "$TARGET_ASSETS_DIR"
+  cp -R "$FIGUI3_DIST_DIR/assets" "$TARGET_ASSETS_DIR"
+  echo "Synced assets into: $TARGET_ASSETS_DIR"
 }
 
 confirm_publish() {
@@ -126,15 +133,7 @@ confirm_publish() {
     exit 1
   fi
 
-  local next_version
   local figui3_commit
-  next_version="$(python3 - "$STATE_FILE" <<'PY'
-import json, sys
-from pathlib import Path
-state = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-print(state.get("next_version", ""))
-PY
-)"
   figui3_commit="$(python3 - "$STATE_FILE" <<'PY'
 import json, sys
 from pathlib import Path
@@ -147,7 +146,7 @@ PY
   git -C "$REPO_ROOT" commit -m "$(cat <<EOF
 publish: sync propkit from figui3
 
-Update propkit HTML from figui3 (commit ${figui3_commit}) and bump fig.css/fig.js unpkg cache-bust to v=${next_version}.
+Update PropKit from figui3 React dist build (commit ${figui3_commit}) and sync bundled assets for production.
 EOF
 )"
   git -C "$REPO_ROOT" push
@@ -163,7 +162,8 @@ main() {
   case "$command" in
     sync)
       sync_figui3
-      sync_propkit_html
+      build_propkit_dist
+      sync_propkit_dist
       echo ""
       echo "Please verify the PropKit page now."
       echo "If it looks good, run: ./publish confirm"
