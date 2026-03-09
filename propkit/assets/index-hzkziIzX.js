@@ -1,4 +1,4 @@
-(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const r of document.querySelectorAll('link[rel="modulepreload"]'))n(r);new MutationObserver(r=>{for(const s of r)if(s.type==="childList")for(const u of s.addedNodes)u.tagName==="LINK"&&u.rel==="modulepreload"&&n(u)}).observe(document,{childList:!0,subtree:!0});function t(r){const s={};return r.integrity&&(s.integrity=r.integrity),r.referrerPolicy&&(s.referrerPolicy=r.referrerPolicy),r.crossOrigin==="use-credentials"?s.credentials="include":r.crossOrigin==="anonymous"?s.credentials="omit":s.credentials="same-origin",s}function n(r){if(r.ep)return;r.ep=!0;const s=t(r);fetch(r.href,s)}})();const M2="modulepreload",z2=function(l){return"/figui3/"+l},L1={},R2=function(e,t,n){let r=Promise.resolve();if(t&&t.length>0){let u=function(d){return Promise.all(d.map(g=>Promise.resolve(g).then(m=>({status:"fulfilled",value:m}),m=>({status:"rejected",reason:m}))))};document.getElementsByTagName("link");const f=document.querySelector("meta[property=csp-nonce]"),h=(f==null?void 0:f.nonce)||(f==null?void 0:f.getAttribute("nonce"));r=u(t.map(d=>{if(d=z2(d),d in L1)return;L1[d]=!0;const g=d.endsWith(".css"),m=g?'[rel="stylesheet"]':"";if(document.querySelector(`link[href="${d}"]${m}`))return;const b=document.createElement("link");if(b.rel=g?"stylesheet":M2,g||(b.as="script"),b.crossOrigin="",b.href=d,h&&b.setAttribute("nonce",h),document.head.appendChild(b),g)return new Promise((S,v)=>{b.addEventListener("load",S),b.addEventListener("error",()=>v(new Error(`Unable to preload CSS for ${d}`)))})}))}function s(u){const f=new Event("vite:preloadError",{cancelable:!0});if(f.payload=u,window.dispatchEvent(f),!f.defaultPrevented)throw u}return r.then(u=>{for(const f of u||[])f.status==="rejected"&&s(f.reason);return e().catch(s)})};var kh={exports:{}},Dr={};/**
+(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const r of document.querySelectorAll('link[rel="modulepreload"]'))n(r);new MutationObserver(r=>{for(const s of r)if(s.type==="childList")for(const u of s.addedNodes)u.tagName==="LINK"&&u.rel==="modulepreload"&&n(u)}).observe(document,{childList:!0,subtree:!0});function t(r){const s={};return r.integrity&&(s.integrity=r.integrity),r.referrerPolicy&&(s.referrerPolicy=r.referrerPolicy),r.crossOrigin==="use-credentials"?s.credentials="include":r.crossOrigin==="anonymous"?s.credentials="omit":s.credentials="same-origin",s}function n(r){if(r.ep)return;r.ep=!0;const s=t(r);fetch(r.href,s)}})();const M2="modulepreload",z2=function(l){return"/propkit/"+l},L1={},R2=function(e,t,n){let r=Promise.resolve();if(t&&t.length>0){let u=function(d){return Promise.all(d.map(g=>Promise.resolve(g).then(m=>({status:"fulfilled",value:m}),m=>({status:"rejected",reason:m}))))};document.getElementsByTagName("link");const f=document.querySelector("meta[property=csp-nonce]"),h=(f==null?void 0:f.nonce)||(f==null?void 0:f.getAttribute("nonce"));r=u(t.map(d=>{if(d=z2(d),d in L1)return;L1[d]=!0;const g=d.endsWith(".css"),m=g?'[rel="stylesheet"]':"";if(document.querySelector(`link[href="${d}"]${m}`))return;const b=document.createElement("link");if(b.rel=g?"stylesheet":M2,g||(b.as="script"),b.crossOrigin="",b.href=d,h&&b.setAttribute("nonce",h),document.head.appendChild(b),g)return new Promise((S,v)=>{b.addEventListener("load",S),b.addEventListener("error",()=>v(new Error(`Unable to preload CSS for ${d}`)))})}))}function s(u){const f=new Event("vite:preloadError",{cancelable:!0});if(f.payload=u,window.dispatchEvent(f),!f.defaultPrevented)throw u}return r.then(u=>{for(const f of u||[])f.status==="rejected"&&s(f.reason);return e().catch(s)})};var kh={exports:{}},Dr={};/**
  * @license React
  * react-jsx-runtime.production.js
  *
@@ -360,6 +360,31 @@ ${t}</${n}>`}function Rl(l){return Array.from(l.childNodes).map(e=>ab(e,0)).filt
   <fig-image upload="true" size="auto"></fig-image>
 </div>`}]},{id:"input-angle",name:"Input Angle",description:"Angle editor with dial interaction and optional text value.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-input-angle value="45" text="true"></fig-input-angle>
+</div>`}]},{id:"layer",name:"Layer",description:"Layer row examples with and without leading layer icons.",examples:[{id:"with-icon",name:"With icon",markup:`<div class="prop-panel">
+  <fig-layer open selected>
+    <div class="fig-layer-row">
+      <svg class="fig-layer-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="4" y="4" width="8" height="8" rx="1" stroke="currentColor" stroke-width="1.25"></rect>
+      </svg>
+      <label>Rectangle</label>
+    </div>
+    <fig-layer selected>
+      <div class="fig-layer-row">
+        <label>Nested rectangle</label>
+      </div>
+    </fig-layer>
+  </fig-layer>
+</div>`},{id:"without-icon",name:"Without icon",markup:`<div class="prop-panel">
+  <fig-layer>
+    <div class="fig-layer-row">
+      <label>Layer with no icon</label>
+    </div>
+    <fig-layer selected>
+      <div class="fig-layer-row">
+        <label>Nested layer with no icon</label>
+      </div>
+    </fig-layer>
+  </fig-layer>
 </div>`}]},{id:"header",name:"Header",description:"Section header with title and optional actions.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-header>
     <h3>Section title</h3>
