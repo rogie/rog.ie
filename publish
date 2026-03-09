@@ -4,24 +4,20 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 FIGUI3_REPO_URL="https://github.com/rogie/figui3.git"
 FIGUI3_TMP_DIR="/tmp/figui3-publish-temp"
-FIGUI3_PROPKIT_DIR="$FIGUI3_TMP_DIR/propkit"
-FIGUI3_DIST_DIR="$FIGUI3_PROPKIT_DIR/dist"
-FIGUI3_DIST_INDEX="$FIGUI3_DIST_DIR/index.html"
-TARGET_DIR="$REPO_ROOT/propkit"
-TARGET_FILE="$TARGET_DIR/index.html"
-TARGET_ASSETS_DIR="$TARGET_DIR/assets"
+FIGUI3_DIST_ROOT="$FIGUI3_TMP_DIR/dist"
+APPS=("propkit" "figui3")
 STATE_FILE="/tmp/new-rogie-publish-state.json"
 
 usage() {
   cat <<'EOF'
 Usage:
-  ./publish             Build latest figui3 propkit app and sync dist output into this repo.
+  ./publish             Build latest figui3 pages and sync dist output into this repo.
   ./publish sync        Same as default.
   ./publish confirm     Git add/commit/push after you visually verify the page.
 
 Workflow:
   1) Run ./publish
-  2) Verify the updated propkit page locally
+  2) Verify the updated /propkit and /figui3 pages locally
   3) Run ./publish confirm
 EOF
 }
@@ -55,75 +51,118 @@ sync_figui3() {
   fi
 }
 
-build_propkit_dist() {
-  if [[ ! -f "$FIGUI3_PROPKIT_DIR/package.json" ]]; then
-    echo "Error: figui3 propkit package not found: $FIGUI3_PROPKIT_DIR/package.json"
+detect_playground_dir() {
+  if [[ -f "$FIGUI3_TMP_DIR/playground/package.json" ]]; then
+    echo "$FIGUI3_TMP_DIR/playground"
+    return 0
+  fi
+  if [[ -f "$FIGUI3_TMP_DIR/propkit/package.json" ]]; then
+    echo "$FIGUI3_TMP_DIR/propkit"
+    return 0
+  fi
+  echo ""
+  return 1
+}
+
+build_figui3_dist_outputs() {
+  local playground_dir
+  playground_dir="$(detect_playground_dir || true)"
+  if [[ -z "$playground_dir" ]]; then
+    echo "Error: figui3 playground package not found (checked /playground and /propkit)."
     exit 1
   fi
 
-  if [[ ! -d "$FIGUI3_PROPKIT_DIR/node_modules" ]]; then
-    npm ci --prefix "$FIGUI3_PROPKIT_DIR"
+  if [[ ! -d "$playground_dir/node_modules" ]]; then
+    npm ci --prefix "$playground_dir"
   fi
 
   (
-    cd "$FIGUI3_PROPKIT_DIR"
-    npx vite build --outDir dist
+    cd "$playground_dir"
+    rm -rf "$FIGUI3_DIST_ROOT/propkit" "$FIGUI3_DIST_ROOT/figui3"
+    npx vite build --base /propkit/ --outDir "$FIGUI3_DIST_ROOT/propkit" --emptyOutDir
+    npx vite build --base /figui3/ --outDir "$FIGUI3_DIST_ROOT/figui3" --emptyOutDir
   )
 
-  if [[ ! -f "$FIGUI3_DIST_INDEX" ]]; then
-    echo "Error: missing dist index after build: $FIGUI3_DIST_INDEX"
-    exit 1
-  fi
-  if [[ ! -d "$FIGUI3_DIST_DIR/assets" ]]; then
-    echo "Error: missing dist assets after build: $FIGUI3_DIST_DIR/assets"
-    exit 1
-  fi
+  for app in "${APPS[@]}"; do
+    if [[ ! -f "$FIGUI3_DIST_ROOT/$app/index.html" ]]; then
+      echo "Error: missing dist index after build: $FIGUI3_DIST_ROOT/$app/index.html"
+      exit 1
+    fi
+    if [[ ! -d "$FIGUI3_DIST_ROOT/$app/assets" ]]; then
+      echo "Error: missing dist assets after build: $FIGUI3_DIST_ROOT/$app/assets"
+      exit 1
+    fi
+  done
 }
 
-sync_propkit_dist() {
-  if [[ ! -d "$TARGET_DIR" ]]; then
-    echo "Error: target directory not found: $TARGET_DIR"
-    exit 1
-  fi
+sync_one_app_dist() {
+  local app="$1"
+  local source_dir="$FIGUI3_DIST_ROOT/$app"
+  local source_index="$source_dir/index.html"
+  local target_dir="$REPO_ROOT/$app"
+  local target_file="$target_dir/index.html"
+  local target_assets_dir="$target_dir/assets"
 
-  local figui3_commit
-  figui3_commit="$(git -C "$FIGUI3_TMP_DIR" rev-parse --short HEAD)"
+  mkdir -p "$target_dir"
 
-  python3 - "$FIGUI3_DIST_INDEX" "$TARGET_FILE" "$STATE_FILE" "$figui3_commit" <<'PY'
-import json
+  python3 - "$source_index" "$target_file" "$app" <<'PY'
 import re
 import sys
 from pathlib import Path
 
 src_path = Path(sys.argv[1])
 dst_path = Path(sys.argv[2])
-state_path = Path(sys.argv[3])
-figui3_commit = sys.argv[4]
+app_name = sys.argv[3]
 
 updated_html = src_path.read_text(encoding="utf-8")
-source_used = src_path
-
-# Vite emits absolute /assets paths by default; rewrite for /propkit hosting.
+# Vite emits absolute /assets paths by default; rewrite for /<app> hosting.
 updated_html = re.sub(r'(["\'])/assets/', r"\1./assets/", updated_html)
+updated_html = re.sub(r'(["\'])/(?:figui3|propkit)/assets/', r"\1./assets/", updated_html)
+
+# figui3's static demo index can reference root files directly (fig.css/fig.js).
+# Normalize those to /<app>/assets so subpath hosting works reliably.
+if app_name == "figui3":
+    for filename in ("fig.css", "fig.js", "components.css", "base.css"):
+        pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
+        replacement = rf'\1./assets/{filename}\1'
+        updated_html = re.sub(pattern, replacement, updated_html)
 
 dst_path.write_text(updated_html, encoding="utf-8")
 
-state = {
-    "figui3_commit": figui3_commit,
-    "target_file": str(dst_path),
-    "source_file": str(source_used),
-    "mode": "react-dist",
-}
-state_path.write_text(json.dumps(state), encoding="utf-8")
-
 print(f"Updated {dst_path}")
-print(f"Synced from figui3 commit {figui3_commit}")
-print(f"Source file used: {source_used}")
+print(f"Synced app: {app_name}")
+print(f"Source file used: {src_path}")
 PY
 
-  rm -rf "$TARGET_ASSETS_DIR"
-  cp -R "$FIGUI3_DIST_DIR/assets" "$TARGET_ASSETS_DIR"
-  echo "Synced assets into: $TARGET_ASSETS_DIR"
+  rm -rf "$target_assets_dir"
+  cp -R "$source_dir/assets" "$target_assets_dir"
+  echo "Synced assets into: $target_assets_dir"
+}
+
+sync_all_dist() {
+  local figui3_commit
+  figui3_commit="$(git -C "$FIGUI3_TMP_DIR" rev-parse --short HEAD)"
+
+  for app in "${APPS[@]}"; do
+    sync_one_app_dist "$app"
+  done
+
+  python3 - "$STATE_FILE" "$figui3_commit" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+state_path = Path(sys.argv[1])
+figui3_commit = sys.argv[2]
+
+state = {
+    "figui3_commit": figui3_commit,
+    "apps": ["propkit", "figui3"],
+    "mode": "multi-react-dist",
+}
+state_path.write_text(json.dumps(state), encoding="utf-8")
+print(f"Synced from figui3 commit {figui3_commit}")
+PY
 }
 
 confirm_publish() {
@@ -144,9 +183,9 @@ PY
 
   git -C "$REPO_ROOT" add -A
   git -C "$REPO_ROOT" commit -m "$(cat <<EOF
-publish: sync propkit from figui3
+publish: sync figui3 and propkit from figui3
 
-Update PropKit from figui3 React dist build (commit ${figui3_commit}) and sync bundled assets for production.
+Update figui3 and PropKit pages from figui3 dist builds (commit ${figui3_commit}) and sync bundled assets for production.
 EOF
 )"
   git -C "$REPO_ROOT" push
@@ -162,10 +201,12 @@ main() {
   case "$command" in
     sync)
       sync_figui3
-      build_propkit_dist
-      sync_propkit_dist
+      build_figui3_dist_outputs
+      sync_all_dist
       echo ""
-      echo "Please verify the PropKit page now."
+      echo "Please verify these pages now:"
+      echo "  - /propkit"
+      echo "  - /figui3"
       echo "If it looks good, run: ./publish confirm"
       ;;
     confirm)
