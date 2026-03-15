@@ -70,6 +70,12 @@
 }
 
 :root {
+  @view-transition {
+    navigation: auto;
+  }
+}
+
+:root {
   --font-size: 16px;
   --color-text: #101010;
   --color-text-secondary: #666;
