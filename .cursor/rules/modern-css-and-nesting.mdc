@@ -1,0 +1,12 @@
+---
+description: Prefer modern CSS and nested component styles
+alwaysApply: true
+---
+
+# Modern CSS And Nesting
+
+- Prefer modern CSS features with progressive enhancement and practical fallbacks.
+- Use native CSS nesting for component styles (`&__element`, `&--modifier`, `&.state`) instead of flat repeated selectors.
+- Keep styles component-scoped and colocated; avoid broad global selectors for component internals.
+- Use CSS custom properties for tunable values and animation/layout handoff from JS.
+- For new focus/overlay UI, prefer layout systems (`grid`/`flex`) over manual fixed positioning unless behavior requires it.

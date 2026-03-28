@@ -1,4 +1,4 @@
-import { Utils, Cache, AudioPlayer, TMDB } from "./rog.ie.utils.js";
+import { Utils, Cache, AudioPlayer, TMDB, FocusLayer } from "./rog.ie.utils.js";
 
 // one minute in milliseconds
 let ONE_MINUTE = 60 * 1000;
@@ -10,6 +10,11 @@ if (document.location.search.includes("clear-cache")) {
   CACHE.clear();
 }
 let CACHE_TTL = ONE_HOUR;
+const focusLayer = new FocusLayer();
+window.focusLayer = focusLayer;
+window.addEventListener("DOMContentLoaded", () => {
+  focusLayer.bind(document);
+});
 
 class Movie extends HTMLElement {
   constructor() {
@@ -18,6 +23,7 @@ class Movie extends HTMLElement {
     this.rating = this.getAttribute("rating");
     this.image = this.getAttribute("image");
     this.link = this.getAttribute("link");
+    this.showTooltip = this.getAttribute("tooltip") !== "false";
     this.render();
   }
   render() {
@@ -40,8 +46,7 @@ class Movie extends HTMLElement {
     </a>
     
     `;*/
-    this.innerHTML = `
-    <fig-tooltip text="${this.title} — ${this.rating}" position="top" delay="300">
+    const movieMarkup = `
       <div class="cover box" style="--cover: url(${this.image})">
         <div class="front"></div>
         <div class="back"></div>
@@ -59,7 +64,10 @@ class Movie extends HTMLElement {
           <div class="bottom"></div>
         </div>
       </div>
-    </fig-tooltip>`;
+    `;
+    this.innerHTML = this.showTooltip
+      ? `<fig-tooltip text="${this.title} — ${this.rating}" position="top" delay="300">${movieMarkup}</fig-tooltip>`
+      : movieMarkup;
     this.querySelector(".cover").addEventListener("mouseenter", () => {
       this.title = "";
     });
@@ -81,6 +89,7 @@ class MovieList extends HTMLElement {
   }
   async connectedCallback() {
     this.limit = this.getAttribute("limit") || 8;
+    this.setAttribute("data-focus-container", "movies");
     this.setAttribute("loading", this.loading);
     await this.fetchMovies();
     this.loading = false;
@@ -125,9 +134,21 @@ class MovieList extends HTMLElement {
     movie.tmdb = search.results;
     if (movie.tmdb.length > 0) {
       movie.tmdb = movie.tmdb[0];
-      movie.tmdb.poster_path = this.tmdb.baseImageUrl + movie.tmdb.poster_path;
-      movie.tmdb.backdrop_path =
-        this.tmdb.baseImageUrl + movie.tmdb.backdrop_path;
+      const posterPath = movie.tmdb.poster_path;
+      const backdropPath = movie.tmdb.backdrop_path;
+      movie.tmdb.images = {
+        poster: {
+          thumb: this.tmdb.getImageUrl(posterPath, "w342"),
+          focus: this.tmdb.getImageUrl(posterPath, "w780"),
+        },
+        backdrop: {
+          thumb: this.tmdb.getImageUrl(backdropPath, "w500"),
+          focus: this.tmdb.getImageUrl(backdropPath, "w1280"),
+        },
+      };
+      movie.thumbnail = movie.tmdb.images.poster.thumb || movie.thumbnail;
+      movie.tmdb.poster_path = movie.tmdb.images.poster.thumb;
+      movie.tmdb.backdrop_path = movie.tmdb.images.backdrop.thumb;
       movie.tmdb.release_date = new Date(movie.tmdb.release_date);
     }
 
@@ -155,6 +176,144 @@ class MovieList extends HTMLElement {
     await this.preloadMovies();
   }
 
+  #setSelected(movie) {
+    this.selected = movie;
+    this.querySelectorAll("rogie-movie").forEach((node) => {
+      if (node === movie) {
+        node.classList.add("selected");
+      } else {
+        node.classList.remove("selected");
+      }
+    });
+  }
+
+  #clearSelected() {
+    this.selected = null;
+    this.querySelectorAll("rogie-movie").forEach((node) => {
+      node.classList.remove("selected");
+    });
+  }
+
+  #getMovieMeta(id) {
+    return this.movies.find((movie) => String(movie?.tmdb?.id) === String(id));
+  }
+
+  #getMovieCoverImage(movieMeta, quality = "thumb") {
+    if (!movieMeta) {
+      return "";
+    }
+    return (
+      movieMeta?.tmdb?.images?.poster?.[quality] ||
+      movieMeta?.tmdb?.poster_path ||
+      movieMeta?.thumbnail ||
+      ""
+    );
+  }
+
+  #getMovieBackdropImage(movieMeta, quality = "thumb") {
+    if (!movieMeta) {
+      return "";
+    }
+    return (
+      movieMeta?.tmdb?.images?.backdrop?.[quality] ||
+      movieMeta?.tmdb?.backdrop_path ||
+      this.#getMovieCoverImage(movieMeta, quality)
+    );
+  }
+
+  #getMovieImagePolicy(movieMeta) {
+    return {
+      thumb: this.#getMovieCoverImage(movieMeta, "thumb"),
+      focus: this.#getMovieCoverImage(movieMeta, "focus"),
+      apply: (target, imageUrl) => {
+        const cover = target.querySelector(".cover");
+        if (!cover || !imageUrl) {
+          return;
+        }
+        cover.style.setProperty("--cover", `url(${imageUrl})`);
+      },
+      prefetchOnOpen: true,
+    };
+  }
+
+  async #buildMoviePayload(movie) {
+    const id = movie.getAttribute("id");
+    const movieMeta = this.#getMovieMeta(id);
+
+    let trailerUrl = "";
+    try {
+      const tmdbMovie = await this.tmdb.getMovie(id);
+      const trailer =
+        tmdbMovie?.results?.find(
+          (result) =>
+            result?.site === "YouTube" &&
+            (result?.type === "Trailer" || result?.type === "Teaser"),
+        ) || tmdbMovie?.results?.[0];
+      if (trailer?.key) {
+        trailerUrl = this.tmdb.getYoutubeUrl(trailer.key);
+      }
+    } catch (error) {
+      console.warn("Unable to fetch trailer data", error);
+    }
+
+    const year =
+      movieMeta?.year ||
+      (movieMeta?.tmdb?.release_date
+        ? new Date(movieMeta.tmdb.release_date).getFullYear()
+        : "");
+    const metaParts = [movieMeta?.rating, year].filter(Boolean).join(" • ");
+
+    return {
+      title: movieMeta?.title || movie.getAttribute("title") || "",
+      meta: metaParts,
+      overview:
+        movieMeta?.tmdb?.overview || "No overview available for this one yet.",
+      imageAlt: movieMeta?.title || movie.getAttribute("title") || "Movie",
+      actions: [
+        trailerUrl
+          ? {
+              label: "Watch Trailer",
+              href: trailerUrl,
+              target: "_blank",
+            }
+          : null,
+        movieMeta?.link
+          ? {
+              label: "View on Letterboxd",
+              href: movieMeta.link,
+              target: "_blank",
+            }
+          : null,
+      ].filter(Boolean),
+    };
+  }
+
+  async #focusMovie(movie) {
+    if (focusLayer.isTargetActive(movie)) {
+      focusLayer.close();
+      this.#clearSelected();
+      return;
+    }
+
+    this.#setSelected(movie);
+    const movieMeta = this.#getMovieMeta(movie.getAttribute("id"));
+    const imagePolicy = this.#getMovieImagePolicy(movieMeta);
+    const payload = await this.#buildMoviePayload(movie);
+
+    await focusLayer.open(movie, {
+      mode: "flip",
+      scope: "page",
+      payload,
+      imagePolicy,
+      payloadPlacement: "right",
+      inset: 24,
+      closeOnScroll: true,
+      onClose: () => {
+        this.#clearSelected();
+      },
+    });
+  }
+
   render() {
     this.innerHTML = this.movies
       .slice(0, this.limit)
@@ -178,6 +337,9 @@ class MovieList extends HTMLElement {
     Utils.hoverFx(
       this,
       (movieList, data) => {
+        if (focusLayer.isOpen) {
+          return;
+        }
         domMovies.forEach((movie) => {
           let rect = movie.getBoundingClientRect();
           let xCenter = rect.left + rect.width / 2;
@@ -196,20 +358,20 @@ class MovieList extends HTMLElement {
       initMovies,
     );
     this.querySelectorAll("rogie-movie").forEach((movie) => {
+      const movieMeta = this.#getMovieMeta(movie.getAttribute("id"));
+      const imagePolicy = this.#getMovieImagePolicy(movieMeta);
+      movie.addEventListener("mouseenter", () => {
+        focusLayer.prefetch(movie, imagePolicy);
+      });
+      movie.addEventListener(
+        "touchstart",
+        () => {
+          focusLayer.prefetch(movie, imagePolicy);
+        },
+        { passive: true },
+      );
       movie.addEventListener("click", async () => {
-        this.selected = movie;
-        let tmdbMovie = await this.tmdb.getMovie(
-          this.selected.getAttribute("id"),
-        );
-        //console.log("selected", this.selected, tmdbMovie);
-        let youtubeUrl = this.tmdb.getYoutubeUrl(tmdbMovie.results[0].key);
-        //console.log("youtubeUrl", youtubeUrl);
-        this.selected.classList.add("selected");
-        this.querySelectorAll("rogie-movie").forEach((movie) => {
-          if (movie !== this.selected) {
-            movie.classList.remove("selected");
-          }
-        });
+        this.#focusMovie(movie);
       });
     });
   }

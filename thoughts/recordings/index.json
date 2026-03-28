@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2026-03-22T15:01:55.308Z",
+  "files": [
+    {
+      "file": "5494 S Chaparral Dr 12.mp3",
+      "title": "5494 S Chaparral Dr 12",
+      "text": "So, anyways, I've been thinking a lot about our state of the industry with vibe coding and how excited we are about all of this, but ultimately, it's this sort of, like, system change and massive tectonic shift into the way that we build things, mostly because it's so powerful. But there's so many things about the previous world, you know, taps, clicks, direct manipulation that I love, and I wanna retain that, and I don't know how we go about it, but I think we can.",
+      "recordedAt": null,
+      "duration": 40.248,
+      "fileType": "MP3",
+      "transcriptSource": "openai",
+      "size": 404611,
+      "mtimeMs": 1774189252717.1775
+    },
+    {
+      "file": "leroy-jenkins.mp3",
+      "title": "Leroy jenkins",
+      "text": "Диван! Дякуємо!",
+      "recordedAt": null,
+      "duration": 4.519188,
+      "fileType": "MP3",
+      "transcriptSource": "openai",
+      "size": 148710,
+      "mtimeMs": 1719082211984.1196
+    },
+    {
+      "file": "On vibe coding.m4a",
+      "title": "On vibe coding",
+      "text": "So anyways, I've been thinking a lot about our state of the industry with Vibe coding and how excited we are about all of this, but ultimately, it's this sort of like system change and massive tectonic shift into the way that we build things, mostly because it's so powerful, but there's so many things about the previous world, you know, taps, clicks, direct manipulation that I love, and I wanna retain that, and I don't know how we go about it, but I think we can.",
+      "recordedAt": "2026-03-22T14:15:21.000Z",
+      "duration": 40.32,
+      "fileType": "M4A",
+      "transcriptSource": "openai",
+      "size": 138839,
+      "mtimeMs": 1774189012526.7756
+    }
+  ]
+}
