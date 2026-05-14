@@ -102,6 +102,8 @@ sync_one_app_dist() {
   local target_dir="$REPO_ROOT/$app"
   local target_file="$target_dir/index.html"
   local target_assets_dir="$target_dir/assets"
+  local target_lab_dir="$target_dir/lab"
+  local target_lab_file="$target_lab_dir/index.html"
 
   mkdir -p "$target_dir"
 
@@ -137,6 +139,24 @@ PY
   rm -rf "$target_assets_dir"
   cp -R "$source_dir/assets" "$target_assets_dir"
   echo "Synced assets into: $target_assets_dir"
+
+  if [[ "$app" == "propkit" ]]; then
+    mkdir -p "$target_lab_dir"
+    python3 - "$target_file" "$target_lab_file" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+base_index = Path(sys.argv[1])
+lab_index = Path(sys.argv[2])
+
+html = base_index.read_text(encoding="utf-8")
+# lab index sits one level deeper, so asset paths need ../assets.
+html = re.sub(r'(["\'])\./assets/', r"\1../assets/", html)
+lab_index.write_text(html, encoding="utf-8")
+print(f"Updated {lab_index}")
+PY
+  fi
 }
 
 sync_all_dist() {
