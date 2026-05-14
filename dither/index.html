@@ -30,6 +30,7 @@
             display: flex;
             gap: 0rem;
             margin: 0 auto;
+            color-scheme: light only;
 
             fig-image {
                 --image-size: 100% !important;
@@ -119,7 +120,7 @@
                 <fig-field direction="horizontal">
                     <label for="ditheringAlgorithm">Algorithm</label>
                     <fig-dropdown id="ditheringAlgorithm"
-                                  variant="neue"
+                                 
                                   value="atkinson">
                         <option value="atkinson">Atkinson</option>
                         <option value="floydSteinberg">Floyd-Steinberg</option>
@@ -136,7 +137,7 @@
                                 min="2"
                                 max="16"
                                 value="4"
-                                variant="minimal"
+                               
                                 step="1"
                                 text="true"
                                 style="flex: 1; max-width: 200px;">
@@ -149,7 +150,7 @@
                                 min="5"
                                 max="50"
                                 value="25"
-                                variant="minimal"
+                               
                                 step="1"
                                 text="true"
                                 style="flex: 1; max-width: 200px;">
@@ -163,7 +164,7 @@
                                 min="-100"
                                 max="100"
                                 value="0"
-                                variant="minimal"
+                               
                                 type="delta"
                                 default="0"
                                 step="1"
@@ -178,7 +179,7 @@
                                 min="-100"
                                 max="100"
                                 value="0"
-                                variant="minimal"
+                               
                                 type="delta"
                                 default="0"
                                 step="1"
@@ -189,13 +190,13 @@
 
                 <fig-field direction="horizontal">
                     <label for="blackWhiteMode">Grayscale</label>
-                    <fig-checkbox id="blackWhiteMode"></fig-checkbox>
+                    <fig-switch id="blackWhiteMode"></fig-switch>
                 </fig-field>
 
                 <fig-field direction="horizontal"
                            style="display: none;">
                     <label for="invertColors">Invert</label>
-                    <fig-checkbox id="invertColors"></fig-checkbox>
+                    <fig-switch id="invertColors"></fig-switch>
                 </fig-field>
             </div>
             </div>

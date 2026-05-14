@@ -77,6 +77,9 @@
 
 :root {
   --font-size: 16px;
+  /* Force FigUI token fallback to light in standalone pages */
+  --buncss-light: initial;
+  --buncss-dark: ;
   --color-text: #101010;
   --color-text-secondary: #666;
   --color-text-tertiary: #999;
@@ -1371,6 +1374,7 @@ rk-chat-message {
     background-color: var(--color-bg-inset);
     box-shadow: var(--shadow-inset);
     overflow: visible;
+    contain: none;
     &:after {
       content: "" !important;
       display: block;
@@ -1742,6 +1746,7 @@ fig-button[variant="primary"] {
   --figma-color-bg-brand: #b3fa75;
   --figma-color-bg-brand-hover: #90ec40;
   --figma-color-bg-menu-hover: #61b729;
+  --figma-color-bg-secondary: var(--figma-color-bg-switch);
   --figma-color-border-selected-strong: #61b729;
   --figma-color-border-selected: #61b729;
   --figma-color-text-onbrand: #000;
