@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/fig-DD9qWml6.css","assets/fig-lab-DyCxvmwS.css"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/fig-b790_FaK.css","assets/fig-lab-DyCxvmwS.css"])))=>i.map(i=>d[i]);
 (function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const r of document.querySelectorAll('link[rel="modulepreload"]'))n(r);new MutationObserver(r=>{for(const o of r)if(o.type==="childList")for(const u of o.addedNodes)u.tagName==="LINK"&&u.rel==="modulepreload"&&n(u)}).observe(document,{childList:!0,subtree:!0});function t(r){const o={};return r.integrity&&(o.integrity=r.integrity),r.referrerPolicy&&(o.referrerPolicy=r.referrerPolicy),r.crossOrigin==="use-credentials"?o.credentials="include":r.crossOrigin==="anonymous"?o.credentials="omit":o.credentials="same-origin",o}function n(r){if(r.ep)return;r.ep=!0;const o=t(r);fetch(r.href,o)}})();const u5="modulepreload",c5=function(l){return"/figui3/"+l},f0={},uu=function(e,t,n){let r=Promise.resolve();if(t&&t.length>0){let u=function(d){return Promise.all(d.map(O=>Promise.resolve(O).then(m=>({status:"fulfilled",value:m}),m=>({status:"rejected",reason:m}))))};document.getElementsByTagName("link");const f=document.querySelector("meta[property=csp-nonce]"),h=(f==null?void 0:f.nonce)||(f==null?void 0:f.getAttribute("nonce"));r=u(t.map(d=>{if(d=c5(d),d in f0)return;f0[d]=!0;const O=d.endsWith(".css"),m=O?'[rel="stylesheet"]':"";if(document.querySelector(`link[href="${d}"]${m}`))return;const b=document.createElement("link");if(b.rel=O?"stylesheet":u5,O||(b.as="script"),b.crossOrigin="",b.href=d,h&&b.setAttribute("nonce",h),document.head.appendChild(b),O)return new Promise((v,x)=>{b.addEventListener("load",v),b.addEventListener("error",()=>x(new Error(`Unable to preload CSS for ${d}`)))})}))}function o(u){const f=new Event("vite:preloadError",{cancelable:!0});if(f.payload=u,window.dispatchEvent(f),!f.defaultPrevented)throw u}return r.then(u=>{for(const f of u||[])f.status==="rejected"&&o(f.reason);return e().catch(o)})};function f5(l){return l&&l.__esModule&&Object.prototype.hasOwnProperty.call(l,"default")?l.default:l}var Nd={exports:{}},to={};/**
  * @license React
  * react-jsx-runtime.production.js
@@ -554,10 +554,12 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-rename",name:"Rename Layer",group:"Controls in dialogs",description:"A minimal rename dialog with a single text input and confirm action.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Rename</fig-button>
   <dialog is="fig-dialog" title="Rename Layer" open handle="fig-header" position="center center" data-playground-hide-field>
-    <fig-field direction="horizontal">
-      <label>Name</label>
-      <fig-input-text value="Frame 1" full></fig-input-text>
-    </fig-field>
+    <fig-content>
+      <fig-field direction="horizontal">
+        <label>Name</label>
+        <fig-input-text value="Frame 1" full></fig-input-text>
+      </fig-field>
+    </fig-content>
     <fig-footer>
       <fig-button variant="secondary" close-dialog>Cancel</fig-button>
       <fig-button>Rename</fig-button>
@@ -566,26 +568,28 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-shadow",name:"Shadow",group:"Controls in dialogs",description:"A drop shadow editor with color, offset, blur, and spread controls.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Shadow</fig-button>
   <dialog is="fig-dialog" title="Shadow" open handle="fig-header" position="center center" data-playground-hide-field>
-    <fig-field direction="horizontal">
-      <label>X</label>
-      <fig-input-number value="0" steppers="true" full></fig-input-number>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Y</label>
-      <fig-input-number value="4" steppers="true" full></fig-input-number>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Color</label>
-      <fig-input-color value="#000000" text="true" alpha="true" picker="figma" picker-anchor="self" full></fig-input-color>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Blur</label>
-      <fig-slider variant="neue" value="8" min="0" max="64" text="true" units="px" full></fig-slider>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Spread</label>
-      <fig-slider variant="neue" value="0" min="-32" max="32" text="true" units="px" full></fig-slider>
-    </fig-field>
+    <fig-content>
+      <fig-field direction="horizontal">
+        <label>X</label>
+        <fig-input-number value="0" steppers="true" full></fig-input-number>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Y</label>
+        <fig-input-number value="4" steppers="true" full></fig-input-number>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Color</label>
+        <fig-input-color value="#000000" text="true" alpha="true" picker="figma" picker-anchor="self" full></fig-input-color>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Blur</label>
+        <fig-slider variant="neue" value="8" min="0" max="64" text="true" units="px" full></fig-slider>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Spread</label>
+        <fig-slider variant="neue" value="0" min="-32" max="32" text="true" units="px" full></fig-slider>
+      </fig-field>
+    </fig-content>
     <fig-footer>
       <fig-button>Apply</fig-button>
     </fig-footer>
@@ -593,27 +597,29 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-blur",name:"Progressive Blur",group:"Controls in dialogs",description:"A progressive blur settings dialog with amount, fade range, and direction controls.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Blur</fig-button>
   <dialog is="fig-dialog" title="Progressive Blur" open handle="fig-header" position="center center" data-playground-hide-field>
-    <fig-field direction="horizontal">
-      <label>Amount</label>
-      <fig-slider variant="neue" value="12" min="0" max="64" text="true" units="px" full></fig-slider>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Fade start</label>
-      <fig-slider variant="neue" value="20" min="0" max="100" text="true" units="%" full></fig-slider>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Fade end</label>
-      <fig-slider variant="neue" value="80" min="0" max="100" text="true" units="%" full></fig-slider>
-    </fig-field>
-    <fig-field direction="horizontal">
-      <label>Direction</label>
-      <fig-dropdown full>
-        <option selected>Top to bottom</option>
-        <option>Bottom to top</option>
-        <option>Left to right</option>
-        <option>Right to left</option>
-      </fig-dropdown>
-    </fig-field>
+    <fig-content>
+      <fig-field direction="horizontal">
+        <label>Amount</label>
+        <fig-slider variant="neue" value="12" min="0" max="64" text="true" units="px" full></fig-slider>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Fade start</label>
+        <fig-slider variant="neue" value="20" min="0" max="100" text="true" units="%" full></fig-slider>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Fade end</label>
+        <fig-slider variant="neue" value="80" min="0" max="100" text="true" units="%" full></fig-slider>
+      </fig-field>
+      <fig-field direction="horizontal">
+        <label>Direction</label>
+        <fig-dropdown full>
+          <option selected>Top to bottom</option>
+          <option>Bottom to top</option>
+          <option>Left to right</option>
+          <option>Right to left</option>
+        </fig-dropdown>
+      </fig-field>
+    </fig-content>
     <fig-footer>
       <fig-button variant="secondary" close-dialog>Cancel</fig-button>
       <fig-button>Apply</fig-button>
@@ -622,7 +628,8 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-photo-stack",name:"Photo Stack",group:"Controls in dialogs",description:"A photo composition plugin dialog with text, color, shape, offset, transition, and dark mode controls across multiple collapsible groups.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Photo Stack</fig-button>
   <dialog is="fig-dialog" title="Photo Stack" open handle="fig-header" position="center center" data-playground-hide-field>
-    <fig-group>
+    <fig-content>
+      <fig-group>
       <fig-field direction="horizontal">
         <label>Title</label>
         <fig-input-text value="Japan" full></fig-input-text>
@@ -701,6 +708,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
       <label>Dark Mode</label>
       <fig-switch checked></fig-switch>
     </fig-field>
+    </fig-content>
     <fig-footer>
       <fig-button>Next</fig-button>
     </fig-footer>
@@ -713,6 +721,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-export",name:"Export Settings",group:"Controls in dialogs",description:"An export dialog with format, quality, scale, filename, and metadata controls across grouped sections.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Export</fig-button>
   <dialog is="fig-dialog" title="Export Settings" open handle="fig-header" position="center center" data-playground-hide-field>
+    <fig-content>
     <fig-group name="Format">
       <fig-field direction="horizontal">
         <label>Format</label>
@@ -750,6 +759,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
         <fig-switch></fig-switch>
       </fig-field>
     </fig-group>
+    </fig-content>
     <fig-footer>
       <fig-button variant="secondary" close-dialog>Cancel</fig-button>
       <fig-button>Export</fig-button>
@@ -758,6 +768,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-token-editor",name:"Design Token Editor",group:"Controls in dialogs",description:"A complex multi-group dialog for editing design tokens with identity, value, variant, and usage sections.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Token Editor</fig-button>
   <dialog is="fig-dialog" title="Design Token Editor" open handle="fig-header" position="center center" data-playground-hide-field>
+    <fig-content>
     <fig-group name="Token">
       <fig-field direction="horizontal">
         <label>Name</label>
@@ -818,6 +829,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
         <fig-switch></fig-switch>
       </fig-field>
     </fig-group>
+    </fig-content>
     <fig-footer>
       <fig-button variant="secondary" close-dialog>Discard</fig-button>
       <fig-button>Save Token</fig-button>
@@ -826,6 +838,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
 </div>`}]},{id:"dialog-prepress",name:"Prepress",group:"Controls in dialogs",description:"A print production tools dialog with tabbed sections for setup, guides, CMYK, preflight, and export settings.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Prepress</fig-button>
   <dialog is="fig-dialog" title="Prepress" open handle="fig-header" position="center center" data-playground-hide-field>
+    <fig-content>
     <fig-tabs>
       <fig-tab selected content="#prepress-setup">Setup</fig-tab>
       <fig-tab content="#prepress-guides">Guides</fig-tab>
@@ -1080,10 +1093,12 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
         <fig-button>Export PDF</fig-button>
       </fig-footer>
     </fig-tab-content>
+    </fig-content>
   </dialog>
 </div>`}]},{id:"dialog-melty-gif",name:"Animated Melty Gif",group:"Controls in dialogs",description:"An animated melty gif generator dialog with image preview, animation controls, and turbulence effect parameters.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Melty Gif</fig-button>
   <dialog is="fig-dialog" title="Animated Melty Gif" open handle="fig-header" position="center center" data-playground-hide-field>
+    <fig-content>
     <fig-field>
       <fig-image full upload="true" size="auto" aspect-ratio="16/10"></fig-image>
     </fig-field>
@@ -1138,6 +1153,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
         <fig-slider variant="neue" value="0.5" min="0" max="5" step="0.1" text="true" units="px" full></fig-slider>
       </fig-field>
     </fig-group>
+    </fig-content>
     <fig-footer>
       <fig-button>Place in Figma</fig-button>
       <fig-button variant="secondary">Download</fig-button>
@@ -1524,7 +1540,7 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
   </div>
 </div>`},{id:"color",name:"Color",markup:`<div class="prop-panel">
   <div data-playground-unwrap="true" style="aspect-ratio: 1/1; width: 100%; position: relative; border-radius: var(--radius-medium); background: var(--figma-color-bg-secondary);">
-    <fig-canvas-control type="color" color="#FF00BF" name="Position" value='{"x":50,"y":50}' snapping="modifier" data-playground-hide-field></fig-canvas-control>
+    <fig-canvas-control type="color" color="#FF00BF" name="Click to edit color" value='{"x":50,"y":50}' snapping="modifier" data-playground-hide-field></fig-canvas-control>
   </div>
 </div>`},{id:"point-radius",name:"Point + Radius",markup:`<div class="prop-panel">
   <div data-playground-unwrap="true" style="aspect-ratio: 1/1; width: 100%; position: relative; border-radius: var(--radius-medium); background: var(--figma-color-bg-secondary);">
@@ -1543,4 +1559,4 @@ ${t}</${n}>`}function ni(l){return Array.from(l.childNodes).map(e=>Xy(e,0)).filt
     <label>Rotation</label>
     <fig-input-angle value="45" text="true" full></fig-input-angle>
   </fig-field>
-</div>`}]}];function Du(l){const e=l.trim();return e?e.charAt(0).toUpperCase()+e.slice(1):""}function x6(l,e){const t=l.trim().toLowerCase(),n=e.trim();return!n||n.toLowerCase()==="default"?Du(t):n.toLowerCase().endsWith(t)?Du(n):Du(`${n} ${t}`)}function $y(l){return l.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function Q6(l,e,t){const n=$y(e.trim().toLowerCase()),r=t.trim();return!r||r.toLowerCase()==="default"?l:`${$y(Du(r))} ${n} example. ${l}`}function w6(l){return l==="lab"?S6:l==="figui3"?v6:m6}function k6(l){return l==="lab"?"Lab":l==="figui3"?"FigUI3":"Propkit"}function T6({mode:l}){const{isDark:e,setTheme:t}=d6(),n=w6(l),o=l==="figui3"?"/figui3":l==="lab"?"/propkit/lab":"/propkit",u=k6(l),{activeSectionId:f,activeExampleId:h,activeSection:d,activeExample:O,navigateTo:m}=h6(n,o),[b,v]=J.useState(""),x=J.useRef(""),Q=J.useRef(g6()?p6():null);J.useEffect(()=>{if(!O){v(""),x.current="";return}const le=mi(O.markup);x.current=le;const ae=Q.current;ae?(Q.current=null,v(O6(le,ae))):(v(le),Ph())},[O]);const w=J.useCallback(le=>{v(le);const ae=x.current;if(ae){const be=ky(le,ae);Object.keys(be).length>0?Ty(be):Ph()}},[]),z=J.useCallback(le=>{const ae=x.current;if(!ae)return;const be=ky(le,ae);Object.keys(be).length>0?Ty(be):Ph()},[]),L=J.useCallback((le,ae)=>{ae&&v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"src",value:ae});return z(ce),ce})},[z]),N=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"open",value:ae?"":null});return z(ce),ce})},[z]),ie=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"checked",value:ae?"":null});return z(ce),ce})},[z]),G=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"value",value:ae});return z(ce),ce})},[z]),U=d&&O?O.title??x6(d.name,O.name):(d==null?void 0:d.name)??"",q=d&&O?O.description??Q6(d.description,d.name,O.name):(d==null?void 0:d.description)??"";return M.jsxs(M.Fragment,{children:[M.jsx(Z5,{activeSectionId:f,activeExampleId:h,isDark:e,setTheme:t,navigateTo:m,sections:n,appTitle:u}),M.jsxs("main",{className:l==="figui3"?"mode-figui3":void 0,children:[d&&M.jsxs(M.Fragment,{children:[M.jsx("h2",{children:U}),M.jsx("p",{className:"description",dangerouslySetInnerHTML:{__html:q}})]}),O&&M.jsx("div",{className:"example-view-container",children:M.jsx(B5,{example:O,markup:b,onPersistImageSource:l==="figui3"||l==="lab"?L:void 0,onPersistDialogOpenState:N,onPersistSwitchCheckedState:ie,onPersistControlValue:G},`${f}/${h}`)}),M.jsx(c6,{markup:b,onMarkupChange:w})]}),M.jsxs("aside",{className:"attributes-sidebar",children:[M.jsx(Qw,{markup:b,onMarkupChange:w,showFieldControls:l==="propkit"||l==="lab"||f==="field",includeFullControl:l==="figui3"||l==="lab"}),((l==="propkit"||l==="lab")&&f!=="skeleton"||l==="figui3"&&f==="menu")&&M.jsx(f6,{},`${f}/${h}`)]})]})}const zh=["Todo","In Progress","Done"],$6=["All","Todo","In Progress","Done"],C6=[{id:1,title:"Build color-token export",owner:"Avery",due:"Mon",status:"In Progress"},{id:2,title:"Review onboarding copy",owner:"Jules",due:"Tue",status:"Todo"},{id:3,title:"Ship sandbox preview route",owner:"Rogie",due:"Today",status:"Done"},{id:4,title:"Prepare release notes",owner:"Sam",due:"Fri",status:"Todo"}];function A6(l){const t=(zh.indexOf(l)+1)%zh.length;return zh[t]}function P6(){const[l,e]=J.useState("All"),[t,n]=J.useState(""),[r,o]=J.useState(C6),u=J.useMemo(()=>r.reduce((d,O)=>(d[O.status]+=1,d),{Todo:0,"In Progress":0,Done:0}),[r]),f=J.useMemo(()=>{const d=t.trim().toLowerCase();return r.filter(O=>{const m=l==="All"||O.status===l,b=d.length===0||O.title.toLowerCase().includes(d)||O.owner.toLowerCase().includes(d);return m&&b})},[l,t,r]),h=J.useCallback(d=>{o(O=>O.map(m=>m.id===d?{...m,status:A6(m.status)}:m))},[]);return M.jsxs("div",{className:"sandbox-app",children:[M.jsxs("header",{className:"sandbox-hero",children:[M.jsx("p",{className:"sandbox-kicker",children:"Playground Sandbox"}),M.jsx("h1",{children:"Sample styled React app"}),M.jsx("p",{children:"This route is a plain React UI sandbox. It is useful for quickly prototyping layout, state, and interactions outside the FigUI3 demo shell."})]}),M.jsxs("section",{className:"sandbox-grid",children:[M.jsxs("article",{className:"sandbox-panel",children:[M.jsx("h2",{children:"Task filters"}),M.jsx("div",{className:"sandbox-filter-row",children:$6.map(d=>M.jsx("button",{type:"button",className:d===l?"is-active":void 0,onClick:()=>e(d),children:d},d))}),M.jsxs("label",{className:"sandbox-search",children:[M.jsx("span",{children:"Search by title or owner"}),M.jsx("input",{type:"search",value:t,placeholder:"Try: release",onChange:d=>n(d.target.value)})]})]}),M.jsxs("article",{className:"sandbox-panel",children:[M.jsx("h2",{children:"Quick stats"}),M.jsxs("div",{className:"sandbox-stats",children:[M.jsxs("div",{children:[M.jsx("p",{children:"Total"}),M.jsx("strong",{children:r.length})]}),M.jsxs("div",{children:[M.jsx("p",{children:"Todo"}),M.jsx("strong",{children:u.Todo})]}),M.jsxs("div",{children:[M.jsx("p",{children:"In progress"}),M.jsx("strong",{children:u["In Progress"]})]}),M.jsxs("div",{children:[M.jsx("p",{children:"Done"}),M.jsx("strong",{children:u.Done})]})]})]}),M.jsxs("article",{className:"sandbox-panel sandbox-task-board",children:[M.jsxs("h2",{children:["Tasks (",f.length,")"]}),f.length===0?M.jsx("p",{className:"sandbox-empty-state",children:"No tasks match the current filter."}):M.jsx("ul",{children:f.map(d=>M.jsxs("li",{children:[M.jsxs("div",{children:[M.jsx("h3",{children:d.title}),M.jsxs("p",{children:[d.owner," - due ",d.due]})]}),M.jsx("button",{type:"button",className:`sandbox-status sandbox-status-${d.status.toLowerCase().replace(/\s+/g,"-")}`,onClick:()=>h(d.id),"aria-label":`Advance status for ${d.title}`,title:"Click to cycle status",children:d.status})]},d.id))})]})]})]})}function jx(l){return l.length>1&&l.endsWith("/")?l.slice(0,-1):l}function z6(l){const e=jx(l);return e==="/propkit/lab"?"lab":e==="/propkit"||e.startsWith("/propkit/")?"propkit":e==="/sandbox"||e.startsWith("/sandbox/")?"sandbox":"figui3"}function M6(l){if(l==="propkit"){document.title="Propkit playground: A framework-agnostic, opinionated set of property controls for Figma plugins";return}if(l==="lab"){document.title="Lab playground: Experimental FigUI3 components";return}if(l==="sandbox"){document.title="Sandbox playground: Styled React sample app";return}document.title="FigUI3 playground: A framework-agnostic set of Figma web components"}function Z6(){const l=window.location.pathname,e=jx(l),t=window.location.search,n=window.location.hash;if(e==="/"||e===""){window.history.replaceState(null,"",`/figui3${t}${n}`);return}if(e==="/lab"||e.startsWith("/lab/")){const o=e.replace(/^\/lab(?=\/|$)/,"/propkit/lab");window.history.replaceState(null,"",`${o}${t}${n}`);return}e==="/figui3"||e.startsWith("/figui3/")||e==="/propkit"||e.startsWith("/propkit/")||e==="/sandbox"||e.startsWith("/sandbox/")||window.history.replaceState(null,"",`/figui3${t}${n}`)}const X6=async()=>{Z6();const l=z6(window.location.pathname),e=document.getElementById("app");e.dataset.mode=l,l!=="sandbox"&&(await uu(()=>Promise.resolve({}),__vite__mapDeps([0])),await uu(()=>import("./fig-yLuGxnjy.js"),[]),l==="lab"&&(await uu(()=>Promise.resolve({}),__vite__mapDeps([1])),await uu(()=>import("./fig-lab-BvY8iUKG.js"),[]))),M6(l),S5.createRoot(e).render(l==="sandbox"?M.jsx(P6,{}):M.jsx(T6,{mode:l}))};X6();export{uu as _};
+</div>`}]}];function Du(l){const e=l.trim();return e?e.charAt(0).toUpperCase()+e.slice(1):""}function x6(l,e){const t=l.trim().toLowerCase(),n=e.trim();return!n||n.toLowerCase()==="default"?Du(t):n.toLowerCase().endsWith(t)?Du(n):Du(`${n} ${t}`)}function $y(l){return l.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}function Q6(l,e,t){const n=$y(e.trim().toLowerCase()),r=t.trim();return!r||r.toLowerCase()==="default"?l:`${$y(Du(r))} ${n} example. ${l}`}function w6(l){return l==="lab"?S6:l==="figui3"?v6:m6}function k6(l){return l==="lab"?"Lab":l==="figui3"?"FigUI3":"Propkit"}function T6({mode:l}){const{isDark:e,setTheme:t}=d6(),n=w6(l),o=l==="figui3"?"/figui3":l==="lab"?"/propkit/lab":"/propkit",u=k6(l),{activeSectionId:f,activeExampleId:h,activeSection:d,activeExample:O,navigateTo:m}=h6(n,o),[b,v]=J.useState(""),x=J.useRef(""),Q=J.useRef(g6()?p6():null);J.useEffect(()=>{if(!O){v(""),x.current="";return}const le=mi(O.markup);x.current=le;const ae=Q.current;ae?(Q.current=null,v(O6(le,ae))):(v(le),Ph())},[O]);const w=J.useCallback(le=>{v(le);const ae=x.current;if(ae){const be=ky(le,ae);Object.keys(be).length>0?Ty(be):Ph()}},[]),z=J.useCallback(le=>{const ae=x.current;if(!ae)return;const be=ky(le,ae);Object.keys(be).length>0?Ty(be):Ph()},[]),L=J.useCallback((le,ae)=>{ae&&v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"src",value:ae});return z(ce),ce})},[z]),N=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"open",value:ae?"":null});return z(ce),ce})},[z]),ie=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"checked",value:ae?"":null});return z(ce),ce})},[z]),G=J.useCallback((le,ae)=>{v(be=>{const ce=St(be,{fieldIndex:le,target:"control",name:"value",value:ae});return z(ce),ce})},[z]),U=d&&O?O.title??x6(d.name,O.name):(d==null?void 0:d.name)??"",q=d&&O?O.description??Q6(d.description,d.name,O.name):(d==null?void 0:d.description)??"";return M.jsxs(M.Fragment,{children:[M.jsx(Z5,{activeSectionId:f,activeExampleId:h,isDark:e,setTheme:t,navigateTo:m,sections:n,appTitle:u}),M.jsxs("main",{className:l==="figui3"?"mode-figui3":void 0,children:[d&&M.jsxs(M.Fragment,{children:[M.jsx("h2",{children:U}),M.jsx("p",{className:"description",dangerouslySetInnerHTML:{__html:q}})]}),O&&M.jsx("div",{className:"example-view-container",children:M.jsx(B5,{example:O,markup:b,onPersistImageSource:l==="figui3"||l==="lab"?L:void 0,onPersistDialogOpenState:N,onPersistSwitchCheckedState:ie,onPersistControlValue:G},`${f}/${h}`)}),M.jsx(c6,{markup:b,onMarkupChange:w})]}),M.jsxs("aside",{className:"attributes-sidebar",children:[M.jsx(Qw,{markup:b,onMarkupChange:w,showFieldControls:l==="propkit"||l==="lab"||f==="field",includeFullControl:l==="figui3"||l==="lab"}),((l==="propkit"||l==="lab")&&f!=="skeleton"||l==="figui3"&&f==="menu")&&M.jsx(f6,{},`${f}/${h}`)]})]})}const zh=["Todo","In Progress","Done"],$6=["All","Todo","In Progress","Done"],C6=[{id:1,title:"Build color-token export",owner:"Avery",due:"Mon",status:"In Progress"},{id:2,title:"Review onboarding copy",owner:"Jules",due:"Tue",status:"Todo"},{id:3,title:"Ship sandbox preview route",owner:"Rogie",due:"Today",status:"Done"},{id:4,title:"Prepare release notes",owner:"Sam",due:"Fri",status:"Todo"}];function A6(l){const t=(zh.indexOf(l)+1)%zh.length;return zh[t]}function P6(){const[l,e]=J.useState("All"),[t,n]=J.useState(""),[r,o]=J.useState(C6),u=J.useMemo(()=>r.reduce((d,O)=>(d[O.status]+=1,d),{Todo:0,"In Progress":0,Done:0}),[r]),f=J.useMemo(()=>{const d=t.trim().toLowerCase();return r.filter(O=>{const m=l==="All"||O.status===l,b=d.length===0||O.title.toLowerCase().includes(d)||O.owner.toLowerCase().includes(d);return m&&b})},[l,t,r]),h=J.useCallback(d=>{o(O=>O.map(m=>m.id===d?{...m,status:A6(m.status)}:m))},[]);return M.jsxs("div",{className:"sandbox-app",children:[M.jsxs("header",{className:"sandbox-hero",children:[M.jsx("p",{className:"sandbox-kicker",children:"Playground Sandbox"}),M.jsx("h1",{children:"Sample styled React app"}),M.jsx("p",{children:"This route is a plain React UI sandbox. It is useful for quickly prototyping layout, state, and interactions outside the FigUI3 demo shell."})]}),M.jsxs("section",{className:"sandbox-grid",children:[M.jsxs("article",{className:"sandbox-panel",children:[M.jsx("h2",{children:"Task filters"}),M.jsx("div",{className:"sandbox-filter-row",children:$6.map(d=>M.jsx("button",{type:"button",className:d===l?"is-active":void 0,onClick:()=>e(d),children:d},d))}),M.jsxs("label",{className:"sandbox-search",children:[M.jsx("span",{children:"Search by title or owner"}),M.jsx("input",{type:"search",value:t,placeholder:"Try: release",onChange:d=>n(d.target.value)})]})]}),M.jsxs("article",{className:"sandbox-panel",children:[M.jsx("h2",{children:"Quick stats"}),M.jsxs("div",{className:"sandbox-stats",children:[M.jsxs("div",{children:[M.jsx("p",{children:"Total"}),M.jsx("strong",{children:r.length})]}),M.jsxs("div",{children:[M.jsx("p",{children:"Todo"}),M.jsx("strong",{children:u.Todo})]}),M.jsxs("div",{children:[M.jsx("p",{children:"In progress"}),M.jsx("strong",{children:u["In Progress"]})]}),M.jsxs("div",{children:[M.jsx("p",{children:"Done"}),M.jsx("strong",{children:u.Done})]})]})]}),M.jsxs("article",{className:"sandbox-panel sandbox-task-board",children:[M.jsxs("h2",{children:["Tasks (",f.length,")"]}),f.length===0?M.jsx("p",{className:"sandbox-empty-state",children:"No tasks match the current filter."}):M.jsx("ul",{children:f.map(d=>M.jsxs("li",{children:[M.jsxs("div",{children:[M.jsx("h3",{children:d.title}),M.jsxs("p",{children:[d.owner," - due ",d.due]})]}),M.jsx("button",{type:"button",className:`sandbox-status sandbox-status-${d.status.toLowerCase().replace(/\s+/g,"-")}`,onClick:()=>h(d.id),"aria-label":`Advance status for ${d.title}`,title:"Click to cycle status",children:d.status})]},d.id))})]})]})]})}function jx(l){return l.length>1&&l.endsWith("/")?l.slice(0,-1):l}function z6(l){const e=jx(l);return e==="/propkit/lab"?"lab":e==="/propkit"||e.startsWith("/propkit/")?"propkit":e==="/sandbox"||e.startsWith("/sandbox/")?"sandbox":"figui3"}function M6(l){if(l==="propkit"){document.title="Propkit playground: A framework-agnostic, opinionated set of property controls for Figma plugins";return}if(l==="lab"){document.title="Lab playground: Experimental FigUI3 components";return}if(l==="sandbox"){document.title="Sandbox playground: Styled React sample app";return}document.title="FigUI3 playground: A framework-agnostic set of Figma web components"}function Z6(){const l=window.location.pathname,e=jx(l),t=window.location.search,n=window.location.hash;if(e==="/"||e===""){window.history.replaceState(null,"",`/figui3${t}${n}`);return}if(e==="/lab"||e.startsWith("/lab/")){const o=e.replace(/^\/lab(?=\/|$)/,"/propkit/lab");window.history.replaceState(null,"",`${o}${t}${n}`);return}e==="/figui3"||e.startsWith("/figui3/")||e==="/propkit"||e.startsWith("/propkit/")||e==="/sandbox"||e.startsWith("/sandbox/")||window.history.replaceState(null,"",`/figui3${t}${n}`)}const X6=async()=>{Z6();const l=z6(window.location.pathname),e=document.getElementById("app");e.dataset.mode=l,l!=="sandbox"&&(await uu(()=>Promise.resolve({}),__vite__mapDeps([0])),await uu(()=>import("./fig-CeULvZ8_.js"),[]),l==="lab"&&(await uu(()=>Promise.resolve({}),__vite__mapDeps([1])),await uu(()=>import("./fig-lab-BKWfpCV5.js"),[]))),M6(l),S5.createRoot(e).render(l==="sandbox"?M.jsx(P6,{}):M.jsx(T6,{mode:l}))};X6();export{uu as _};
