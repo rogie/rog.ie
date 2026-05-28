@@ -33,9 +33,9 @@
             color-scheme: light only;
 
             fig-image {
-                --image-size: 100% !important;
                 margin: 0 0 1rem 0;
                 image-rendering: pixelated;
+                width: 100%;
             }
 
             @media (width < 480px) {
@@ -111,9 +111,10 @@
             <fig-image upload="true"
                        download="true"
                        label="Change image"
+                       checkerboard="true"
+                       size="auto"
                        aspect-ratio="auto"
-                       src="charli.jpeg"
-                       size="large">
+                       src="charli.jpeg">
             </fig-image>
 
             <div class="controls">
@@ -659,6 +660,17 @@
             let canvas, ctx, originalImageData, ditheredImage;
             let width, height;
 
+            function updateFigImagePreview(figImage, src) {
+                const mediaElement = figImage?.mediaEl || figImage?.querySelector('img.fig-media-element, img');
+
+                if (mediaElement) {
+                    mediaElement.src = src;
+                    return;
+                }
+
+                figImage?.setAttribute('src', src);
+            }
+
             // Function to resize images based on scale
             async function resizeImages() {
                 if (!img || !img.complete) return;
@@ -671,7 +683,7 @@
 
                 // Recreate canvas with new dimensions
                 canvas = new OffscreenCanvas(width * (scale / 100), height * (scale / 100));
-                ctx = canvas.getContext('2d');
+                ctx = canvas.getContext('2d', { willReadFrequently: true });
 
                 // Draw the image onto the canvas with new dimensions
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -837,8 +849,7 @@
                             URL.revokeObjectURL(objectURL);
                         }
                         objectURL = URL.createObjectURL(blob);
-                        const chit = ditheredImage.querySelector('fig-chit');
-                        chit.setAttribute('background', `url(${objectURL})`);
+                        updateFigImagePreview(ditheredImage, objectURL);
                         ditheredImage.blob = objectURL;
                     } catch (error) {
                         console.error('Error converting canvas to blob:', error);
@@ -870,7 +881,7 @@
 
                     // Create an offscreen canvas to extract image data
                     canvas = new OffscreenCanvas(width * (scale / 100), height * (scale / 100));
-                    ctx = canvas.getContext('2d');
+                    ctx = canvas.getContext('2d', { willReadFrequently: true });
                     canvas.width = width * (scale / 100);
                     canvas.height = height * (scale / 100);
 
@@ -936,9 +947,9 @@
                 // Handle fig-image changes (uploads or src changes)
                 if (figImage) {
                     figImage.addEventListener('loaded', (e) => {
-                        // Use the blob/base64 from the event detail when available (e.g. uploads),
+                        // Use the event detail when available (e.g. uploads),
                         // since the src attribute may not be updated yet when loaded fires
-                        const src = e.detail?.blob || e.detail?.base64 || figImage.getAttribute('src');
+                        const src = e.detail?.src || e.detail?.blob || e.detail?.base64 || figImage.getAttribute('src');
                         if (src) {
                             img.src = src;
                         }
