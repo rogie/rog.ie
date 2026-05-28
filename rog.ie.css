@@ -1704,14 +1704,29 @@ rk-chat-message {
 
 /* FigUI3 */
 fig-button,
-fig-input,
-input,
-fig-input-text,
-textarea,
+fig-button-combo,
+fig-checkbox,
+fig-combo-input,
+fig-dropdown,
 fig-field,
+fig-input,
+fig-input-color,
+fig-input-combo,
+fig-input-file,
+fig-input-number,
+fig-input-text,
+fig-radio,
+fig-segment,
+fig-segmented-control,
+fig-slider,
+fig-switch,
+fig-tooltip,
+input,
+textarea,
 input[type="text"],
+select,
 button,
-.fig-tooltip {
+dialog[is="fig-popup"][variant="tooltip"] {
   font-size: var(--body-medium-fontSize);
 }
 fig-input-text,
