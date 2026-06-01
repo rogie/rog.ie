@@ -915,7 +915,7 @@ ${t}</${l}>`}function Wt(n){return Array.from(n.childNodes).map(e=>Yy(e,0)).filt
 </div>`}]},{id:"dialog-iframe",name:"Plugin",group:"Controls in dialogs",description:"A plugin dialog hosting its contents inside an iframe that broadcasts height changes to the parent.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Plugin</fig-button>
   <dialog is="fig-dialog" title="Plugin" open handle="fig-header" position="center center" autoresize data-playground-hide-field style="width: 300px;">
-    <iframe src="/propkit/iframe.html"></iframe>
+    <iframe src="/propskit/iframe.html"></iframe>
   </dialog>
 </div>`}]},{id:"dialog-export",name:"Export Settings",group:"Controls in dialogs",description:"An export dialog with format, quality, scale, filename, and metadata controls across grouped sections.",examples:[{id:"default",name:"Default",markup:`<div class="prop-panel">
   <fig-button data-playground-ignore-controls="true" onclick="const d=this.nextElementSibling; d.hasAttribute('modal') ? d.showModal() : d.show();">Open Export</fig-button>

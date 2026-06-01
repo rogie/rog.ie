@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
 FIGUI3_REPO_URL="https://github.com/rogie/figui3.git"
 FIGUI3_TMP_DIR="/tmp/figui3-publish-temp"
 FIGUI3_DIST_ROOT="$FIGUI3_TMP_DIR/dist"
-APPS=("propkit" "figui3")
+APPS=("propskit" "figui3")
 STATE_FILE="/tmp/new-rogie-publish-state.json"
 
 usage() {
@@ -17,7 +17,7 @@ Usage:
 
 Workflow:
   1) Run ./publish
-  2) Verify the updated /propkit and /figui3 pages locally
+  2) Verify the updated /propskit and /figui3 pages locally
   3) Run ./publish confirm
 EOF
 }
@@ -78,8 +78,8 @@ build_figui3_dist_outputs() {
 
   (
     cd "$playground_dir"
-    rm -rf "$FIGUI3_DIST_ROOT/propkit" "$FIGUI3_DIST_ROOT/figui3"
-    npx vite build --base /propkit/ --outDir "$FIGUI3_DIST_ROOT/propkit" --emptyOutDir
+    rm -rf "$FIGUI3_DIST_ROOT/propskit" "$FIGUI3_DIST_ROOT/figui3"
+    npx vite build --base /propskit/ --outDir "$FIGUI3_DIST_ROOT/propskit" --emptyOutDir
     npx vite build --base /figui3/ --outDir "$FIGUI3_DIST_ROOT/figui3" --emptyOutDir
   )
 
@@ -119,7 +119,7 @@ app_name = sys.argv[3]
 updated_html = src_path.read_text(encoding="utf-8")
 # Vite emits absolute /assets paths by default; rewrite for /<app> hosting.
 updated_html = re.sub(r'(["\'])/assets/', r"\1./assets/", updated_html)
-updated_html = re.sub(r'(["\'])/(?:figui3|propkit)/assets/', r"\1./assets/", updated_html)
+updated_html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', r"\1./assets/", updated_html)
 
 # figui3's static demo index can reference root files directly (fig.css/fig.js).
 # Normalize those to /<app>/assets so subpath hosting works reliably.
@@ -165,7 +165,7 @@ extra_html = [
 for src in extra_html:
     rel = src.relative_to(source_dir)
     # Some builds emit iframe pages under a nested "propkit/" folder.
-    # For this repo, publish them at the app root (e.g. /propkit/iframe.html).
+    # For this repo, publish them at the app root (e.g. /propskit/iframe.html).
     if rel.parts and rel.parts[0] == "propkit":
         rel = Path(*rel.parts[1:])
     dst = target_dir / rel
@@ -175,7 +175,7 @@ for src in extra_html:
     # Rewrite root-hosted assets to a path relative to this html file.
     assets_rel = os.path.relpath(target_dir / "assets", dst.parent).replace(os.sep, "/")
     html = re.sub(r'(["\'])/assets/', rf"\1{assets_rel}/", html)
-    html = re.sub(r'(["\'])/(?:figui3|propkit)/assets/', rf"\1{assets_rel}/", html)
+    html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', rf"\1{assets_rel}/", html)
 
     # Normalize figui3 root file references (e.g. /fig.css) for nested routes too.
     if app_name == "figui3":
@@ -194,10 +194,13 @@ from pathlib import Path
 
 target_dir = Path(sys.argv[1])
 old_urls = (
+    "/propkit/iframe.html",
     "https://rog.ie/propkit/iframe.html",
     "https://www.rog.ie/propkit/iframe.html",
+    "https://rog.ie/propskit/iframe.html",
+    "https://www.rog.ie/propskit/iframe.html",
 )
-new_url = "/propkit/iframe.html"
+new_url = "/propskit/iframe.html"
 updated = 0
 
 for path in target_dir.rglob("*"):
@@ -216,7 +219,7 @@ if updated == 0:
     print("No hardcoded iframe URLs found to rewrite.")
 PY
 
-  if [[ "$app" == "propkit" ]]; then
+  if [[ "$app" == "propskit" ]]; then
     mkdir -p "$target_lab_dir"
     python3 - "$target_file" "$target_lab_file" <<'PY'
 import re
@@ -235,6 +238,69 @@ PY
   fi
 }
 
+write_legacy_propkit_redirects() {
+  local legacy_dir="$REPO_ROOT/propkit"
+  rm -rf "$legacy_dir"
+  mkdir -p "$legacy_dir/lab"
+
+  python3 - "$legacy_dir/index.html" "/propskit/" <<'PY'
+import sys
+from pathlib import Path
+
+dst = Path(sys.argv[1])
+target = sys.argv[2]
+dst.write_text(f"""<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting...</title>
+<link rel="canonical" href="{target}">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>
+  location.replace("{target}" + location.search + location.hash);
+</script>
+<p>Redirecting to <a href="{target}">{target}</a>.</p>
+""", encoding="utf-8")
+print(f"Updated legacy redirect: {dst} -> {target}")
+PY
+
+  python3 - "$legacy_dir/lab/index.html" "/propskit/lab/" <<'PY'
+import sys
+from pathlib import Path
+
+dst = Path(sys.argv[1])
+target = sys.argv[2]
+dst.write_text(f"""<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting...</title>
+<link rel="canonical" href="{target}">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>
+  location.replace("{target}" + location.search + location.hash);
+</script>
+<p>Redirecting to <a href="{target}">{target}</a>.</p>
+""", encoding="utf-8")
+print(f"Updated legacy redirect: {dst} -> {target}")
+PY
+
+  python3 - "$legacy_dir/iframe.html" "/propskit/iframe.html" <<'PY'
+import sys
+from pathlib import Path
+
+dst = Path(sys.argv[1])
+target = sys.argv[2]
+dst.write_text(f"""<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting...</title>
+<link rel="canonical" href="{target}">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>
+  location.replace("{target}" + location.search + location.hash);
+</script>
+<p>Redirecting to <a href="{target}">{target}</a>.</p>
+""", encoding="utf-8")
+print(f"Updated legacy redirect: {dst} -> {target}")
+PY
+}
+
 sync_all_dist() {
   local figui3_commit
   figui3_commit="$(git -C "$FIGUI3_TMP_DIR" rev-parse --short HEAD)"
@@ -242,6 +308,8 @@ sync_all_dist() {
   for app in "${APPS[@]}"; do
     sync_one_app_dist "$app"
   done
+
+  write_legacy_propkit_redirects
 
   python3 - "$STATE_FILE" "$figui3_commit" <<'PY'
 import json
@@ -253,7 +321,7 @@ figui3_commit = sys.argv[2]
 
 state = {
     "figui3_commit": figui3_commit,
-    "apps": ["propkit", "figui3"],
+    "apps": ["propskit", "figui3"],
     "mode": "multi-react-dist",
 }
 state_path.write_text(json.dumps(state), encoding="utf-8")
@@ -301,7 +369,8 @@ main() {
       sync_all_dist
       echo ""
       echo "Please verify these pages now:"
-      echo "  - /propkit"
+      echo "  - /propskit"
+      echo "  - /propkit (legacy redirect)"
       echo "  - /figui3"
       echo "If it looks good, run: ./publish confirm"
       ;;
