@@ -906,7 +906,7 @@ class SignupForm extends HTMLElement {
                     value="Rog.ie" />
         <h2 class="message">Get emails about the plugin</h2>
         
-        <fig-field direction="horizontal">
+        <fig-field>
             <fig-input-text name="firstName" placeholder="Name" required></fig-input-text>
                 <div class="input-combo">
                     <input type="email"

@@ -49,21 +49,17 @@
                 flex-direction: row;
                 gap: 0.5rem;
 
-                fig-field:first-child {
-                    padding: 0 !important;
-                }
-
-                fig-field:not(:first-child) {
-                    padding: 0 0 0 0.5rem !important;
-                }
-
                 >* {
-                    width: 100% !important;
+                    width: 100%;
+                    --figma-color-bg-secondary: transparent;
 
-                    fig-slider {
-                        width: 100%;
-                    }
                 }
+                fig-field{
+                    --fig-field-left-padding: var(--spacer-2);
+                    --fig-field-right-padding: var(--spacer-2);
+                }
+
+
 
                 >*:not(:first-child) {
                     border-left: 1px solid var(--figma-color-border);

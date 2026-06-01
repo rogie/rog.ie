@@ -86,7 +86,7 @@ var Kt=Object.defineProperty;var qt=w=>{throw TypeError(w)};var Qt=(w,m,t)=>m in
         </fig-tooltip>
       </fig-field>
       <fig-preview class="fig-fill-picker-gradient-preview">
-        <fig-input-gradient class="fig-fill-picker-gradient-bar-input" edit="true" size="large" value='${JSON.stringify({type:"gradient",gradient:dt(e(this,v))})}'></fig-input-gradient>
+        <fig-input-gradient class="fig-fill-picker-gradient-bar-input" edit="true" mode="tip" size="large" value='${JSON.stringify({type:"gradient",gradient:dt(e(this,v))})}'></fig-input-gradient>
       </fig-preview>
       <fig-field class="fig-fill-picker-gradient-interpolation">
         <label>Mixing</label>
