@@ -121,13 +121,12 @@ updated_html = src_path.read_text(encoding="utf-8")
 updated_html = re.sub(r'(["\'])/assets/', r"\1./assets/", updated_html)
 updated_html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', r"\1./assets/", updated_html)
 
-# figui3's static demo index can reference root files directly (fig.css/fig.js).
+# Static demo pages can reference root files directly (fig.css/fig.js).
 # Normalize those to /<app>/assets so subpath hosting works reliably.
-if app_name == "figui3":
-    for filename in ("fig.css", "fig.js", "components.css", "base.css"):
-        pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
-        replacement = rf'\1./assets/{filename}\1'
-        updated_html = re.sub(pattern, replacement, updated_html)
+for filename in ("fig.css", "fig.js", "fig-layer.css", "fig-layer.js", "components.css", "base.css"):
+    pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
+    replacement = rf'\1./assets/{filename}\1'
+    updated_html = re.sub(pattern, replacement, updated_html)
 
 dst_path.write_text(updated_html, encoding="utf-8")
 
@@ -139,6 +138,13 @@ PY
   rm -rf "$target_assets_dir"
   cp -R "$source_dir/assets" "$target_assets_dir"
   echo "Synced assets into: $target_assets_dir"
+
+  for filename in fig.css fig.js fig-layer.css fig-layer.js components.css base.css; do
+    if [[ -f "$FIGUI3_TMP_DIR/$filename" ]]; then
+      cp "$FIGUI3_TMP_DIR/$filename" "$target_assets_dir/$filename"
+      echo "Synced library file into assets: $target_assets_dir/$filename"
+    fi
+  done
 
   # Clean up legacy nested iframe path from older publish behavior.
   if [[ -f "$target_dir/propkit/iframe.html" ]]; then
@@ -177,12 +183,11 @@ for src in extra_html:
     html = re.sub(r'(["\'])/assets/', rf"\1{assets_rel}/", html)
     html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', rf"\1{assets_rel}/", html)
 
-    # Normalize figui3 root file references (e.g. /fig.css) for nested routes too.
-    if app_name == "figui3":
-        for filename in ("fig.css", "fig.js", "components.css", "base.css"):
-            pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
-            replacement = rf'\1{assets_rel}/{filename}\1'
-            html = re.sub(pattern, replacement, html)
+    # Normalize root file references (e.g. /fig.css) for nested routes too.
+    for filename in ("fig.css", "fig.js", "fig-layer.css", "fig-layer.js", "components.css", "base.css"):
+        pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
+        replacement = rf'\1{assets_rel}/{filename}\1'
+        html = re.sub(pattern, replacement, html)
 
     dst.write_text(html, encoding="utf-8")
     print(f"Synced extra html: {dst}")
@@ -193,14 +198,18 @@ import sys
 from pathlib import Path
 
 target_dir = Path(sys.argv[1])
-old_urls = (
-    "/propkit/iframe.html",
-    "https://rog.ie/propkit/iframe.html",
-    "https://www.rog.ie/propkit/iframe.html",
-    "https://rog.ie/propskit/iframe.html",
-    "https://www.rog.ie/propskit/iframe.html",
+url_rewrites = (
+    ("/propkit/iframe.html", "/propskit/iframe.html"),
+    ("https://rog.ie/propkit/iframe.html", "/propskit/iframe.html"),
+    ("https://www.rog.ie/propkit/iframe.html", "/propskit/iframe.html"),
+    ("https://rog.ie/propskit/iframe.html", "/propskit/iframe.html"),
+    ("https://www.rog.ie/propskit/iframe.html", "/propskit/iframe.html"),
+    ("/propkit/plugin-alt.html", "/propskit/plugin-alt.html"),
+    ("https://rog.ie/propkit/plugin-alt.html", "/propskit/plugin-alt.html"),
+    ("https://www.rog.ie/propkit/plugin-alt.html", "/propskit/plugin-alt.html"),
+    ("https://rog.ie/propskit/plugin-alt.html", "/propskit/plugin-alt.html"),
+    ("https://www.rog.ie/propskit/plugin-alt.html", "/propskit/plugin-alt.html"),
 )
-new_url = "/propskit/iframe.html"
 updated = 0
 
 for path in target_dir.rglob("*"):
@@ -208,15 +217,15 @@ for path in target_dir.rglob("*"):
         continue
     text = path.read_text(encoding="utf-8")
     original = text
-    for old in old_urls:
-        text = text.replace(old, new_url)
+    for old, new in url_rewrites:
+        text = text.replace(old, new)
     if text != original:
         path.write_text(text, encoding="utf-8")
         updated += 1
-        print(f"Rewrote iframe URL in: {path}")
+        print(f"Rewrote legacy URL in: {path}")
 
 if updated == 0:
-    print("No hardcoded iframe URLs found to rewrite.")
+    print("No hardcoded legacy URLs found to rewrite.")
 PY
 
   if [[ "$app" == "propskit" ]]; then
@@ -282,6 +291,25 @@ print(f"Updated legacy redirect: {dst} -> {target}")
 PY
 
   python3 - "$legacy_dir/iframe.html" "/propskit/iframe.html" <<'PY'
+import sys
+from pathlib import Path
+
+dst = Path(sys.argv[1])
+target = sys.argv[2]
+dst.write_text(f"""<!doctype html>
+<meta charset="utf-8">
+<title>Redirecting...</title>
+<link rel="canonical" href="{target}">
+<meta http-equiv="refresh" content="0; url={target}">
+<script>
+  location.replace("{target}" + location.search + location.hash);
+</script>
+<p>Redirecting to <a href="{target}">{target}</a>.</p>
+""", encoding="utf-8")
+print(f"Updated legacy redirect: {dst} -> {target}")
+PY
+
+  python3 - "$legacy_dir/plugin-alt.html" "/propskit/plugin-alt.html" <<'PY'
 import sys
 from pathlib import Path
 
