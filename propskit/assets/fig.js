@@ -62,7 +62,7 @@ function createFigOverflowButtons({
         className: ["fig-overflow-chevron", chevronClass].filter(Boolean).join(" "),
       }),
     );
-    button.addEventListener("pointerdown", (event) => {
+    button.addEventListener("click", (event) => {
       event.preventDefault();
       event.stopPropagation();
       onPointerDown?.(event);
@@ -13963,6 +13963,7 @@ class FigInputJoystick extends HTMLElement {
     const y = this.coordinates === "math" ? 1 - yScreen : yScreen;
     this.position = { x, y };
     if (syncHandle) this.#syncHandlePosition();
+    this.#syncFields();
     this.#syncValueAttribute();
   }
 
@@ -14019,7 +14020,11 @@ class FigInputJoystick extends HTMLElement {
     if (this.cursor) {
       this.cursor.value = `${this.position.x * 100}% ${displayY * 100}%`;
     }
-    // Also sync text inputs if they exist (convert to percentage 0-100)
+    this.#syncFields();
+  }
+
+  // Sync the X/Y number fields to the current position (percentage 0-100).
+  #syncFields() {
     if (this.#fieldsEnabled && this.xInput && this.yInput) {
       this.xInput.setAttribute("value", Math.round(this.position.x * 100));
       this.yInput.setAttribute("value", Math.round(this.position.y * 100));

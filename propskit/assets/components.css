@@ -1202,52 +1202,40 @@ fig-tab,
 
 fig-tabs,
 .tabs {
-  --fig-overflow-size: var(--spacer-4);
+  --fig-overflow-size: calc(var(--spacer-4) + var(--spacer-2));
   --fig-tabs-inline-padding: var(--spacer-2);
   --fig-tabs-block-padding: var(--spacer-1);
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: 0;
+  gap: var(--spacer-1);
   min-width: 0;
   overflow: auto hidden;
-  padding: 0;
+  padding: var(--spacer-1) var(--spacer-2-5);
+  position: relative;
   scrollbar-width: none;
   width: 100%;
 
   > fig-tab {
     flex-shrink: 0;
-    margin-block: var(--fig-tabs-block-padding);
   }
 
-  > fig-tab + fig-tab {
-    margin-inline-start: var(--spacer-1);
-  }
-
-  > .fig-overflow-start + fig-tab {
-    margin-inline-start: var(--fig-tabs-inline-padding);
-  }
-
-  > fig-tab:has(+ .fig-overflow-end) {
-    margin-inline-end: var(--fig-tabs-inline-padding);
-  }
 
   > .fig-overflow {
     align-self: stretch;
-    flex: 0 0 var(--fig-overflow-size);
     height: auto;
     margin-block: 0;
     position: sticky;
     top: 0;
-    width: var(--fig-overflow-size);
     z-index: 3;
+    width: var(--spacer-4);
+    margin-left: calc(var(--spacer-3) * -1);
+    margin-right: calc(var(--spacer-3) * -1);
   }
 
   > .fig-overflow-start {
-    inset-inline-start: 0;
-    left: 0;
-    margin-inline-end: calc(-1 * var(--fig-overflow-size));
+    left: calc(var(--spacer-2-5) * -1);
     order: -1;
     right: auto;
     box-shadow: 1px 0 0 0 var(--figma-color-bordertranslucent);
@@ -1262,11 +1250,9 @@ fig-tabs,
   }
 
   > .fig-overflow-end {
-    inset-inline-end: 0;
     left: auto;
-    margin-inline-start: calc(-1 * var(--fig-overflow-size));
     order: 1;
-    right: 0;
+    right: calc(var(--spacer-2-5) * -1);
     box-shadow: -1px 0 0 0 var(--figma-color-bordertranslucent);
 
     &:before{
@@ -2988,6 +2974,7 @@ dialog,
 .popover,
 [popover] {
   --dialog-radius: var(--radius-large, 0.8125rem);
+  --dialog-max-width: calc(100vw - var(--spacer-4));
   padding: 0;
   outline: 0;
   border: 0;
@@ -2996,23 +2983,17 @@ dialog,
   color: var(--figma-color-text);
   border-radius: var(--dialog-radius);
   background: var(--figma-color-bg);
-  min-width: var(--popover-min-width);
+  min-width: min(var(--popover-min-width), var(--dialog-max-width));
   box-shadow: var(--figma-elevation-500-modal-window);
   max-height: calc(60vh - var(--spacer-4));
-  max-width: 50vw;
+  max-width: var(--dialog-max-width);
   height: max-content;
-
   & > fig-content,
-  &> .fig-content,
   &> main {
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
     overscroll-behavior: contain;
-  }
-
-  p {
-    padding: 0 var(--spacer-3);
   }
 
   &:popover-open {
@@ -3055,7 +3036,6 @@ dialog[is="fig-dialog"] {
   &[resizable]:not([resizable="false"]) {
     resize: both;
     overflow: auto;
-    min-width: 12rem;
     min-height: 6rem;
   }
   & > iframe{
@@ -3317,7 +3297,8 @@ fig-input-color {
 }
 
 fig-header {
-  height: var(--spacer-6);
+  --fig-header-height: var(--spacer-6);
+  height: var(--fig-header-height);
   margin: 0;
   padding: var(--spacer-1) var(--spacer-3);
   display: flex;
@@ -3326,11 +3307,6 @@ fig-header {
   gap: var(--spacer-2);
   user-select: none;
   color: var(--figma-color-text-secondary);
-
-  fig-input-text:only-child{
-    margin-right: calc(var(--spacer-2) * -1);
-    margin-left: calc(var(--spacer-2) * -1);
-  }
   
 
   fig-button[icon][variant="ghost"]:not(fig-input-text fig-button) {
@@ -3368,6 +3344,7 @@ fig-group {
 
   & > fig-header {
     cursor: default;
+    
     padding-left: var(--spacer-3);
       
     &:focus-visible {
@@ -3377,6 +3354,7 @@ fig-group {
       border-radius: var(--figma-focus-outline-radius);
     }
     h3 {
+      margin:0;
       .fig-group-chevron {
         --icon: var(--icon-16-chevron);
         --size: 1rem;
@@ -3486,8 +3464,14 @@ fig-footer {
 }
 
 fig-content {
-  padding: var(--spacer-2) 0;
+  padding: var(--spacer-2-5) 0;
   display: block;
+  &:has(>fig-group[name]:first-child){
+    padding-top: 0;
+  }
+  &:has(>fig-group[name]:last-child){
+    padding-bottom: 0;
+  }
 }
 
 vstack,
@@ -4637,11 +4621,12 @@ fig-chooser {
   --fig-chooser-gap: var(--spacer-2);
   --fig-chooser-inline-padding: var(--spacer-2);
   --fig-chooser-block-padding: var(--spacer-2);
+  outline: red;
 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--fig-chooser-gap);
   height: inherit;
   max-height: inherit;
   max-width: inherit;
@@ -4656,18 +4641,6 @@ fig-chooser {
     min-width: 0;
   }
 
-  > :not(.fig-overflow) + :not(.fig-overflow) {
-    margin-block-start: var(--fig-chooser-gap);
-  }
-
-  > .fig-overflow-start + :not(.fig-overflow) {
-    margin-block-start: var(--fig-chooser-block-padding);
-  }
-
-  > :not(.fig-overflow):has(+ .fig-overflow-end) {
-    margin-block-end: var(--fig-chooser-block-padding);
-  }
-
   > .fig-overflow {
     flex: 0 0 var(--chooser-fade-size);
     height: var(--chooser-fade-size);
@@ -4675,6 +4648,7 @@ fig-chooser {
     position: sticky;
     width: 100%;
     z-index: 3;
+    margin: calc(var(--fig-chooser-gap) * -1);
   }
 
   > .fig-overflow-start {
@@ -4712,20 +4686,6 @@ fig-chooser {
     flex-direction: row;
     overflow: auto hidden;
 
-    > :not(.fig-overflow) + :not(.fig-overflow) {
-      margin-block-start: 0;
-      margin-inline-start: var(--fig-chooser-gap);
-    }
-
-    > .fig-overflow-start + :not(.fig-overflow) {
-      margin-block-start: 0;
-      margin-inline-start: var(--fig-chooser-inline-padding);
-    }
-
-    > :not(.fig-overflow):has(+ .fig-overflow-end) {
-      margin-block-end: 0;
-      margin-inline-end: var(--fig-chooser-inline-padding);
-    }
 
     > :not(.fig-overflow) {
       flex: 0 0 auto;
@@ -4735,8 +4695,9 @@ fig-chooser {
       align-self: stretch;
       flex: 0 0 var(--chooser-fade-size);
       height: auto;
-      margin-block: 0;
       width: var(--chooser-fade-size);
+      margin-top: 0;
+      margin-bottom: 0;
     }
 
     > .fig-overflow-start {
@@ -4775,6 +4736,13 @@ fig-chooser {
         rotate: -90deg;
       }
     }
+  }
+  &[layout="vertical"], 
+  &[layout="grid"]{
+   &>.fig-overflow{
+    margin-left:0;
+    margin-right:0;
+   }
   }
 
   &[layout="grid"] {
