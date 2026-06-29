@@ -115,7 +115,7 @@
                        label="Change image"
                        checkerboard="true"
                        size="auto"
-                       aspect-ratio="auto"
+                       aspect-ratio="2157 / 3289"
                        src="charli.jpeg">
             </fig-image>
 
@@ -875,6 +875,8 @@
                     const scale = parseFloat(document.getElementById('imageScale').value);
                     width = img.naturalWidth;
                     height = img.naturalHeight;
+                    const figImage = document.querySelector('fig-image');
+                    figImage?.setAttribute('aspect-ratio', `${width} / ${height}`);
 
                     const imagesContainer = document.querySelector('.images');
 
@@ -894,7 +896,7 @@
                     originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
                     // Create a new image element for the dithered result
-                    ditheredImage = document.querySelector('fig-image');
+                    ditheredImage = figImage;
 
                     // Apply initial dithering
                     const initialColorLevels = parseInt(document.getElementById('colorLevels').value);
