@@ -779,7 +779,7 @@ class Footer extends HTMLElement {
   render() {
     this.innerHTML = `
     <footer>
-        <fig-tooltip text="Rogie King"><a href="/"><img class="signature" src="/signature.svg" alt="Rogie King"></a></fig-tooltip>
+        <fig-tooltip text="Rogie King"><a href="/"><img class="signature" src="/assets/signature.svg" alt="Rogie King"></a></fig-tooltip>
         <ul>
             <a href="https://www.figma.com/@rogie">
               <fig-tooltip text="Figma">
@@ -937,11 +937,16 @@ class Media extends HTMLElement {
   }
 
   render() {
-    this.innerHTML = `
-      <div class="media">
-        ${this.innerHTML}
-      </div>
-    `;
+    if (this.querySelector(":scope > .media")) return;
+
+    const media = document.createElement("div");
+    media.className = "media";
+
+    while (this.firstChild) {
+      media.append(this.firstChild);
+    }
+
+    this.append(media);
   }
 }
 

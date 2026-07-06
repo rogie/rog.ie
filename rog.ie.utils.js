@@ -459,15 +459,57 @@ class FocusLayer {
   }
 
   bind(root = document) {
-    root.querySelectorAll("[data-focusable]").forEach((target) => {
+    root.querySelectorAll("[data-focusable], [zoomable]").forEach((target) => {
       if (this.boundDeclarativeTargets.has(target)) {
         return;
       }
       this.boundDeclarativeTargets.add(target);
-      target.addEventListener("click", () => {
+      this.prepareDeclarativeTarget(target);
+      target.addEventListener("click", (event) => {
+        if (this.shouldIgnoreDeclarativeEvent(event, target)) {
+          return;
+        }
+        const shouldRestoreFocus = !target.hasAttribute("zoomable");
+        if (!shouldRestoreFocus && target instanceof HTMLElement) {
+          target.blur();
+        }
+        this.toggle(target, {
+          restoreFocus: shouldRestoreFocus,
+        });
+      });
+      target.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") {
+          return;
+        }
+        if (this.shouldIgnoreDeclarativeEvent(event, target)) {
+          return;
+        }
+        event.preventDefault();
         this.toggle(target);
       });
     });
+  }
+
+  prepareDeclarativeTarget(target) {
+    if (!target.hasAttribute("zoomable")) {
+      return;
+    }
+    if (target instanceof HTMLElement && !target.hasAttribute("tabindex")) {
+      target.tabIndex = 0;
+    }
+    if (!target.hasAttribute("role")) {
+      target.setAttribute("role", "button");
+    }
+  }
+
+  shouldIgnoreDeclarativeEvent(event, target) {
+    if (!(event.target instanceof Element)) {
+      return false;
+    }
+    const interactiveTarget = event.target.closest(
+      "a, button, input, select, textarea, summary, [contenteditable], [data-focus-ignore]",
+    );
+    return Boolean(interactiveTarget && interactiveTarget !== target);
   }
 
   toggle(target, options = {}) {
@@ -577,7 +619,11 @@ class FocusLayer {
         options.onClose(target);
       }
 
-      if (this.previousActiveElement && this.previousActiveElement.focus) {
+      if (
+        options?.restoreFocus &&
+        this.previousActiveElement &&
+        this.previousActiveElement.focus
+      ) {
         this.previousActiveElement.focus();
       }
 
@@ -604,6 +650,7 @@ class FocusLayer {
 
   resolveOptions(target, options) {
     const dataset = target.dataset || {};
+    const isZoomable = target.hasAttribute("zoomable");
     const mode = options.mode || dataset.focusMode || "flip";
     const scope = options.scope || dataset.focusScope || "page";
     const payloadPlacement =
@@ -613,8 +660,12 @@ class FocusLayer {
       mode,
       scope,
       inset: Number(options.inset ?? dataset.focusInset ?? 20),
-      maxWidth: Number(options.maxWidth ?? dataset.focusMaxWidth ?? 320),
-      maxHeight: Number(options.maxHeight ?? dataset.focusMaxHeight ?? 780),
+      maxWidth: Number(
+        options.maxWidth ?? dataset.focusMaxWidth ?? (isZoomable ? 960 : 320),
+      ),
+      maxHeight: Number(
+        options.maxHeight ?? dataset.focusMaxHeight ?? (isZoomable ? 860 : 780),
+      ),
       closeOnScroll: options.closeOnScroll ?? true,
       durationMs: Number(options.durationMs ?? dataset.focusDuration ?? 260),
       dimOpacity: Number(options.dimOpacity ?? dataset.focusDimOpacity ?? 0.6),
@@ -624,6 +675,7 @@ class FocusLayer {
       payloadPlacement,
       className: options.className || "",
       onClose: options.onClose || null,
+      restoreFocus: options.restoreFocus ?? true,
     };
   }
 
@@ -730,6 +782,18 @@ class FocusLayer {
     this.activeLayer.style.setProperty(
       "--focus-layer-blur",
       `${this.options.blurAmount}px`,
+    );
+    this.activeLayer.style.setProperty(
+      "--focus-layer-inset",
+      `${this.options.inset}px`,
+    );
+    this.activeLayer.style.setProperty(
+      "--focus-item-region-max-width",
+      `${this.options.maxWidth}px`,
+    );
+    this.activeLayer.style.setProperty(
+      "--focus-payload-region-max-width",
+      "320px",
     );
 
     const backdrop = document.createElement("button");
@@ -908,8 +972,13 @@ class FocusLayer {
       return;
     }
     const styles = getComputedStyle(this.activeTarget);
+    const sourceDisplay = styles.display;
     const sourceWidth = styles.getPropertyValue("--width").trim();
     const sourceHeight = styles.getPropertyValue("--height").trim();
+
+    if (sourceDisplay && sourceDisplay !== "none" && sourceDisplay !== "contents") {
+      clone.style.setProperty("--focus-clone-display", sourceDisplay);
+    }
 
     if (sourceWidth) {
       clone.style.setProperty("--width", sourceWidth);
@@ -936,6 +1005,7 @@ class FocusLayer {
     clone.classList.add("focus-layer__clone");
     this.syncCloneSizeVars(clone, sourceRect);
     this.activeItem.appendChild(clone);
+    this.syncClonedMedia(clone);
     this.hideActiveTargetForClone();
     this.syncLayoutRegionVars();
     this.setActiveItemRect(destinationRect);
@@ -958,6 +1028,47 @@ class FocusLayer {
       }
       this.activeItem.classList.add("is-open");
       this.activeItem.style.transform = "translate(0px, 0px) scale(1, 1)";
+    });
+  }
+
+  syncClonedMedia(clone) {
+    if (!clone || !this.activeTarget) {
+      return;
+    }
+    const sourceMedia = [
+      ...(this.activeTarget.matches("img, video") ? [this.activeTarget] : []),
+      ...this.activeTarget.querySelectorAll("img, video"),
+    ];
+    const clonedMedia = [
+      ...(clone.matches("img, video") ? [clone] : []),
+      ...clone.querySelectorAll("img, video"),
+    ];
+
+    clonedMedia.forEach((media, index) => {
+      const source = sourceMedia[index] || sourceMedia[0];
+      if (!source) {
+        return;
+      }
+      if (media instanceof HTMLImageElement && source instanceof HTMLImageElement) {
+        media.src = source.currentSrc || source.src;
+        return;
+      }
+      if (!(media instanceof HTMLVideoElement) || !(source instanceof HTMLVideoElement)) {
+        return;
+      }
+      media.muted = source.muted || media.muted;
+      media.playsInline = true;
+      if (source.currentSrc && !media.currentSrc) {
+        media.src = source.currentSrc;
+      }
+      try {
+        if (Number.isFinite(source.currentTime)) {
+          media.currentTime = source.currentTime;
+        }
+      } catch {}
+      if (!source.paused || media.autoplay) {
+        media.play().catch(() => {});
+      }
     });
   }
 

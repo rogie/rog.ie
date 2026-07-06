@@ -15,7 +15,7 @@
     <!-- Preload hints (start fetching early) -->
     <link rel="preload"
           as="style"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+          href="https://unpkg.com/@rogieking/figui3@6.9.8/components.css" />
     <link rel="preload"
           as="style"
           href="/rog.ie.css" />
@@ -25,18 +25,20 @@
           href="/rog.ie.web-components.js" />
     <link rel="preload"
           as="script"
-          href="https://unpkg.com/@rogieking/figui3@latest/fig.js?" />
+          href="https://unpkg.com/@rogieking/figui3@6.9.8/fig.js?" />
 
     <!-- Render-blocking stylesheets (prevents FOUC) -->
     <link rel="stylesheet"
-          href="https://unpkg.com/@rogieking/figui3@latest/components.css" />
+          href="https://unpkg.com/@rogieking/figui3@6.9.8/components.css" />
     <link rel="stylesheet"
           href="/rog.ie.css" />
 
     <!-- Scripts -->
     <script src="/rog.ie.web-components.js"
             type="module"></script>
-    <script src="https://unpkg.com/@rogieking/figui3@latest/fig.js?"></script>
+    <script src="/paper-background.js"
+            type="module"></script>
+    <script src="https://unpkg.com/@rogieking/figui3@6.9.8/fig.js?"></script>
     <link rel="icon"
           href="/assets/avatar.svg"
           type="image/svg+xml">
@@ -48,6 +50,8 @@
 </head>
 
 <body>
+    <div id="paper-background" aria-hidden="true"></div>
+
     <header class="home">
 
         <h1>
@@ -76,6 +80,20 @@
     </header>
 
     <main>
+        <section id="thoughts">
+            <h2>Thoughts</h2>
+            <ul class="post-list thoughts">
+                <li class="post-item">
+                    <a href="/thoughts/passion-people/"
+                       class="post-link">
+                        <h3 class="post-title">Passion &amp; People </h3>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2026</span>
+                    </a>
+                </li>
+            </ul>
+        </section>
+
         <section id="projects">
 
             <h2>Projects</h2>

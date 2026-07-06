@@ -17,7 +17,7 @@ Usage:
 
 Workflow:
   1) Run ./publish
-  2) Verify the updated /propskit and /figui3 pages locally
+  2) Verify the built site locally, including /propskit and /figui3
   3) Run ./publish confirm
 EOF
 }
@@ -357,6 +357,12 @@ print(f"Synced from figui3 commit {figui3_commit}")
 PY
 }
 
+build_site() {
+  if [[ -f "$REPO_ROOT/package.json" ]]; then
+    npm run build --prefix "$REPO_ROOT"
+  fi
+}
+
 confirm_publish() {
   if [[ ! -f "$STATE_FILE" ]]; then
     echo "Error: no pending publish state found."
@@ -395,8 +401,11 @@ main() {
       sync_figui3
       build_figui3_dist_outputs
       sync_all_dist
+      build_site
       echo ""
       echo "Please verify these pages now:"
+      echo "  - /"
+      echo "  - /thoughts"
       echo "  - /propskit"
       echo "  - /propkit (legacy redirect)"
       echo "  - /figui3"

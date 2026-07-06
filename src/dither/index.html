@@ -1,0 +1,976 @@
+---
+layout: base.njk
+title: "Dither!"
+description: "A dithering tool."
+headExtra: |
+  <style>
+          .dither-app {
+              width: 100%;
+              max-width: 50rem;
+              padding: 1rem;
+              display: flex;
+              gap: 0rem;
+              margin: 0 auto;
+              color-scheme: light only;
+  
+              fig-image {
+                  margin: 0 0 1rem 0;
+                  width: 100%;
+                  img{
+                      image-rendering: pixelated;
+                  }
+              }
+  
+              @media (width < 480px) {
+                  flex-direction: column;
+              }
+          }
+  
+          .controls {
+              padding: 1rem;
+              width: 100%;
+  
+              fig-field {
+                  width: 100%;
+                  padding-left: 0;
+                  padding-right: 0;
+  
+                  label {
+                      min-width: 5rem !important;
+                  }
+              }
+          }
+  
+          .images {
+              display: flex;
+              gap: 20px;
+              flex-wrap: wrap;
+              align-items: flex-start;
+          }
+  
+          .image-container {
+              background: white;
+              padding: 10px;
+              border-radius: 8px;
+  
+              &.output {
+                  image-rendering: pixelated;
+              }
+  
+              img {
+                  width: 300px;
+                  height: auto;
+              }
+  
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+  
+          .image-label {
+              text-align: center;
+              margin-bottom: 10px;
+              font-weight: 500;
+              color: #333;
+          }
+  
+          .control-group.disabled {
+              opacity: 0.5;
+              pointer-events: none;
+          }
+      </style>
+---
+<rk-chat>
+        <rk-chat-message from="me"
+                         style="green">
+            I made this fun little tool to dither your images. Try out an image of your own!
+        </rk-chat-message>
+    </rk-chat>
+    <main class="full-width">
+
+        <figure class="dither-app">
+
+            <fig-image upload="true"
+                       download="true"
+                       label="Change image"
+                       checkerboard="true"
+                       size="auto"
+                       aspect-ratio="2157 / 3289"
+                       src="charli.jpeg">
+            </fig-image>
+
+            <div class="controls">
+                <fig-field direction="horizontal">
+                    <label for="ditheringAlgorithm">Algorithm</label>
+                    <fig-dropdown id="ditheringAlgorithm"
+                                 
+                                  value="atkinson">
+                        <option value="atkinson">Atkinson</option>
+                        <option value="floydSteinberg">Floyd-Steinberg</option>
+                        <option value="jarvis">Jarvis</option>
+                        <option value="sierra">Sierra</option>
+                        <option value="burkes">Burkes</option>
+                        <option value="blueNoise">Blue Noise</option>
+                    </fig-dropdown>
+                </fig-field>
+
+                <fig-field direction="horizontal">
+                    <label for="colorLevels">Color Levels</label>
+                    <fig-slider id="colorLevels"
+                                min="2"
+                                max="16"
+                                value="4"
+                               
+                                step="1"
+                                text="true"
+                                style="flex: 1; max-width: 200px;">
+                    </fig-slider>
+                </fig-field>
+
+                <fig-field direction="horizontal">
+                    <label for="imageScale">Scale</label>
+                    <fig-slider id="imageScale"
+                                min="5"
+                                max="50"
+                                value="25"
+                               
+                                step="1"
+                                text="true"
+                                style="flex: 1; max-width: 200px;">
+                    </fig-slider>
+                </fig-field>
+
+                <fig-field direction="horizontal"
+                           id="thresholdGroup">
+                    <label for="threshold">Brightness</label>
+                    <fig-slider id="threshold"
+                                min="-100"
+                                max="100"
+                                value="0"
+                               
+                                type="delta"
+                                default="0"
+                                step="1"
+                                text="true"
+                                style="flex: 1; max-width: 200px;">
+                    </fig-slider>
+                </fig-field>
+
+                <fig-field direction="horizontal">
+                    <label for="contrast">Contrast</label>
+                    <fig-slider id="contrast"
+                                min="-100"
+                                max="100"
+                                value="0"
+                               
+                                type="delta"
+                                default="0"
+                                step="1"
+                                text="true"
+                                style="flex: 1; max-width: 200px;">
+                    </fig-slider>
+                </fig-field>
+
+                <fig-field direction="horizontal">
+                    <label for="blackWhiteMode">Grayscale</label>
+                    <fig-switch id="blackWhiteMode"></fig-switch>
+                </fig-field>
+
+                <fig-field direction="horizontal"
+                           style="display: none;">
+                    <label for="invertColors">Invert</label>
+                    <fig-switch id="invertColors"></fig-switch>
+                </fig-field>
+            </div>
+            </div>
+
+
+            <div class="images"></div>
+        </figure>
+
+        <script>
+            let objectURL = null;
+            // Atkinson dithering algorithm (CPU implementation)
+            function atkinsonDither(imageData, colorLevels) {
+
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+
+                const quantizeGamma = (value) => {
+                    // Convert to linear space (inverse gamma)
+                    const linear = Math.pow(value / 255, 2.2);
+                    // Quantize in linear space
+                    const level = Math.round(linear * (colorLevels - 1));
+                    // Convert back to gamma space
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        // Process each color channel
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+                            const newValue = quantizeGamma(oldValue);
+                            const error = oldValue - newValue;
+
+                            data[idx + c] = newValue;
+
+                            // Distribute error using Atkinson pattern
+                            const errorFraction = error / 8;
+
+                            // Right pixel
+                            if (x + 1 < width) {
+                                data[idx + 4 + c] += errorFraction;
+                            }
+
+                            // Two pixels to the right
+                            if (x + 2 < width) {
+                                data[idx + 8 + c] += errorFraction;
+                            }
+
+                            // Below left
+                            if (y + 1 < height && x - 1 >= 0) {
+                                data[((y + 1) * width + (x - 1)) * 4 + c] += errorFraction;
+                            }
+
+                            // Below
+                            if (y + 1 < height) {
+                                data[((y + 1) * width + x) * 4 + c] += errorFraction;
+                            }
+
+                            // Below right
+                            if (y + 1 < height && x + 1 < width) {
+                                data[((y + 1) * width + (x + 1)) * 4 + c] += errorFraction;
+                            }
+
+                            // Two rows below
+                            if (y + 2 < height) {
+                                data[((y + 2) * width + x) * 4 + c] += errorFraction;
+                            }
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                // Create new ImageData from the modified data
+                return new ImageData(data, width, height);
+            }
+
+            // Floyd-Steinberg dithering algorithm
+            function floydSteinbergDither(imageData, colorLevels) {
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                const quantizeGamma = (value) => {
+                    const linear = Math.pow(value / 255, 2.2);
+                    const level = Math.round(linear * (colorLevels - 1));
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+                            const newValue = quantizeGamma(oldValue);
+                            const error = oldValue - newValue;
+
+                            data[idx + c] = newValue;
+
+                            // Floyd-Steinberg error distribution
+                            // Right pixel (7/16)
+                            if (x + 1 < width) {
+                                data[idx + 4 + c] += error * 7 / 16;
+                            }
+
+                            // Below left (-1, +1) (3/16)
+                            if (y + 1 < height && x - 1 >= 0) {
+                                data[((y + 1) * width + (x - 1)) * 4 + c] += error * 3 / 16;
+                            }
+
+                            // Below (0, +1) (5/16)
+                            if (y + 1 < height) {
+                                data[((y + 1) * width + x) * 4 + c] += error * 5 / 16;
+                            }
+
+                            // Below right (+1, +1) (1/16)
+                            if (y + 1 < height && x + 1 < width) {
+                                data[((y + 1) * width + (x + 1)) * 4 + c] += error * 1 / 16;
+                            }
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                return new ImageData(data, width, height);
+            }
+
+            // Sierra dithering algorithm
+            function sierraDither(imageData, colorLevels) {
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                const quantizeGamma = (value) => {
+                    const linear = Math.pow(value / 255, 2.2);
+                    const level = Math.round(linear * (colorLevels - 1));
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+                            const newValue = quantizeGamma(oldValue);
+                            const error = oldValue - newValue;
+
+                            data[idx + c] = newValue;
+
+                            // Sierra error distribution (divider: 32)
+                            // Row 0
+                            if (x + 1 < width) {
+                                data[idx + 4 + c] += error * 5 / 32;
+                            }
+                            if (x + 2 < width) {
+                                data[idx + 8 + c] += error * 3 / 32;
+                            }
+
+                            // Row 1
+                            if (y + 1 < height && x - 2 >= 0) {
+                                data[((y + 1) * width + (x - 2)) * 4 + c] += error * 2 / 32;
+                            }
+                            if (y + 1 < height && x - 1 >= 0) {
+                                data[((y + 1) * width + (x - 1)) * 4 + c] += error * 4 / 32;
+                            }
+                            if (y + 1 < height) {
+                                data[((y + 1) * width + x) * 4 + c] += error * 5 / 32;
+                            }
+                            if (y + 1 < height && x + 1 < width) {
+                                data[((y + 1) * width + (x + 1)) * 4 + c] += error * 4 / 32;
+                            }
+                            if (y + 1 < height && x + 2 < width) {
+                                data[((y + 1) * width + (x + 2)) * 4 + c] += error * 2 / 32;
+                            }
+
+                            // Row 2
+                            if (y + 2 < height && x - 1 >= 0) {
+                                data[((y + 2) * width + (x - 1)) * 4 + c] += error * 2 / 32;
+                            }
+                            if (y + 2 < height) {
+                                data[((y + 2) * width + x) * 4 + c] += error * 3 / 32;
+                            }
+                            if (y + 2 < height && x + 1 < width) {
+                                data[((y + 2) * width + (x + 1)) * 4 + c] += error * 2 / 32;
+                            }
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                return new ImageData(data, width, height);
+            }
+
+            // Burkes dithering algorithm
+            function burkesDither(imageData, colorLevels) {
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                const quantizeGamma = (value) => {
+                    const linear = Math.pow(value / 255, 2.2);
+                    const level = Math.round(linear * (colorLevels - 1));
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+                            const newValue = quantizeGamma(oldValue);
+                            const error = oldValue - newValue;
+
+                            data[idx + c] = newValue;
+
+                            // Burkes error distribution (divider: 32)
+                            // Row 0
+                            if (x + 1 < width) {
+                                data[idx + 4 + c] += error * 8 / 32;
+                            }
+                            if (x + 2 < width) {
+                                data[idx + 8 + c] += error * 4 / 32;
+                            }
+
+                            // Row 1
+                            if (y + 1 < height && x - 2 >= 0) {
+                                data[((y + 1) * width + (x - 2)) * 4 + c] += error * 2 / 32;
+                            }
+                            if (y + 1 < height && x - 1 >= 0) {
+                                data[((y + 1) * width + (x - 1)) * 4 + c] += error * 4 / 32;
+                            }
+                            if (y + 1 < height) {
+                                data[((y + 1) * width + x) * 4 + c] += error * 8 / 32;
+                            }
+                            if (y + 1 < height && x + 1 < width) {
+                                data[((y + 1) * width + (x + 1)) * 4 + c] += error * 4 / 32;
+                            }
+                            if (y + 1 < height && x + 2 < width) {
+                                data[((y + 1) * width + (x + 2)) * 4 + c] += error * 2 / 32;
+                            }
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                return new ImageData(data, width, height);
+            }
+
+            // Jarvis, Judice, and Ninke dithering algorithm
+            function jarvisDither(imageData, colorLevels) {
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                const quantizeGamma = (value) => {
+                    const linear = Math.pow(value / 255, 2.2);
+                    const level = Math.round(linear * (colorLevels - 1));
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+                            const newValue = quantizeGamma(oldValue);
+                            const error = oldValue - newValue;
+
+                            data[idx + c] = newValue;
+
+                            // Jarvis error distribution (divider: 48)
+                            // Row 0 (current row)
+                            if (x + 1 < width) {
+                                data[idx + 4 + c] += error * 7 / 48;
+                            }
+                            if (x + 2 < width) {
+                                data[idx + 8 + c] += error * 5 / 48;
+                            }
+
+                            // Row 1 (next row)
+                            if (y + 1 < height && x - 2 >= 0) {
+                                data[((y + 1) * width + (x - 2)) * 4 + c] += error * 3 / 48;
+                            }
+                            if (y + 1 < height && x - 1 >= 0) {
+                                data[((y + 1) * width + (x - 1)) * 4 + c] += error * 5 / 48;
+                            }
+                            if (y + 1 < height) {
+                                data[((y + 1) * width + x) * 4 + c] += error * 7 / 48;
+                            }
+                            if (y + 1 < height && x + 1 < width) {
+                                data[((y + 1) * width + (x + 1)) * 4 + c] += error * 5 / 48;
+                            }
+                            if (y + 1 < height && x + 2 < width) {
+                                data[((y + 1) * width + (x + 2)) * 4 + c] += error * 3 / 48;
+                            }
+
+                            // Row 2 (two rows below)
+                            if (y + 2 < height && x - 2 >= 0) {
+                                data[((y + 2) * width + (x - 2)) * 4 + c] += error * 1 / 48;
+                            }
+                            if (y + 2 < height && x - 1 >= 0) {
+                                data[((y + 2) * width + (x - 1)) * 4 + c] += error * 3 / 48;
+                            }
+                            if (y + 2 < height) {
+                                data[((y + 2) * width + x) * 4 + c] += error * 5 / 48;
+                            }
+                            if (y + 2 < height && x + 1 < width) {
+                                data[((y + 2) * width + (x + 1)) * 4 + c] += error * 3 / 48;
+                            }
+                            if (y + 2 < height && x + 2 < width) {
+                                data[((y + 2) * width + (x + 2)) * 4 + c] += error * 1 / 48;
+                            }
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                return new ImageData(data, width, height);
+            }
+
+            // Blue noise dithering algorithm
+            function blueNoiseDither(imageData, colorLevels) {
+                const startTime = performance.now();
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                // Generate better blue noise pattern using Mitchell's best-candidate algorithm
+                const noiseSize = 64;
+                const noisePattern = generateBlueNoisePattern(noiseSize);
+
+                const quantizeGamma = (value) => {
+                    const linear = Math.pow(value / 255, 2.2);
+                    const level = Math.round(linear * (colorLevels - 1));
+                    return Math.pow(level / (colorLevels - 1), 1 / 2.2) * 255;
+                };
+
+                for (let y = 0; y < height; y++) {
+                    for (let x = 0; x < width; x++) {
+                        const idx = (y * width + x) * 4;
+
+                        // Get noise value from tiled pattern
+                        const noiseX = x % noiseSize;
+                        const noiseY = y % noiseSize;
+                        const noise = noisePattern[noiseY * noiseSize + noiseX];
+
+                        // Convert noise to threshold (-1 to 1, then scale)
+                        const threshold = (noise - 0.5) * 64 / colorLevels;
+
+                        for (let c = 0; c < 3; c++) {
+                            const oldValue = data[idx + c];
+
+                            // Apply threshold for quantization decision
+                            const adjustedValue = oldValue + threshold;
+                            const newValue = quantizeGamma(Math.max(0, Math.min(255, adjustedValue)));
+
+                            data[idx + c] = newValue;
+                        }
+                    }
+                }
+
+                const endTime = performance.now();
+
+                return new ImageData(data, width, height);
+            }
+
+            // Generate blue noise pattern using a simplified void-and-cluster approach
+            function generateBlueNoisePattern(size) {
+                const pattern = new Float32Array(size * size);
+                const occupied = new Array(size * size).fill(false);
+                const numPoints = Math.floor(size * size * 0.5); // About 50% coverage
+
+                // Simple seeded random number generator for consistency
+                let seed = 12345;
+                const random = () => {
+                    seed = (seed * 9301 + 49297) % 233280;
+                    return seed / 233280;
+                };
+
+                // Place points using Mitchell's best-candidate algorithm
+                const points = [];
+                const candidates = 30; // Number of candidates to test per point
+
+                for (let i = 0; i < numPoints; i++) {
+                    let bestCandidate = null;
+                    let bestDistance = -1;
+
+                    // Test multiple random candidates
+                    for (let c = 0; c < candidates; c++) {
+                        const x = Math.floor(random() * size);
+                        const y = Math.floor(random() * size);
+                        const candidate = { x, y };
+
+                        // Find minimum distance to existing points
+                        let minDistance = Infinity;
+                        for (const point of points) {
+                            // Use toroidal distance for seamless tiling
+                            const dx = Math.min(Math.abs(candidate.x - point.x),
+                                size - Math.abs(candidate.x - point.x));
+                            const dy = Math.min(Math.abs(candidate.y - point.y),
+                                size - Math.abs(candidate.y - point.y));
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            minDistance = Math.min(minDistance, distance);
+                        }
+
+                        // Keep the candidate with the largest minimum distance
+                        if (minDistance > bestDistance) {
+                            bestDistance = minDistance;
+                            bestCandidate = candidate;
+                        }
+                    }
+
+                    if (bestCandidate) {
+                        points.push(bestCandidate);
+                        const index = bestCandidate.y * size + bestCandidate.x;
+                        occupied[index] = true;
+                    }
+                }
+
+                // Create smooth distance field from points
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        let minDistance = Infinity;
+
+                        // Find distance to nearest point
+                        for (const point of points) {
+                            const dx = Math.min(Math.abs(x - point.x), size - Math.abs(x - point.x));
+                            const dy = Math.min(Math.abs(y - point.y), size - Math.abs(y - point.y));
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            minDistance = Math.min(minDistance, distance);
+                        }
+
+                        // Convert distance to noise value (0-1)
+                        const maxDistance = Math.sqrt(2) * size / 4;
+                        pattern[y * size + x] = Math.min(minDistance / maxDistance, 1.0);
+                    }
+                }
+
+                return pattern;
+            }
+
+            // Global variables to store canvas and image data
+            let canvas, ctx, originalImageData, ditheredImage;
+            let width, height;
+
+            function updateFigImagePreview(figImage, src) {
+                const mediaElement = figImage?.mediaEl || figImage?.querySelector('img.fig-media-element, img');
+
+                if (mediaElement) {
+                    mediaElement.src = src;
+                    return;
+                }
+
+                figImage?.setAttribute('src', src);
+            }
+
+            // Function to resize images based on scale
+            async function resizeImages() {
+                if (!img || !img.complete) return;
+
+                const scale = parseFloat(document.getElementById('imageScale').value);
+
+                width = img.naturalWidth;
+                height = img.naturalHeight;
+
+
+                // Recreate canvas with new dimensions
+                canvas = new OffscreenCanvas(width * (scale / 100), height * (scale / 100));
+                ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+                // Draw the image onto the canvas with new dimensions
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Store new original image data
+                originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Reapply dithering with current settings
+                const colorLevels = parseInt(document.getElementById('colorLevels').value);
+                const brightnessAdjust = parseInt(document.getElementById('threshold').value);
+                const contrastAdjust = parseInt(document.getElementById('contrast').value);
+                const isGrayscale = document.getElementById('blackWhiteMode').checked;
+                const isInverted = document.getElementById('invertColors').checked;
+
+                await applyDithering(colorLevels, brightnessAdjust, contrastAdjust, isGrayscale, isInverted);
+            }
+
+            // Apply brightness adjustment to color images
+            function applyBrightnessAdjustment(imageData, brightnessAdjust) {
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    // Apply brightness adjustment to each RGB channel (-100 to +100)
+                    data[i] = Math.max(0, Math.min(255, data[i] + brightnessAdjust));       // R
+                    data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + brightnessAdjust)); // G
+                    data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + brightnessAdjust)); // B
+                    // Alpha stays the same
+                }
+
+                return new ImageData(data, width, height);
+            }
+
+            // Convert image to grayscale with brightness adjustment
+            function applyGrayscaleWithBrightness(imageData, brightnessAdjust) {
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    // Convert to grayscale using luminance formula
+                    const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+
+                    // Apply brightness adjustment (-100 to +100)
+                    const adjustedGray = Math.max(0, Math.min(255, gray + brightnessAdjust));
+
+                    // Set RGB to the same grayscale value
+                    data[i] = adjustedGray;     // R
+                    data[i + 1] = adjustedGray; // G
+                    data[i + 2] = adjustedGray; // B
+                    // Alpha stays the same
+                }
+
+                return new ImageData(data, width, height);
+            }
+
+            // Invert colors in the image
+            function applyColorInversion(imageData) {
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    // Invert RGB channels
+                    data[i] = 255 - data[i];         // R
+                    data[i + 1] = 255 - data[i + 1]; // G
+                    data[i + 2] = 255 - data[i + 2]; // B
+                    // Alpha stays the same
+                }
+
+                return new ImageData(data, width, height);
+            }
+
+            // Apply contrast adjustment to the image
+            function applyContrastAdjustment(imageData, contrastAdjust) {
+                const data = new Uint8ClampedArray(imageData.data);
+                const width = imageData.width;
+                const height = imageData.height;
+
+                // Convert -100 to +100 range to contrast factor (0.5 to 2.0)
+                const contrastFactor = contrastAdjust >= 0
+                    ? 1 + (contrastAdjust / 100) * 1.0  // 0 to +100 -> 1.0 to 2.0
+                    : 1 + (contrastAdjust / 100) * 0.5; // -100 to 0 -> 0.5 to 1.0
+
+                for (let i = 0; i < data.length; i += 4) {
+                    // Apply contrast to RGB channels
+                    for (let c = 0; c < 3; c++) {
+                        // Center around 128 (middle gray), apply contrast, then add back
+                        const adjusted = (data[i + c] - 128) * contrastFactor + 128;
+                        data[i + c] = Math.max(0, Math.min(255, adjusted));
+                    }
+                    // Alpha stays the same
+                }
+
+                return new ImageData(data, width, height);
+            }
+
+            async function applyDithering(colorLevels, brightnessAdjust = 0, contrastAdjust = 0, isGrayscale = false, isInverted = false) {
+                if (!originalImageData) return;
+
+                // Clear the canvas and redraw the original image
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Get fresh image data
+                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                // Apply color inversion if enabled (first)
+                if (isInverted) {
+                    imageData = applyColorInversion(imageData);
+                }
+
+                // Apply contrast adjustment (second)
+                if (contrastAdjust !== 0) {
+                    imageData = applyContrastAdjustment(imageData, contrastAdjust);
+                }
+
+                // Apply grayscale conversion with brightness adjustment if enabled (third)
+                if (isGrayscale) {
+                    imageData = applyGrayscaleWithBrightness(imageData, brightnessAdjust);
+                } else if (brightnessAdjust !== 0) {
+                    // Apply brightness adjustment to color images (fourth)
+                    imageData = applyBrightnessAdjustment(imageData, brightnessAdjust);
+                }
+
+                // Get selected dithering algorithm
+                const algorithm = document.getElementById('ditheringAlgorithm').value;
+
+                // Apply selected dithering algorithm
+                let ditheredData;
+                switch (algorithm) {
+                    case 'floydSteinberg':
+                        ditheredData = floydSteinbergDither(imageData, colorLevels);
+                        break;
+                    case 'jarvis':
+                        ditheredData = jarvisDither(imageData, colorLevels);
+                        break;
+                    case 'sierra':
+                        ditheredData = sierraDither(imageData, colorLevels);
+                        break;
+                    case 'burkes':
+                        ditheredData = burkesDither(imageData, colorLevels);
+                        break;
+                    case 'blueNoise':
+                        ditheredData = blueNoiseDither(imageData, colorLevels);
+                        break;
+                    case 'atkinson':
+                    default:
+                        ditheredData = atkinsonDither(imageData, colorLevels);
+                        break;
+                }
+
+                // Put the dithered data back onto the canvas
+                ctx.putImageData(ditheredData, 0, 0);
+
+                // Update the dithered image
+                if (ditheredImage) {
+                    try {
+                        const blob = await canvas.convertToBlob();
+                        // Clean up previous object URL to prevent memory leaks
+                        if (objectURL) {
+                            URL.revokeObjectURL(objectURL);
+                        }
+                        objectURL = URL.createObjectURL(blob);
+                        updateFigImagePreview(ditheredImage, objectURL);
+                        ditheredImage.blob = objectURL;
+                    } catch (error) {
+                        console.error('Error converting canvas to blob:', error);
+                    }
+                }
+            }
+
+            let img = new Image();
+
+            function loadImageFromFigImage() {
+                const figImage = document.querySelector('fig-image');
+                const imageSrc = figImage?.getAttribute('src');
+
+                if (imageSrc) {
+                    img.src = imageSrc;
+                }
+            }
+
+            img.onload = async () => {
+                if (img) {
+                    const scale = parseFloat(document.getElementById('imageScale').value);
+                    width = img.naturalWidth;
+                    height = img.naturalHeight;
+                    const figImage = document.querySelector('fig-image');
+                    figImage?.setAttribute('aspect-ratio', `${width} / ${height}`);
+
+                    const imagesContainer = document.querySelector('.images');
+
+                    // Clear existing containers
+                    imagesContainer.innerHTML = '';
+
+                    // Create an offscreen canvas to extract image data
+                    canvas = new OffscreenCanvas(width * (scale / 100), height * (scale / 100));
+                    ctx = canvas.getContext('2d', { willReadFrequently: true });
+                    canvas.width = width * (scale / 100);
+                    canvas.height = height * (scale / 100);
+
+                    // Draw the image onto the canvas
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                    // Store original image data
+                    originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    // Create a new image element for the dithered result
+                    ditheredImage = figImage;
+
+                    // Apply initial dithering
+                    const initialColorLevels = parseInt(document.getElementById('colorLevels').value);
+                    const initialBrightnessAdjust = parseInt(document.getElementById('threshold').value);
+                    const initialContrastAdjust = parseInt(document.getElementById('contrast').value);
+                    const initialGrayscale = document.getElementById('blackWhiteMode').checked;
+                    const initialInverted = document.getElementById('invertColors').checked;
+                    await applyDithering(initialColorLevels, initialBrightnessAdjust, initialContrastAdjust, initialGrayscale, initialInverted);
+                }
+            }
+
+            // Load initial image
+            loadImageFromFigImage();
+
+            // Debounce utility function
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Add event listeners
+            document.addEventListener('DOMContentLoaded', () => {
+                const slider = document.getElementById('colorLevels');
+                const scaleSlider = document.getElementById('imageScale');
+                const algorithmSelect = document.getElementById('ditheringAlgorithm');
+                const blackWhiteCheckbox = document.getElementById('blackWhiteMode');
+                const thresholdSlider = document.getElementById('threshold');
+                const contrastSlider = document.getElementById('contrast');
+                const invertColorsCheckbox = document.getElementById('invertColors');
+                const figImage = document.querySelector('fig-image');
+
+                const updateDithering = async () => {
+                    const colorLevels = parseInt(slider.value);
+                    const brightnessAdjust = parseInt(thresholdSlider.value);
+                    const contrastAdjust = parseInt(contrastSlider.value);
+                    const isGrayscale = blackWhiteCheckbox.checked;
+                    const isInverted = invertColorsCheckbox.checked;
+                    await applyDithering(colorLevels, brightnessAdjust, contrastAdjust, isGrayscale, isInverted);
+                };
+
+                // Create debounced versions of the update functions
+                const debouncedUpdateDithering = debounce(updateDithering, 300);
+                const debouncedResizeImages = debounce(resizeImages, 300);
+
+                // Handle fig-image changes (uploads or src changes)
+                if (figImage) {
+                    figImage.addEventListener('loaded', (e) => {
+                        // Use the event detail when available (e.g. uploads),
+                        // since the src attribute may not be updated yet when loaded fires
+                        const src = e.detail?.src || e.detail?.blob || e.detail?.base64 || figImage.getAttribute('src');
+                        if (src) {
+                            img.src = src;
+                        }
+                    });
+                }
+
+                slider.addEventListener('input', (e) => {
+                    const colorLevels = parseInt(e.detail?.value || e.target.value);
+                    debouncedUpdateDithering();
+                });
+
+                scaleSlider.addEventListener('input', (e) => {
+                    const scale = parseFloat(e.detail?.value || e.target.value);
+                    debouncedResizeImages();
+                });
+
+                thresholdSlider.addEventListener('input', (e) => {
+                    const brightnessAdjust = parseInt(e.detail?.value || e.target.value);
+                    debouncedUpdateDithering();
+                });
+
+                contrastSlider.addEventListener('input', (e) => {
+                    const contrastAdjust = parseInt(e.detail?.value || e.target.value);
+                    debouncedUpdateDithering();
+                });
+
+                algorithmSelect.addEventListener('change', (e) => {
+                    updateDithering();
+                });
+
+                blackWhiteCheckbox.addEventListener('change', (e) => {
+                    updateDithering();
+                });
+
+                invertColorsCheckbox.addEventListener('change', (e) => {
+                    updateDithering();
+                });
+
+            });
+
+        </script>
+    </main>

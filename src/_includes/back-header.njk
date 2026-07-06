@@ -1,0 +1,16 @@
+<header>
+    <fig-tooltip text="Home">
+        <fig-button type="link"
+                    class="back"
+                    icon="true"
+                    variant="secondary"
+                    href="{{ backHref or '/' }}">
+            <img src="/assets/icon-back.svg"
+                 alt="Back">
+        </fig-button>
+    </fig-tooltip>
+    <h1>{{ heading or title }}</h1>
+    {% if intro %}
+    <p class="page-intro">{{ intro | safe }}</p>
+    {% endif %}
+</header>

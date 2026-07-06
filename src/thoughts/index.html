@@ -1,0 +1,1255 @@
+---
+layout: base.njk
+title: "Thoughts"
+description: "A stream of spoken thoughts."
+headExtra: |
+  <style>
+          body {
+              max-width: 38rem;
+          }
+  
+          .thoughts-header {
+              margin-bottom: 1.5rem;
+  
+              h1 {
+                  display: flex;
+                  align-items: center;
+                  gap: 0.5rem;
+              }
+          }
+  
+          .thoughts-shell {
+              display: flex;
+              flex-direction: column;
+              gap: 0.85rem;
+              padding-bottom: 1rem;
+          }
+  
+          .thought-card {
+              display: grid;
+              grid-template-columns: auto 1fr;
+              gap: 0.75rem;
+              align-items: start;
+          }
+  
+          .thought-card[hidden] {
+              display: none;
+          }
+  
+          .thought-bubble {
+              border-width: 14px;
+              border-style: solid;
+              border-image: url(/assets/chat-bubble-green.svg);
+              border-image-slice: 14 14 14 14;
+              border-image-repeat: stretch repeat;
+              background-clip: content-box;
+              background-color: #b3fa75;
+              color: #000;
+              filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+              width: 100%;
+          }
+  
+          .thought-bubble__inner {
+              margin: -0.5rem calc(0.25rem - 2px);
+              display: flex;
+              flex-direction: column;
+              gap: 0.55rem;
+          }
+  
+          .thought-meta {
+              display: flex;
+              align-items: center;
+              gap: 0.45rem;
+              flex-wrap: wrap;
+              font-size: 0.65rem;
+              letter-spacing: 0.02em;
+              color: rgba(0, 0, 0, 0.45);
+              text-transform: uppercase;
+          }
+  
+          .thought-meta-wrap {
+              grid-column: 2;
+              padding-left: 0.1rem;
+              margin-top: -0.15rem;
+          }
+  
+          .thought-title {
+              font-size: 0.82rem;
+              line-height: 1.2;
+              color: rgba(0, 0, 0, 0.82);
+              font-weight: 600;
+              margin: 0;
+              text-wrap: balance;
+              letter-spacing: 0.01em;
+          }
+  
+          .thought-meta__dot {
+              width: 0.2rem;
+              height: 0.2rem;
+              border-radius: 50%;
+              background: currentColor;
+              opacity: 0.5;
+          }
+  
+          .thought-text {
+              font-size: 0.78rem;
+              line-height: 1.4;
+              color: rgba(0, 0, 0, 0.72);
+              display: block;
+              margin: 0;
+          }
+  
+          .thought-text[data-empty="true"] {
+              color: rgba(0, 0, 0, 0.45);
+              font-style: italic;
+          }
+  
+          .thought-text[data-collapsed="true"] {
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+          }
+  
+          .thought-play {
+              --progress: 0;
+              position: relative;
+              width: 3rem;
+              height: 3rem;
+              border: 0;
+              padding: 0;
+              margin-top: 0.15rem;
+              background: none;
+              cursor: pointer;
+              display: grid;
+              place-items: center;
+          }
+  
+          .thought-play:focus-visible {
+              outline: 2px solid rgba(0, 0, 0, 0.3);
+              outline-offset: 0.2rem;
+              border-radius: 999px;
+          }
+  
+          .thought-play svg {
+              width: 100%;
+              height: 100%;
+              overflow: visible;
+              transform: rotate(-90deg);
+          }
+  
+          .thought-play__track,
+          .thought-play__progress {
+              fill: none;
+              stroke-width: 2.75;
+          }
+  
+          .thought-play__track {
+              stroke: rgba(0, 0, 0, 0.12);
+          }
+  
+          .thought-play__progress {
+              stroke: rgba(0, 0, 0, 0.72);
+              stroke-linecap: round;
+              transition: stroke-dashoffset 120ms linear;
+          }
+  
+          .thought-play__button {
+              position: absolute;
+              inset: 0.4rem;
+              border-radius: 999px;
+              background: rgba(255, 255, 255, 0.7);
+              box-shadow:
+                  inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                  0 0 0 1px rgba(0, 0, 0, 0.06);
+              display: grid;
+              place-items: center;
+              transition: transform 120ms ease, background-color 120ms ease;
+          }
+  
+          .thought-play:hover .thought-play__button {
+              transform: scale(1.03);
+              background: rgba(255, 255, 255, 0.82);
+          }
+  
+          .thought-play__icon {
+              width: 0.85rem;
+              height: 0.85rem;
+              position: relative;
+              display: block;
+          }
+  
+          .thought-play__icon::before,
+          .thought-play__icon::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background-repeat: no-repeat;
+              background-position: center;
+              background-size: contain;
+              transition: opacity 120ms ease;
+          }
+  
+          .thought-play__icon::before {
+              background-image: url(/assets/play.svg);
+              opacity: 1;
+          }
+  
+          .thought-play__icon::after {
+              background-image: url(/assets/pause.svg);
+              opacity: 0;
+          }
+  
+          .thought-card[data-playing="true"] .thought-play__icon::before {
+              opacity: 0;
+          }
+  
+          .thought-card[data-playing="true"] .thought-play__icon::after {
+              opacity: 1;
+          }
+  
+          .thought-voice-row {
+              display: grid;
+              grid-template-columns: auto 1fr auto;
+              gap: 0.8rem;
+              align-items: center;
+          }
+  
+          .thought-waveform {
+              min-width: 0;
+              height: 2.25rem;
+              display: block;
+          }
+  
+          .thought-waveform-shell {
+              position: relative;
+              min-width: 0;
+              height: 2.25rem;
+              --wave-progress: 0;
+          }
+  
+          .thought-waveform-progress {
+              position: absolute;
+              inset: 0 auto 0 0;
+              width: calc(var(--wave-progress) * 100%);
+              background: rgba(0, 0, 0, 0.12);
+              border-radius: 0.5rem;
+              pointer-events: none;
+              z-index: 0;
+              transition: width 90ms linear;
+          }
+  
+          .thought-waveform[data-ready="false"] {
+              opacity: 0.5;
+          }
+  
+          .thought-waveform ::part(wrapper) {
+              cursor: pointer;
+              position: relative;
+              z-index: 1;
+          }
+  
+          .thought-waveform ::part(cursor) {
+              width: 2px;
+              background: rgba(255, 255, 255, 0.9);
+              border-radius: 999px;
+          }
+  
+          .thought-waveform ::part(region) {
+              display: none;
+          }
+  
+          .thought-duration {
+              font-size: 0.7rem;
+              color: rgba(0, 0, 0, 0.48);
+              font-variant-numeric: tabular-nums;
+              letter-spacing: 0.02em;
+          }
+  
+          .thought-transcript-row {
+              display: flex;
+              align-items: baseline;
+              gap: 0.4rem;
+              min-width: 0;
+          }
+  
+          .thought-more {
+              border: 0;
+              background: none;
+              color: rgba(0, 0, 0, 0.55);
+              font-size: 0.72rem;
+              font-weight: 600;
+              padding: 0;
+              flex: 0 0 auto;
+              cursor: pointer;
+          }
+  
+          .thought-more:hover {
+              color: rgba(0, 0, 0, 0.82);
+          }
+  
+          .thought-more[hidden] {
+              display: none;
+          }
+  
+          .thought-avatar {
+              margin-top: 0.2rem;
+              flex-shrink: 0;
+              background-color: var(--color-bg-inset);
+              box-shadow: var(--shadow-inset);
+              overflow: visible;
+          }
+  
+          .thought-avatar::after {
+              content: "" !important;
+              display: block;
+              width: 120%;
+              height: 120%;
+              margin: -13% -10% 0 0;
+              background-image: url("/assets/avatar-rogie.png");
+              background-size: contain;
+              background-position: center;
+          }
+  
+          .thought-empty,
+          .thought-error {
+              border-radius: var(--base-radius);
+              background: rgba(255, 255, 255, 0.8);
+              box-shadow: var(--shadow);
+              padding: 1rem;
+              color: var(--color-text-secondary);
+          }
+  
+          .thought-empty code,
+          .thought-error code {
+              color: var(--color-text);
+          }
+  
+          @media (width < 480px) {
+              body {
+                  max-width: 100%;
+              }
+  
+              .thought-card {
+                  gap: 0.6rem;
+              }
+  
+              .thought-play {
+                  width: 2.85rem;
+                  height: 2.85rem;
+              }
+  
+              .thought-voice-row {
+                  gap: 0.55rem;
+              }
+  
+              .thought-waveform {
+                  height: 2rem;
+              }
+  
+              .thought-waveform-shell {
+                  height: 2rem;
+              }
+          }
+      </style>
+---
+<header class="thoughts-header">
+        <fig-button class="back"
+                    variant="secondary"
+                    icon="true"
+                    aria-label="Go back"
+                    onclick="history.back()"></fig-button>
+        <h1>Thoughts</h1>
+        <p>Short spoken notes loaded from <code>/thoughts/recordings</code>.</p>
+    </header>
+
+    <rk-chat>
+        <rk-chat-message from="me"
+                         style="green">
+            Little audio thoughts. Tap a bubble to listen.
+        </rk-chat-message>
+    </rk-chat>
+
+    <main>
+        <section class="thoughts-shell"
+                 id="thoughtsList"
+                 aria-live="polite">
+            <div class="thought-empty">Loading thoughts…</div>
+        </section>
+    </main>
+<script type="module">
+        import WaveSurfer from "https://cdn.jsdelivr.net/npm/wavesurfer.js@7/dist/wavesurfer.esm.js";
+        const THOUGHTS_DIR = "./recordings/";
+        const RECORDINGS_BASE_URL = new URL(THOUGHTS_DIR, window.location.href);
+        const MANIFEST_URL = new URL("index.json", RECORDINGS_BASE_URL).href;
+        const listEl = document.getElementById("thoughtsList");
+        const waveSurfers = new Map();
+
+        let thoughts = [];
+        let currentThoughtId = null;
+
+        const dateFormatter = new Intl.DateTimeFormat(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "2-digit",
+        });
+
+        const durationFormatter = new Intl.NumberFormat(undefined, {
+            minimumIntegerDigits: 2,
+        });
+
+        function escapeHtml(value = "") {
+            return String(value)
+                .replaceAll("&", "&amp;")
+                .replaceAll("<", "&lt;")
+                .replaceAll(">", "&gt;")
+                .replaceAll('"', "&quot;");
+        }
+
+        function normalizeRelativeUrl(fileName) {
+            return new URL(fileName, RECORDINGS_BASE_URL).href;
+        }
+
+        async function loadManifestEntries() {
+            const response = await fetch(MANIFEST_URL, { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`Manifest request failed with ${response.status}`);
+            }
+
+            const payload = await response.json();
+            const files = Array.isArray(payload) ? payload : payload.files;
+            if (!Array.isArray(files)) {
+                throw new Error("Manifest must be an array or { files: [] }");
+            }
+
+            return files
+                .filter((entry) => {
+                    if (typeof entry === "string") {
+                        return /\.(mp3|m4a)$/i.test(entry);
+                    }
+
+                    return typeof entry?.file === "string" && /\.(mp3|m4a)$/i.test(entry.file);
+                });
+        }
+
+        async function loadDirectoryListingUrls() {
+            const response = await fetch(THOUGHTS_DIR, { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`Directory listing request failed with ${response.status}`);
+            }
+
+            const html = await response.text();
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const links = Array.from(doc.querySelectorAll("a[href]"));
+            const urls = links
+                .map((link) => link.getAttribute("href"))
+                .filter((href) => href && /\.(mp3|m4a)$/i.test(href))
+                .map((href) => new URL(href, response.url).href);
+
+            return Array.from(new Set(urls));
+        }
+
+        async function listRecordingUrls() {
+            try {
+                const manifestEntries = await loadManifestEntries();
+                if (manifestEntries.length > 0) {
+                    return manifestEntries;
+                }
+            } catch (error) {
+                console.info("Thoughts manifest unavailable, trying directory listing.", error);
+            }
+
+            return loadDirectoryListingUrls();
+        }
+
+        function syncSafeToInt(bytes) {
+            return ((bytes[0] & 0x7f) << 21)
+                | ((bytes[1] & 0x7f) << 14)
+                | ((bytes[2] & 0x7f) << 7)
+                | (bytes[3] & 0x7f);
+        }
+
+        function decodeLatin1(bytes) {
+            return Array.from(bytes || [], (byte) => String.fromCharCode(byte)).join("");
+        }
+
+        function readNullTerminated(data, encoding) {
+            let offset = 0;
+            if (encoding === 0 || encoding === 3) {
+                while (offset < data.length && data[offset] !== 0) {
+                    offset += 1;
+                }
+                return {
+                    value: decodeTextBytes(data.slice(0, offset), encoding),
+                    nextOffset: Math.min(offset + 1, data.length),
+                };
+            }
+
+            while (offset + 1 < data.length) {
+                if (data[offset] === 0 && data[offset + 1] === 0) {
+                    break;
+                }
+                offset += 2;
+            }
+
+            return {
+                value: decodeTextBytes(data.slice(0, offset), encoding),
+                nextOffset: Math.min(offset + 2, data.length),
+            };
+        }
+
+        function decodeTextBytes(bytes, encodingByte = 3) {
+            if (!bytes || bytes.length === 0) {
+                return "";
+            }
+
+            const encodingMap = {
+                0: "iso-8859-1",
+                1: "utf-16",
+                2: "utf-16be",
+                3: "utf-8",
+            };
+
+            const encoding = encodingMap[encodingByte] || "utf-8";
+            let decoder;
+
+            try {
+                decoder = new TextDecoder(encoding);
+            } catch (error) {
+                decoder = new TextDecoder("utf-8");
+            }
+
+            return decoder.decode(bytes).replace(/\u0000/g, "").trim();
+        }
+
+        function frameIdLooksValid(frameId, length = 4) {
+            return length === 3
+                ? /^[A-Z0-9]{3}$/.test(frameId)
+                : /^[A-Z0-9]{4}$/.test(frameId);
+        }
+
+        function parseMp3Date(value = "") {
+            const cleaned = value.trim();
+            if (!cleaned) {
+                return null;
+            }
+
+            const directDate = new Date(cleaned);
+            if (!Number.isNaN(directDate.getTime())) {
+                return directDate;
+            }
+
+            const compact = cleaned.match(/^(\d{4})(\d{2})(\d{2})$/);
+            if (compact) {
+                const [, year, month, day] = compact;
+                return new Date(`${year}-${month}-${day}T00:00:00`);
+            }
+
+            const yearOnly = cleaned.match(/^(\d{4})$/);
+            if (yearOnly) {
+                return new Date(`${yearOnly[1]}-01-01T00:00:00`);
+            }
+
+            return null;
+        }
+
+        function buildId3CombinedDate(fields) {
+            const year = fields.get("TYER") || fields.get("TYE");
+            const date = fields.get("TDAT") || fields.get("TDA");
+            const time = fields.get("TIME") || fields.get("TIM");
+
+            if (!year && !date && !time) {
+                return null;
+            }
+
+            const normalizedYear = year?.match(/\d{4}/)?.[0] || "1970";
+            const normalizedDate = date?.match(/(\d{2})(\d{2})/);
+            const normalizedTime = time?.match(/(\d{2})(\d{2})/);
+            const day = normalizedDate?.[1] || "01";
+            const month = normalizedDate?.[2] || "01";
+            const hour = normalizedTime?.[1] || "00";
+            const minute = normalizedTime?.[2] || "00";
+
+            return parseMp3Date(`${normalizedYear}-${month}-${day}T${hour}:${minute}:00`);
+        }
+
+        function filenameToText(url) {
+            const fileName = decodeURIComponent(url.split("/").pop() || "Untitled thought");
+            return fileName
+                .replace(/\.(mp3|m4a)$/i, "")
+                .replace(/[-_]+/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function toSentenceCase(value = "") {
+            const trimmed = value.trim();
+            if (!trimmed) {
+                return "Untitled thought";
+            }
+
+            return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+        }
+
+        function prettifyTitle(value = "") {
+            const normalized = value
+                .replace(/\s+/g, " ")
+                .replace(/\b\d{1,2}\b/g, (match) => match)
+                .trim();
+
+            if (!normalized) {
+                return "Untitled thought";
+            }
+
+            return toSentenceCase(normalized);
+        }
+
+        function parseFilenameDate(url) {
+            const name = decodeURIComponent(url.split("/").pop() || "");
+            const match = name.match(/(20\d{2})[-_]?(\d{2})[-_]?(\d{2})(?:[-_T]?(\d{2}))?(?:[-_]?(\d{2}))?/);
+            if (!match) {
+                return null;
+            }
+
+            const [, year, month, day, hour = "00", minute = "00"] = match;
+            const date = new Date(`${year}-${month}-${day}T${hour}:${minute}:00`);
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        function getFileTypeLabel(url) {
+            const extension = url.split(".").pop()?.toLowerCase();
+            if (!extension) {
+                return "Audio";
+            }
+
+            return extension.toUpperCase();
+        }
+
+        function parseId3Metadata(bytes) {
+            if (bytes.length < 10 || String.fromCharCode(...bytes.slice(0, 3)) !== "ID3") {
+                return {};
+            }
+
+            const version = bytes[3];
+            const tagSize = syncSafeToInt(bytes.slice(6, 10)) + 10;
+            const limit = Math.min(tagSize, bytes.length);
+
+            const textFrames = new Map();
+            const specialFrames = [];
+            const isV22 = version === 2;
+            const headerSize = isV22 ? 6 : 10;
+            let offset = 10;
+
+            while (offset + headerSize <= limit) {
+                const frameIdLength = isV22 ? 3 : 4;
+                const frameId = decodeLatin1(bytes.slice(offset, offset + frameIdLength));
+                if (!frameIdLooksValid(frameId, frameIdLength)) {
+                    break;
+                }
+
+                const frameSize = isV22
+                    ? ((bytes[offset + 3] << 16) | (bytes[offset + 4] << 8) | bytes[offset + 5])
+                    : version === 4
+                        ? syncSafeToInt(bytes.slice(offset + 4, offset + 8))
+                        : ((bytes[offset + 4] << 24) | (bytes[offset + 5] << 16) | (bytes[offset + 6] << 8) | bytes[offset + 7]);
+
+                if (frameSize <= 0 || offset + headerSize + frameSize > limit) {
+                    break;
+                }
+
+                const payload = bytes.slice(offset + headerSize, offset + headerSize + frameSize);
+                if (payload.length > 0) {
+                    const encoding = payload[0];
+                    if (
+                        (frameId.startsWith("T") && frameId !== "TXXX")
+                        || (isV22 && frameId.startsWith("T") && frameId !== "TXX")
+                    ) {
+                        textFrames.set(frameId, decodeTextBytes(payload.slice(1), encoding));
+                    } else if (frameId === "TXXX" || frameId === "TXX") {
+                        const description = readNullTerminated(payload.slice(1), encoding);
+                        const value = decodeTextBytes(payload.slice(1 + description.nextOffset), encoding);
+                        specialFrames.push({
+                            id: frameId,
+                            description: description.value,
+                            value,
+                        });
+                    } else if (frameId === "COMM" || frameId === "USLT" || frameId === "COM" || frameId === "ULT") {
+                        const languageOffset = 4;
+                        const description = readNullTerminated(payload.slice(languageOffset), encoding);
+                        const value = decodeTextBytes(payload.slice(languageOffset + description.nextOffset), encoding);
+                        specialFrames.push({
+                            id: frameId,
+                            description: description.value,
+                            value,
+                        });
+                    }
+                }
+
+                offset += headerSize + frameSize;
+            }
+
+            const textCandidates = [
+                ...specialFrames
+                    .filter((frame) => /transcript|summary|text|note|thought/i.test(frame.description || ""))
+                    .map((frame) => frame.value),
+                ...specialFrames
+                    .filter((frame) => frame.id === "USLT")
+                    .map((frame) => frame.value),
+                ...specialFrames
+                    .filter((frame) => frame.id === "COMM" || frame.id === "COM")
+                    .map((frame) => frame.value),
+                textFrames.get("TIT2"),
+                textFrames.get("TT2"),
+            ].filter(Boolean);
+
+            const dateValue = textFrames.get("TDRC")
+                || textFrames.get("TDEN")
+                || textFrames.get("TDTG")
+                || textFrames.get("TYER")
+                || buildId3CombinedDate(textFrames);
+
+            return {
+                title: textFrames.get("TIT2") || textFrames.get("TT2") || "",
+                text: textCandidates[0] || "",
+                recordedAt: dateValue instanceof Date ? dateValue : parseMp3Date(dateValue),
+            };
+        }
+
+        function readUint32(dataView, offset) {
+            return dataView.getUint32(offset, false);
+        }
+
+        function readUint64(dataView, offset) {
+            const high = dataView.getUint32(offset, false);
+            const low = dataView.getUint32(offset + 4, false);
+            return Number((BigInt(high) << 32n) | BigInt(low));
+        }
+
+        function readAtomType(bytes, offset) {
+            return decodeLatin1(bytes.slice(offset, offset + 4));
+        }
+
+        function readMp4Atoms(bytes, start = 0, end = bytes.length) {
+            const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            const atoms = [];
+            let offset = start;
+
+            while (offset + 8 <= end) {
+                let size = readUint32(dataView, offset);
+                const type = readAtomType(bytes, offset + 4);
+                let headerSize = 8;
+
+                if (size === 1) {
+                    if (offset + 16 > end) {
+                        break;
+                    }
+                    size = readUint64(dataView, offset + 8);
+                    headerSize = 16;
+                } else if (size === 0) {
+                    size = end - offset;
+                }
+
+                if (size < headerSize || offset + size > end) {
+                    break;
+                }
+
+                atoms.push({
+                    type,
+                    start: offset,
+                    size,
+                    headerSize,
+                    dataStart: offset + headerSize,
+                    end: offset + size,
+                });
+
+                offset += size;
+            }
+
+            return atoms;
+        }
+
+        function parseMp4DataAtom(bytes, atom) {
+            if (atom.type !== "data" || atom.end - atom.dataStart < 8) {
+                return null;
+            }
+
+            const payloadStart = atom.dataStart + 8;
+            const payload = bytes.slice(payloadStart, atom.end);
+            return decodeTextBytes(payload, 3).trim();
+        }
+
+        function parseMp4Metadata(bytes) {
+            const dataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+            const containerTypes = new Set(["moov", "udta", "ilst", "trak", "mdia", "minf", "stbl"]);
+            const metadata = {
+                textValues: [],
+                dateValues: [],
+            };
+
+            function visitRange(start, end, parentType = "") {
+                const atoms = readMp4Atoms(bytes, start, end);
+
+                for (const atom of atoms) {
+                    if (atom.type === "meta") {
+                        visitRange(atom.dataStart + 4, atom.end, atom.type);
+                        continue;
+                    }
+
+                    if (atom.type === "mvhd" || atom.type === "mdhd") {
+                        const version = bytes[atom.dataStart];
+                        const creationOffset = version === 1 ? atom.dataStart + 4 : atom.dataStart + 4;
+                        const creationTime = version === 1
+                            ? readUint64(dataView, creationOffset)
+                            : readUint32(dataView, creationOffset);
+                        if (creationTime > 0) {
+                            const unixMs = (creationTime - 2082844800) * 1000;
+                            const date = new Date(unixMs);
+                            if (!Number.isNaN(date.getTime())) {
+                                metadata.dateValues.push(date.toISOString());
+                            }
+                        }
+                        continue;
+                    }
+
+                    if (parentType === "ilst") {
+                        const itemChildren = readMp4Atoms(bytes, atom.dataStart, atom.end);
+                        const values = [];
+                        let freeformName = "";
+                        let freeformMean = "";
+
+                        for (const child of itemChildren) {
+                            if (child.type === "data") {
+                                const value = parseMp4DataAtom(bytes, child);
+                                if (value) {
+                                    values.push(value);
+                                }
+                            } else if (child.type === "name" || child.type === "mean") {
+                                const value = decodeTextBytes(bytes.slice(child.dataStart + 4, child.end), 3).trim();
+                                if (child.type === "name") {
+                                    freeformName = value;
+                                } else {
+                                    freeformMean = value;
+                                }
+                            }
+                        }
+
+                        const tagName = atom.type;
+                        const joinedValue = values.filter(Boolean).join("\n").trim();
+
+                        if (joinedValue) {
+                            if (tagName === "\u00a9day") {
+                                metadata.dateValues.push(joinedValue);
+                            } else if (tagName === "\u00a9nam" || tagName === "desc" || tagName === "\u00a9cmt" || tagName === "ldes") {
+                                metadata.textValues.push(joinedValue);
+                            } else if (tagName === "----") {
+                                const key = `${freeformMean} ${freeformName}`.trim();
+                                if (/transcript|summary|text|note|thought|comment|description/i.test(key)) {
+                                    metadata.textValues.push(joinedValue);
+                                }
+                                if (/date|time|created/i.test(key)) {
+                                    metadata.dateValues.push(joinedValue);
+                                }
+                            }
+                        }
+
+                        continue;
+                    }
+
+                    if (containerTypes.has(atom.type)) {
+                        visitRange(atom.dataStart, atom.end, atom.type);
+                    }
+                }
+            }
+
+            visitRange(0, bytes.length);
+
+            const text = metadata.textValues.find(Boolean) || "";
+            const recordedAtRaw = metadata.dateValues.find(Boolean) || "";
+
+            return {
+                title: "",
+                text,
+                recordedAt: parseMp3Date(recordedAtRaw),
+            };
+        }
+
+        async function readAudioMetadata(url) {
+            const response = await fetch(url, { cache: "no-store" });
+            if (!response.ok) {
+                throw new Error(`Metadata request failed with ${response.status}`);
+            }
+
+            const bytes = new Uint8Array(await response.arrayBuffer());
+
+            if (/\.mp3$/i.test(url)) {
+                return parseId3Metadata(bytes);
+            }
+
+            if (/\.m4a$/i.test(url)) {
+                return parseMp4Metadata(bytes);
+            }
+
+            return {};
+        }
+
+        function getAudioDuration(url) {
+            return new Promise((resolve) => {
+                const probe = new Audio();
+                probe.preload = "metadata";
+                probe.src = url;
+
+                const cleanup = () => {
+                    probe.removeAttribute("src");
+                    probe.load();
+                };
+
+                probe.addEventListener("loadedmetadata", () => {
+                    const duration = Number.isFinite(probe.duration) ? probe.duration : null;
+                    cleanup();
+                    resolve(duration);
+                }, { once: true });
+
+                probe.addEventListener("error", () => {
+                    cleanup();
+                    resolve(null);
+                }, { once: true });
+            });
+        }
+
+        function formatDuration(seconds) {
+            if (!Number.isFinite(seconds) || seconds <= 0) {
+                return null;
+            }
+
+            const wholeSeconds = Math.round(seconds);
+            const minutes = Math.floor(wholeSeconds / 60);
+            const remainingSeconds = wholeSeconds % 60;
+            return `${minutes}:${durationFormatter.format(remainingSeconds)}`;
+        }
+
+        function truncateText(value = "", maxLength = 100) {
+            const normalized = value.replace(/\s+/g, " ").trim();
+            if (normalized.length <= maxLength) {
+                return {
+                    preview: normalized,
+                    truncated: false,
+                };
+            }
+
+            return {
+                preview: `${normalized.slice(0, maxLength).trimEnd()}...`,
+                truncated: true,
+            };
+        }
+
+        function updateDurationLabel(thoughtId, durationSeconds) {
+            const card = listEl.querySelector(`[data-thought-id="${thoughtId}"]`);
+            const durationEl = card?.querySelector(".thought-duration");
+            if (!durationEl) {
+                return;
+            }
+
+            const formatted = formatDuration(durationSeconds);
+            durationEl.textContent = formatted || "--:--";
+        }
+
+        function updateWaveformFillProgress(thoughtId, progress) {
+            const card = listEl.querySelector(`[data-thought-id="${thoughtId}"]`);
+            const shell = card?.querySelector(".thought-waveform-shell");
+            if (!shell) {
+                return;
+            }
+
+            const clampedProgress = Math.min(Math.max(progress, 0), 1);
+            shell.style.setProperty("--wave-progress", String(clampedProgress));
+        }
+
+        function initWaveforms(items) {
+            items.forEach((thought) => {
+                const card = listEl.querySelector(`[data-thought-id="${thought.id}"]`);
+                const waveformEl = card?.querySelector(".thought-waveform");
+                if (!waveformEl) {
+                    return;
+                }
+
+                waveformEl.dataset.ready = "false";
+
+                const ws = WaveSurfer.create({
+                    container: waveformEl,
+                    url: thought.url,
+                    height: 36,
+                    barWidth: 2,
+                    barGap: 2,
+                    barRadius: 999,
+                    cursorWidth: 2,
+                    cursorColor: "rgba(255, 255, 255, 0.95)",
+                    normalize: true,
+                    interact: true,
+                    dragToSeek: true,
+                    waveColor: "rgba(0, 0, 0, 0.18)",
+                    progressColor: "rgba(0, 0, 0, 0.95)",
+                });
+
+                waveSurfers.set(thought.id, ws);
+
+                ws.on("ready", () => {
+                    waveformEl.dataset.ready = "true";
+                    const duration = ws.getDuration();
+                    if (Number.isFinite(duration) && duration > 0) {
+                        thought.duration = duration;
+                        updateDurationLabel(thought.id, duration);
+                    }
+                    updateWaveformFillProgress(thought.id, 0);
+                });
+
+                ws.on("play", () => {
+                    currentThoughtId = thought.id;
+                    setPlayingState(thought.id, true);
+                });
+
+                ws.on("pause", () => {
+                    if (currentThoughtId === thought.id) {
+                        setPlayingState(thought.id, false);
+                    }
+                });
+
+                ws.on("finish", () => {
+                    setPlayingState(thought.id, false);
+                    updateRing(card?.querySelector(".thought-play"), 1);
+                    updateWaveformFillProgress(thought.id, 1);
+                    currentThoughtId = null;
+                });
+
+                ws.on("timeupdate", (currentTime) => {
+                    const duration = ws.getDuration() || thought.duration || 0;
+                    const progress = duration > 0 ? currentTime / duration : 0;
+                    updateRing(card?.querySelector(".thought-play"), progress);
+                    updateWaveformFillProgress(thought.id, progress);
+                });
+
+                ws.on("interaction", () => {
+                    currentThoughtId = thought.id;
+                });
+
+                ws.on("seeking", (currentTime) => {
+                    const duration = ws.getDuration() || thought.duration || 0;
+                    const progress = duration > 0 ? currentTime / duration : 0;
+                    updateRing(card?.querySelector(".thought-play"), progress);
+                    updateWaveformFillProgress(thought.id, progress);
+                });
+            });
+        }
+
+        function normalizeThought(thought, index) {
+            return {
+                id: `thought-${index}`,
+                ...thought,
+            };
+        }
+
+        async function buildThought(url, index) {
+            const [metadata, duration] = await Promise.all([
+                readAudioMetadata(url).catch(() => ({})),
+                getAudioDuration(url),
+            ]);
+
+            const recordedAt = metadata.recordedAt || parseFilenameDate(url);
+            const fallbackTitle = prettifyTitle(filenameToText(url));
+            const title = prettifyTitle(metadata.title || fallbackTitle);
+            const text = metadata.text || "";
+
+            return normalizeThought({
+                url,
+                title,
+                text,
+                duration,
+                fileType: getFileTypeLabel(url),
+                recordedAt,
+            }, index);
+        }
+
+        function buildThoughtFromManifest(entry, index) {
+            const fileName = typeof entry === "string" ? entry : entry.file;
+            const url = normalizeRelativeUrl(fileName);
+            const fallbackTitle = prettifyTitle(filenameToText(url));
+            const duration = Number(entry?.duration);
+            const recordedAt = entry?.recordedAt ? new Date(entry.recordedAt) : parseFilenameDate(url);
+
+            return normalizeThought({
+                url,
+                title: prettifyTitle(entry?.title || fallbackTitle),
+                text: typeof entry?.text === "string" ? entry.text : "",
+                duration: Number.isFinite(duration) ? duration : null,
+                fileType: entry?.fileType || getFileTypeLabel(url),
+                recordedAt: recordedAt && !Number.isNaN(recordedAt.getTime()) ? recordedAt : null,
+            }, index);
+        }
+
+        function sortThoughts(items) {
+            return items.sort((a, b) => {
+                const aTime = a.recordedAt ? a.recordedAt.getTime() : 0;
+                const bTime = b.recordedAt ? b.recordedAt.getTime() : 0;
+                return bTime - aTime || a.text.localeCompare(b.text);
+            });
+        }
+
+        function renderEmptyState(message, className = "thought-empty") {
+            listEl.innerHTML = `<div class="${className}">${message}</div>`;
+        }
+
+        function renderThoughts(items) {
+            if (items.length === 0) {
+                renderEmptyState(`Drop some <code>.mp3</code> files into <code>/thoughts/recordings</code> and run <code>node thoughts/update-manifest.mjs</code>.`);
+                return;
+            }
+
+            listEl.innerHTML = items.map((thought) => {
+                const timestamp = thought.recordedAt ? dateFormatter.format(thought.recordedAt) : "No timestamp";
+                const duration = formatDuration(thought.duration);
+                const transcript = truncateText(thought.text || "", 50);
+                const safeText = escapeHtml(thought.text || "");
+                const safePreview = escapeHtml(transcript.preview || "");
+                const safeTitle = escapeHtml(thought.title || "Untitled thought");
+                const safeFileType = escapeHtml(thought.fileType || "Audio");
+                const hasTranscript = Boolean(safeText);
+
+                return `
+                    <article class="thought-card" data-thought-id="${thought.id}" data-playing="false">
+                        <fig-avatar class="thought-avatar" size="large" name="Rogie King"></fig-avatar>
+                        <div class="thought-bubble">
+                            <div class="thought-bubble__inner">
+                                <h3 class="thought-title">${safeTitle}</h3>
+                                <div class="thought-voice-row">
+                                    <button class="thought-play" type="button" aria-label="Play thought">
+                                        <svg viewBox="0 0 48 48" aria-hidden="true">
+                                            <circle class="thought-play__track" cx="24" cy="24" r="20"></circle>
+                                            <circle class="thought-play__progress" cx="24" cy="24" r="20"></circle>
+                                        </svg>
+                                        <span class="thought-play__button">
+                                            <span class="thought-play__icon"></span>
+                                        </span>
+                                    </button>
+                                    <div class="thought-waveform-shell">
+                                        <div class="thought-waveform-progress" aria-hidden="true"></div>
+                                        <div class="thought-waveform" aria-hidden="true"></div>
+                                    </div>
+                                    <span class="thought-duration">${escapeHtml(duration || "--:--")}</span>
+                                </div>
+                                <div class="thought-transcript-row">
+                                    <p class="thought-text" data-empty="${hasTranscript ? "false" : "true"}" data-collapsed="${transcript.truncated ? "true" : "false"}" data-full="${safeText}" data-preview="${safePreview}">${hasTranscript ? (transcript.truncated ? safePreview : safeText) : "Transcript unavailable."}</p>
+                                    <button class="thought-more" type="button" ${transcript.truncated ? "" : "hidden"}>More</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="thought-meta-wrap">
+                            <div class="thought-meta">
+                                <span>${escapeHtml(timestamp)}</span>
+                                <span class="thought-meta__dot"></span>
+                                <span>${safeFileType}</span>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+
+            listEl.querySelectorAll(".thought-play").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const card = button.closest(".thought-card");
+                    const thought = thoughts.find((item) => item.id === card?.dataset.thoughtId);
+                    if (thought) {
+                        toggleThought(thought);
+                    }
+                });
+
+                updateRing(button, 0);
+            });
+
+            listEl.querySelectorAll(".thought-more").forEach((button) => {
+                button.addEventListener("click", () => {
+                    const transcript = button.closest(".thought-transcript-row")?.querySelector(".thought-text");
+                    if (!transcript) {
+                        return;
+                    }
+
+                    const collapsed = transcript.dataset.collapsed !== "false";
+                    transcript.dataset.collapsed = collapsed ? "false" : "true";
+                    transcript.innerHTML = collapsed
+                        ? (transcript.dataset.full || transcript.innerHTML)
+                        : (transcript.dataset.preview || transcript.innerHTML);
+                    button.textContent = collapsed ? "Less" : "More";
+                });
+            });
+        }
+
+        function updateRing(button, progress) {
+            const circle = button.querySelector(".thought-play__progress");
+            if (!circle) {
+                return;
+            }
+
+            const radius = Number(circle.getAttribute("r"));
+            const circumference = 2 * Math.PI * radius;
+            circle.style.strokeDasharray = String(circumference);
+            circle.style.strokeDashoffset = String(circumference * (1 - Math.min(Math.max(progress, 0), 1)));
+        }
+
+        function setPlayingState(thoughtId, isPlaying) {
+            listEl.querySelectorAll(".thought-card").forEach((card) => {
+                const active = card.dataset.thoughtId === thoughtId && isPlaying;
+                card.dataset.playing = active ? "true" : "false";
+                const button = card.querySelector(".thought-play");
+                if (button && !active) {
+                    updateRing(button, 0);
+                }
+            });
+        }
+
+        async function toggleThought(thought) {
+            const ws = waveSurfers.get(thought.id);
+            if (!ws) {
+                return;
+            }
+
+            if (currentThoughtId === thought.id && ws.isPlaying()) {
+                ws.pause();
+                return;
+            }
+
+            if (currentThoughtId && currentThoughtId !== thought.id) {
+                waveSurfers.get(currentThoughtId)?.pause();
+            }
+
+            try {
+                await ws.play();
+            } catch (error) {
+                console.error("Unable to play thought.", error);
+                setPlayingState(null, false);
+            }
+        }
+
+        async function init() {
+            try {
+                const entries = await listRecordingUrls();
+                const items = await Promise.all(entries.map((entry, index) => {
+                    if (typeof entry === "string") {
+                        return buildThought(normalizeRelativeUrl(entry), index);
+                    }
+
+                    if (entry && typeof entry === "object" && typeof entry.file === "string") {
+                        return buildThoughtFromManifest(entry, index);
+                    }
+
+                    return null;
+                }));
+                thoughts = sortThoughts(items.filter(Boolean));
+                renderThoughts(thoughts);
+                initWaveforms(thoughts);
+            } catch (error) {
+                console.error(error);
+                renderEmptyState(`Couldn't load thoughts yet. Add audio files to <code>/thoughts/recordings</code> and make sure <code>/thoughts/recordings/index.json</code> exists.`, "thought-error");
+            }
+        }
+
+        init();
+    </script>

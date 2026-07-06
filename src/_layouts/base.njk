@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ lang or 'en' }}">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="description"
+          content="{{ description or site.description }}">
+    <meta name="author"
+          content="{{ author or 'Rogie King' }}">
+    <title>{{ title or site.title }}</title>
+
+    <!-- Preload hints (start fetching early) -->
+    <link rel="preload"
+          as="style"
+          href="https://unpkg.com/@rogieking/figui3@{{ figuiVersion or site.figuiVersion }}/components.css">
+    <link rel="preload"
+          as="style"
+          href="/rog.ie.css">
+    <link rel="preload"
+          as="script"
+          crossorigin
+          href="/rog.ie.web-components.js">
+    <link rel="preload"
+          as="script"
+          href="https://unpkg.com/@rogieking/figui3@{{ figuiVersion or site.figuiVersion }}/fig.js">
+
+    <!-- Render-blocking stylesheets (prevents FOUC) -->
+    <link rel="stylesheet"
+          href="https://unpkg.com/@rogieking/figui3@{{ figuiVersion or site.figuiVersion }}/components.css">
+    <link rel="stylesheet"
+          href="/rog.ie.css">
+
+    <!-- Scripts -->
+    <script src="/rog.ie.web-components.js"
+            type="module"></script>
+    {% if includePaperBackground != false %}
+    <script src="/paper-background.js"
+            type="module"></script>
+    {% endif %}
+    <script src="https://unpkg.com/@rogieking/figui3@{{ figuiVersion or site.figuiVersion }}/fig.js"></script>
+
+    <link rel="icon"
+          href="/assets/avatar.svg"
+          type="image/svg+xml">
+    {{ headExtra | safe }}
+</head>
+
+<body{% if bodyClass %} class="{{ bodyClass }}"{% endif %}>
+    {% if includePaperBackground != false %}
+    <div id="paper-background" aria-hidden="true"></div>
+    {% endif %}
+
+    {{ content | safe }}
+
+    {% if includeFooter != false %}
+    <rogie-footer></rogie-footer>
+    {% endif %}
+
+    {{ bodyExtra | safe }}
+</body>
+
+</html>
