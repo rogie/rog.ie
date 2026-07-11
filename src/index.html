@@ -1,14 +1,81 @@
 ---
 layout: base.njk
 title: "Rogie King: Designer, Artist & Developer"
+headExtra: |
+  <script src="/media-shader.js"></script>
 ---
 <header class="home">
 
         <h1>
-            <fig-avatar size="large"
-                        class="header-icon avatar"
-                        name="Rogie King"
-                        initials="RK"></fig-avatar>
+            <media-shader class="header-icon avatar"
+                          src="/assets/avatar-rogie-brush.png"
+                          width="5rem"
+                          height="5rem"
+                          eager="true"
+                          alt="Rogie King"
+                          fragment-shader='#version 300 es
+                            precision highp float;
+
+                            out vec4 glFragColor;
+
+                            uniform sampler2D u_texture;
+                            uniform vec2 u_resolution;
+                            uniform float u_time;
+                            uniform bool u_has_texture;
+
+                            in vec2 v_tex_coord;
+
+                            float random(vec2 st) {
+                              return fract(sin(dot(st, vec2(12.9898, 78.233))) * 43758.5453);
+                            }
+
+                            float noise(vec2 st) {
+                              vec2 cell = floor(st);
+                              vec2 local = fract(st);
+                              local = local * local * (3.0 - 2.0 * local);
+
+                              return mix(
+                                mix(random(cell), random(cell + vec2(1.0, 0.0)), local.x),
+                                mix(random(cell + vec2(0.0, 1.0)), random(cell + vec2(1.0)), local.x),
+                                local.y
+                              );
+                            }
+
+                            void main() {
+                              if (!u_has_texture) {
+                                glFragColor = vec4(0.0);
+                                return;
+                              }
+
+                              float frame = floor(u_time * 8.0);
+                              float angle = (random(vec2(frame, 19.7)) - 0.5) * 0.03;
+                              float cosine = cos(angle);
+                              float sine = sin(angle);
+                              vec2 centered = v_tex_coord - 0.5;
+                              vec2 uv = vec2(
+                                cosine * centered.x - sine * centered.y,
+                                sine * centered.x + cosine * centered.y
+                              ) + 0.5;
+
+                              vec2 jitter = vec2(
+                                random(vec2(frame, 7.31)),
+                                random(vec2(frame, 43.17))
+                              ) - 0.5;
+                              uv += jitter * 1.2 / u_resolution;
+
+                              vec2 field = uv * 14.0;
+                              vec2 boil = vec2(
+                                noise(field + vec2(frame * 0.71, frame * 1.13)),
+                                noise(field + vec2(frame * 1.37, frame * 0.53))
+                              ) - 0.5;
+
+                              uv += boil * 1.75 / u_resolution;
+                              vec4 color = texture(u_texture, uv);
+
+                              float flicker = noise(gl_FragCoord.xy * 0.2 + frame) - 0.5;
+                              color.rgb *= 1.0 + flicker * 0.015;
+                              glFragColor = color;
+                            }'></media-shader>
             <span class="home-greeting"><rk-greeting>Ayo</rk-greeting>, I’m Rogie!</span>
         </h1>
         <p class="page-intro">I'm a Product Designer at
@@ -23,6 +90,20 @@ title: "Rogie King: Designer, Artist & Developer"
     </header>
 
     <main>
+
+        <!--section id="thoughts">
+            <h2>Notes</h2>
+            <ul class="post-list thoughts">
+                <li class="post-item">
+                    <a href="/thoughts/passion-people/"
+                       class="post-link thought">
+                        <h3 class="post-title">Passion &amp; People </h3>
+                        <span class="post-separator">&middot;</span>
+                        <span class="post-year">2026</span>
+                    </a>
+                </li>
+            </ul>
+        </section-->
        
 
         <section id="projects">
