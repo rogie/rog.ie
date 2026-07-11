@@ -74,6 +74,8 @@ headExtra: |
 
                               float flicker = noise(gl_FragCoord.xy * 0.2 + frame) - 0.5;
                               color.rgb *= 1.0 + flicker * 0.015;
+                              float grain = random(floor(gl_FragCoord.xy / 3.0) + frame * vec2(37.0, 17.0)) - 0.5;
+                              color.rgb += grain;
                               color.rgb *= color.a;
                               glFragColor = color;
                             }'></media-shader>
