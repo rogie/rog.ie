@@ -1304,9 +1304,18 @@ rogie-movie {
     }
   }
 
+  &.focus-layer__clone {
+    --clamped-scale: 1;
+    filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
+  }
+
   &.focus-layer__clone .cover.box {
     --width: var(--focus-item-width, 0) !important;
     --height: var(--focus-item-height, 0) !important;
+    /* Face the payload more squarely so the 3D lean doesn't eat text. */
+    transform-origin: 50% 80%;
+    transform: rotateY(-12deg);
+    scale: 1;
   }
 
   .focus-layer__item > &.focus-layer__clone .tape.box {
@@ -1645,6 +1654,10 @@ rk-chat-message {
     calc(100vw / 3),
     var(--focus-payload-region-max-width)
   );
+  /* Room for movie tape slide-out (cover / 4.2) plus a little breathing room. */
+  --focus-content-gap: calc(
+    (var(--focus-item-region-width) / 4.2) + 0.75rem
+  );
   position: fixed;
   inset: 0;
   z-index: 3000;
@@ -1661,7 +1674,9 @@ rk-chat-message {
     cursor: zoom-out;
     pointer-events: auto;
     opacity: 0;
-    background: rgba(255, 255, 255, var(--focus-layer-dim, 0.6)) !important;
+    background: rgb(
+      from var(--color-bg) r g b / var(--focus-layer-dim, 0.6)
+    ) !important;
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
     /* Closing: no delay — clear with the zoom-out. */
@@ -1676,7 +1691,9 @@ rk-chat-message {
     &:focus,
     &:focus-visible,
     &:active {
-      background: rgba(255, 255, 255, var(--focus-layer-dim, 0.6)) !important;
+      background: rgb(
+        from var(--color-bg) r g b / var(--focus-layer-dim, 0.6)
+      ) !important;
       outline: none;
       box-shadow: none;
       filter: none;
@@ -1692,11 +1709,12 @@ rk-chat-message {
       minmax(0, var(--focus-payload-region-width));
     justify-content: center;
     align-items: center;
-    gap: 0;
+    gap: var(--focus-content-gap);
     pointer-events: none;
 
     &[data-has-payload="false"] {
       grid-template-columns: minmax(0, var(--focus-item-region-width));
+      gap: 0;
     }
   }
 
@@ -1870,8 +1888,8 @@ rk-chat-message {
   &.is-open {
     .focus-layer__backdrop {
       opacity: 1;
-      backdrop-filter: blur(var(--focus-layer-blur, 3px));
-      -webkit-backdrop-filter: blur(var(--focus-layer-blur, 3px));
+      backdrop-filter: blur(var(--focus-layer-blur, 5px));
+      -webkit-backdrop-filter: blur(var(--focus-layer-blur, 5px));
       /* Opening: dim with the zoom, blur follows slightly later. */
       transition:
         opacity var(--focus-layer-duration, 260ms) ease,
@@ -2070,7 +2088,7 @@ rk-chat-message {
       display: block;
       width: calc(var(--depth) * 1px - 16px);
       margin: 8px;
-      mask-image: url(http://127.0.0.1:5500/assets/betamax.svg);
+      mask-image: url(/assets/betamax.svg);
       mask-size: 100%;
       border-radius: 2px;
       position: absolute;

@@ -693,8 +693,8 @@ class FocusLayer {
       ),
       closeOnScroll: options.closeOnScroll ?? true,
       durationMs: Number(options.durationMs ?? dataset.focusDuration ?? 260),
-      dimOpacity: Number(options.dimOpacity ?? dataset.focusDimOpacity ?? 0.6),
-      blurAmount: Number(options.blurAmount ?? dataset.focusBlurAmount ?? 3),
+      dimOpacity: Number(options.dimOpacity ?? dataset.focusDimOpacity ?? 0.5),
+      blurAmount: Number(options.blurAmount ?? dataset.focusBlurAmount ?? 5),
       payload: options.payload || null,
       imagePolicy: options.imagePolicy || null,
       payloadPlacement,
@@ -1037,6 +1037,26 @@ class FocusLayer {
         mediaRect,
         aspectRatio: mediaRect.width / mediaRect.height,
         captionExtra: Math.max(0, hostRect.height - mediaRect.height),
+      };
+    }
+
+    // Movie covers use CSS backgrounds on a 3D box — prefer layout size
+    // (transforms don't affect offsetWidth/Height) over the projected AABB.
+    const cover = target.querySelector(".cover.box");
+    if (cover?.offsetWidth > 0 && cover?.offsetHeight > 0) {
+      const coverRect = {
+        width: cover.offsetWidth,
+        height: cover.offsetHeight,
+        left: hostRect.left,
+        top: hostRect.top,
+        right: hostRect.left + cover.offsetWidth,
+        bottom: hostRect.top + cover.offsetHeight,
+      };
+      return {
+        hostRect,
+        mediaRect: coverRect,
+        aspectRatio: cover.offsetWidth / cover.offsetHeight,
+        captionExtra: Math.max(0, hostRect.height - cover.offsetHeight),
       };
     }
 
@@ -1401,10 +1421,9 @@ class FocusLayer {
       regionRect = this.itemRegionEl.getBoundingClientRect();
     }
 
-    let mediaWidth = Math.min(
-      this.options.maxWidth,
-      regionRect?.width > 0 ? regionRect.width : availableWidth,
-    );
+    const regionWidth =
+      regionRect?.width > 0 ? regionRect.width : availableWidth;
+    let mediaWidth = Math.min(this.options.maxWidth, regionWidth);
     let mediaHeight = mediaWidth / aspectRatio;
     let height = mediaHeight + captionExtra;
 
@@ -1414,6 +1433,13 @@ class FocusLayer {
         this.options.maxHeight,
       );
       mediaWidth = mediaHeight * aspectRatio;
+      height = mediaHeight + captionExtra;
+    }
+
+    // Height clamping can widen past the item region — keep payload clear.
+    if (mediaWidth > regionWidth) {
+      mediaWidth = regionWidth;
+      mediaHeight = mediaWidth / aspectRatio;
       height = mediaHeight + captionExtra;
     }
 
