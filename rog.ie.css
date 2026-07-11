@@ -151,10 +151,9 @@ html {
   background-size: 120px 120px;
 }
 
-/* Paper Shaders sets canvas to z-index: -1 inside an isolated context, which can
-   hide it behind the container background. Keep the canvas on top. */
+/* Keep the CSS paper texture beneath the WebGL canvas so a delayed or lost
+   shader frame never leaves the page with a flat background. */
 #paper-background[data-paper-shader] {
-  background-image: none;
   isolation: auto;
   /* Library forces position:relative via :where(); keep document-absolute. */
   position: absolute !important;
@@ -358,8 +357,8 @@ header {
 
     .header-icon {
       position: absolute;
-      top: 0;
-      right: calc(100% + 1.5rem);
+      top: -1rem;
+      right: calc(100% + 0.5rem);
       left: auto;
       z-index: 2;
       width: 5rem;
@@ -371,7 +370,7 @@ header {
   .header-icon {
     width: 3rem;
     height: 3rem;
-    margin-left: -2.5rem;
+    margin-left: -2rem;
     margin-right: 0.5rem;
     flex-shrink: 0;
     overflow: visible;
