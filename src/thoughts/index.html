@@ -1,7 +1,8 @@
 ---
 layout: base.njk
-title: "Thoughts"
-description: "A stream of spoken thoughts."
+title: "Notes"
+description: "A stream of spoken notes."
+permalink: "/notes/"
 headExtra: |
   <style>
           body {
@@ -358,8 +359,8 @@ headExtra: |
                     icon="true"
                     aria-label="Go back"
                     onclick="history.back()"></fig-button>
-        <h1>Thoughts</h1>
-        <p>Short spoken notes loaded from <code>/thoughts/recordings</code>.</p>
+        <h1>Notes</h1>
+        <p>Short spoken notes loaded from <code>/notes/recordings</code>.</p>
     </header>
 
     <rk-chat>
@@ -1100,7 +1101,7 @@ headExtra: |
 
         function renderThoughts(items) {
             if (items.length === 0) {
-                renderEmptyState(`Drop some <code>.mp3</code> files into <code>/thoughts/recordings</code> and run <code>node thoughts/update-manifest.mjs</code>.`);
+                renderEmptyState(`Drop some <code>.mp3</code> files into <code>/notes/recordings</code> and run <code>node thoughts/update-manifest.mjs</code>.`);
                 return;
             }
 
@@ -1247,7 +1248,7 @@ headExtra: |
                 initWaveforms(thoughts);
             } catch (error) {
                 console.error(error);
-                renderEmptyState(`Couldn't load thoughts yet. Add audio files to <code>/thoughts/recordings</code> and make sure <code>/thoughts/recordings/index.json</code> exists.`, "thought-error");
+                renderEmptyState(`Couldn't load notes yet. Add audio files to <code>/notes/recordings</code> and make sure <code>/notes/recordings/index.json</code> exists.`, "thought-error");
             }
         }
 

@@ -33,7 +33,7 @@ const addThoughtMediaPassthrough = (eleventyConfig) => {
       }
 
       const outputPath = path
-        .join("thoughts", path.relative(sourceRoot, sourcePath))
+        .join("notes", path.relative(sourceRoot, sourcePath))
         .replaceAll(path.sep, "/");
 
       eleventyConfig.addPassthroughCopy({
@@ -79,8 +79,8 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("propkit");
 
   eleventyConfig.addPassthroughCopy({
-    "thoughts/recordings": "thoughts/recordings",
-    "thoughts/update-manifest.mjs": "thoughts/update-manifest.mjs",
+    "thoughts/recordings": "notes/recordings",
+    "thoughts/update-manifest.mjs": "notes/update-manifest.mjs",
   });
   addThoughtMediaPassthrough(eleventyConfig);
 

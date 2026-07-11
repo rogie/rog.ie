@@ -69,13 +69,13 @@ headExtra: |
                                 noise(field + vec2(frame * 1.37, frame * 0.53))
                               ) - 0.5;
 
-                              uv += boil * 1.75 / u_resolution;
+                              uv += boil * 1.25 / u_resolution;
                               vec4 color = texture(u_texture, uv);
 
                               float flicker = noise(gl_FragCoord.xy * 0.2 + frame) - 0.5;
                               color.rgb *= 1.0 + flicker * 0.015;
                               float grain = random(floor(gl_FragCoord.xy / 3.0) + frame * vec2(37.0, 17.0)) - 0.5;
-                              color.rgb += grain;
+                              color.rgb += grain * 0.7;
                               color.rgb *= color.a;
                               glFragColor = color;
                             }'></media-shader>
@@ -88,7 +88,7 @@ headExtra: |
         </p>
         <p class="page-intro">I love
             <horror-text>horror</horror-text> movies,
-            electronic music, ass-numbing hot sauce, art shit and code stuff.
+            electronic music, ass-numbing hot sauce, retro art shit and code stuffs.
         </p>
     </header>
 
@@ -98,7 +98,7 @@ headExtra: |
             <h2>Notes</h2>
             <ul class="post-list thoughts">
                 <li class="post-item">
-                    <a href="/thoughts/passion-people/"
+                    <a href="/notes/passion-people/"
                        class="post-link thought">
                         <h3 class="post-title">Passion &amp; People </h3>
                         <span class="post-separator">&middot;</span>
