@@ -2,6 +2,8 @@
 layout: base.njk
 title: "Dither!"
 description: "A dithering tool."
+heading: "Dither!"
+intro: "A mini retro error-diffusion dithering tool."
 headExtra: |
   <style>
           .dither-app {
@@ -29,14 +31,24 @@ headExtra: |
           .controls {
               padding: 1rem;
               width: 100%;
-  
+
               fig-field {
                   width: 100%;
                   padding-left: 0;
                   padding-right: 0;
-  
+
                   label {
                       min-width: 5rem !important;
+                      flex-shrink: 0;
+                  }
+
+                  fig-slider,
+                  fig-dropdown,
+                  fig-switch {
+                      flex: 1 1 auto;
+                      width: 100%;
+                      max-width: none;
+                      min-width: 0;
                   }
               }
           }
@@ -78,12 +90,8 @@ headExtra: |
           }
       </style>
 ---
-<rk-chat>
-        <rk-chat-message from="me"
-                         style="green">
-            I made this fun little tool to dither your images. Try out an image of your own!
-        </rk-chat-message>
-    </rk-chat>
+{% include "back-header.njk" %}
+
     <main class="full-width">
 
         <figure class="dither-app">
@@ -118,10 +126,8 @@ headExtra: |
                                 min="2"
                                 max="16"
                                 value="4"
-                               
                                 step="1"
-                                text="true"
-                                style="flex: 1; max-width: 200px;">
+                                text="true">
                     </fig-slider>
                 </fig-field>
 
@@ -131,10 +137,8 @@ headExtra: |
                                 min="5"
                                 max="50"
                                 value="25"
-                               
                                 step="1"
-                                text="true"
-                                style="flex: 1; max-width: 200px;">
+                                text="true">
                     </fig-slider>
                 </fig-field>
 
@@ -145,12 +149,10 @@ headExtra: |
                                 min="-100"
                                 max="100"
                                 value="0"
-                               
                                 type="delta"
                                 default="0"
                                 step="1"
-                                text="true"
-                                style="flex: 1; max-width: 200px;">
+                                text="true">
                     </fig-slider>
                 </fig-field>
 
@@ -160,12 +162,10 @@ headExtra: |
                                 min="-100"
                                 max="100"
                                 value="0"
-                               
                                 type="delta"
                                 default="0"
                                 step="1"
-                                text="true"
-                                style="flex: 1; max-width: 200px;">
+                                text="true">
                     </fig-slider>
                 </fig-field>
 

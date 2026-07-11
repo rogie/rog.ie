@@ -42,10 +42,12 @@ const getDocumentHeight = () =>
   );
 
 const syncPaperBackgroundHeight = (container) => {
-  // The shader is an absolute page layer, so it needs to follow late layout
-  // changes from fonts, media, and custom elements.
-  container.style.height = "0px";
-  container.style.height = `${getDocumentHeight()}px`;
+  // Match the full page so the texture scrolls like a real sheet of paper.
+  // Read height without collapsing the layer first (avoids a 0-height flash).
+  const nextHeight = `${getDocumentHeight()}px`;
+  if (container.style.height !== nextHeight) {
+    container.style.height = nextHeight;
+  }
 };
 
 const observePaperBackgroundHeight = (container) => {
@@ -62,6 +64,12 @@ const observePaperBackgroundHeight = (container) => {
   resizeObserver.observe(document.documentElement);
   if (document.body) resizeObserver.observe(document.body);
 
+  const mutationObserver = new MutationObserver(scheduleSync);
+  mutationObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+
   window.addEventListener("load", scheduleSync);
   window.addEventListener("resize", scheduleSync);
   document.fonts?.ready.then(scheduleSync).catch(() => {});
@@ -69,51 +77,71 @@ const observePaperBackgroundHeight = (container) => {
   scheduleSync();
   setTimeout(scheduleSync, 250);
   setTimeout(scheduleSync, 1000);
+  setTimeout(scheduleSync, 3000);
 };
 
 const mountPaperBackground = async () => {
   const container = document.getElementById("paper-background");
-  if (!container) return;
+  if (!container || container.paperShaderMount) return;
 
   try {
     const image = await loadImage(emptyPixel);
     syncPaperBackgroundHeight(container);
 
-    new ShaderMount(container, paperTextureFragmentShader, {
-      u_image: image,
-      u_colorBack: hexToRgba("#ffffff"),
-      u_colorFront: hexToRgba("#EEEADF"),
-      u_contrast: 0.3,
-      u_roughness: 1,
-      u_fiber: 0.4,
-      u_fiberSize: 0.2,
-      u_crumples: 0.2,
-      u_crumpleSize: 0.9,
-      u_folds: 0.8,
-      u_foldCount: 13,
-      u_drops: 0,
-      u_fade: 0.04,
-      u_seed: 861.8,
-      u_scale: 0.5,
-      u_fit: 1,
-      u_rotation: 0.2,
-      u_offsetX: 0,
-      u_offsetY: 0,
-      u_originX: 0.5,
-      u_originY: 0.5,
-      u_worldWidth: 1920,
-      u_worldHeight: 1920,
-      u_noiseTexture: getShaderNoiseTexture(),
-    }, undefined, 0);
+    new ShaderMount(
+      container,
+      paperTextureFragmentShader,
+      {
+        u_image: image,
+        u_colorBack: hexToRgba("#ffffff"),
+        u_colorFront: hexToRgba("#EEEADF"),
+        u_contrast: 0.75,
+        u_roughness: 0.5,
+        u_fiber: 0.3,
+        u_fiberSize: 0.1,
+        u_crumples: 0.25,
+        u_crumpleSize: 0.45,
+        u_folds: 0,
+        u_foldCount: 0,
+        u_drops: 0,
+        u_fade: 0.3,
+        u_seed: 861.8,
+        u_scale: 0.4,
+        u_fit: 1,
+        u_rotation: 0.2,
+        u_offsetX: 0,
+        u_offsetY: 0,
+        u_originX: 0.5,
+        u_originY: 0.5,
+        u_worldWidth: 1920,
+        u_worldHeight: 1920,
+        u_noiseTexture: getShaderNoiseTexture(),
+      },
+      {
+        alpha: true,
+        antialias: false,
+        depth: false,
+        stencil: false,
+        powerPreference: "low-power",
+        failIfMajorPerformanceCaveat: false,
+      },
+      0,
+    );
 
+    container.dataset.paperReady = "true";
     observePaperBackgroundHeight(container);
   } catch (error) {
     console.warn("Failed to mount paper background shader", error);
+    container.dataset.paperReady = "fallback";
+    syncPaperBackgroundHeight(container);
+    observePaperBackgroundHeight(container);
   }
 };
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", mountPaperBackground, { once: true });
+  document.addEventListener("DOMContentLoaded", mountPaperBackground, {
+    once: true,
+  });
 } else {
   mountPaperBackground();
 }

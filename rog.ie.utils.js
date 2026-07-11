@@ -444,6 +444,10 @@ class FocusLayer {
     this.imagePolicyState = null;
     this.imageCache = new Set();
     this.boundDeclarativeTargets = new WeakSet();
+    this.isClosing = false;
+    this.closeAnimationFrame = null;
+    this.textRevealTimer = null;
+    this.boundZoomTransitionEnd = null;
 
     this.handleBackdropClick = this.handleBackdropClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
@@ -576,11 +580,16 @@ class FocusLayer {
     if (!this.activeTarget) {
       return;
     }
+    if (this.isClosing && !force) {
+      return;
+    }
 
     const target = this.activeTarget;
     const options = this.options;
     const duration = options?.durationMs ?? 260;
     const isLive = options?.mode === "live";
+    this.isClosing = true;
+    this.clearZoomedTextReveal();
 
     if (this.activeLayer) {
       this.activeLayer.classList.remove("is-open");
@@ -596,17 +605,11 @@ class FocusLayer {
     document.removeEventListener("keydown", this.handleKeyDown);
     window.removeEventListener("scroll", this.handleScroll);
 
-    if (!force) {
-      if (isLive) {
-        this.closeLiveTarget(duration);
-      } else {
-        this.closeCloneTarget(duration);
-      }
-    }
-
     const teardown = () => {
+      this.cancelCloseAnimation();
       if (this.activeItem) {
         this.activeItem.style.willChange = "";
+        this.activeItem.style.transition = "";
       }
       if (this.activeLayer) {
         this.activeLayer.remove();
@@ -639,13 +642,35 @@ class FocusLayer {
       this.payloadRevealTimer = null;
       this.focusContainer = null;
       this.previousActiveElement = null;
+      this.isClosing = false;
     };
 
     if (force) {
+      this.cancelCloseAnimation();
       teardown();
-    } else {
-      setTimeout(teardown, duration + 30);
+      return;
     }
+
+    if (isLive) {
+      this.closeLiveTarget(duration);
+      window.setTimeout(teardown, duration + 30);
+      return;
+    }
+
+    this.closeCloneTarget().then(teardown);
+  }
+
+  cancelCloseAnimation() {
+    if (this.closeAnimationFrame != null) {
+      cancelAnimationFrame(this.closeAnimationFrame);
+      this.closeAnimationFrame = null;
+    }
+  }
+
+  easeCloseProgress(t) {
+    // Matches focus-layer cubic-bezier(0.22, 0.61, 0.36, 1) closely enough for FLIP.
+    const clamped = Math.min(1, Math.max(0, t));
+    return 1 - Math.pow(1 - clamped, 3);
   }
 
   resolveOptions(target, options) {
@@ -669,7 +694,7 @@ class FocusLayer {
       closeOnScroll: options.closeOnScroll ?? true,
       durationMs: Number(options.durationMs ?? dataset.focusDuration ?? 260),
       dimOpacity: Number(options.dimOpacity ?? dataset.focusDimOpacity ?? 0.6),
-      blurAmount: Number(options.blurAmount ?? dataset.focusBlurAmount ?? 8),
+      blurAmount: Number(options.blurAmount ?? dataset.focusBlurAmount ?? 3),
       payload: options.payload || null,
       imagePolicy: options.imagePolicy || null,
       payloadPlacement,
@@ -782,6 +807,10 @@ class FocusLayer {
     this.activeLayer.style.setProperty(
       "--focus-layer-blur",
       `${this.options.blurAmount}px`,
+    );
+    this.activeLayer.style.setProperty(
+      "--focus-layer-backdrop-delay",
+      `${Math.round(this.options.durationMs * 0.4)}ms`,
     );
     this.activeLayer.style.setProperty(
       "--focus-layer-inset",
@@ -993,33 +1022,105 @@ class FocusLayer {
     }
   }
 
+  getFocusSourceMetrics(target) {
+    const hostRect = target.getBoundingClientRect();
+    const mediaSurface =
+      target.querySelector(":scope > fig-preview") ||
+      target.querySelector(":scope > img, :scope > video") ||
+      (target.matches("img, video") ? target : null) ||
+      target.querySelector("img, video");
+    const mediaRect = mediaSurface?.getBoundingClientRect?.();
+
+    if (mediaRect && mediaRect.width > 0 && mediaRect.height > 0) {
+      return {
+        hostRect,
+        mediaRect,
+        aspectRatio: mediaRect.width / mediaRect.height,
+        captionExtra: Math.max(0, hostRect.height - mediaRect.height),
+      };
+    }
+
+    return {
+      hostRect,
+      mediaRect: hostRect,
+      aspectRatio: hostRect.width / hostRect.height || 1,
+      captionExtra: 0,
+    };
+  }
+
+  applyCloneMediaAspectRatio(clone, aspectRatio) {
+    if (!clone || !(aspectRatio > 0)) {
+      return;
+    }
+    const ratio = String(aspectRatio);
+    if (clone.hasAttribute("aspect-ratio") || clone.matches("fig-media, fig-image, fig-video")) {
+      clone.setAttribute("aspect-ratio", ratio);
+    }
+    clone.style.setProperty("--fig-media-aspect-ratio", ratio);
+  }
+
+  reconcileClonedFigMedia(clone) {
+    if (!clone?.matches?.("fig-media, fig-image, fig-video")) {
+      return;
+    }
+    const preview = clone.querySelector(":scope > fig-preview");
+    if (!preview) {
+      return;
+    }
+    // connectedCallback can't see the prior instance's #mediaEl, so it appends a
+    // second generated media node. Keep the live one (last) and drop the extras.
+    const medias = [
+      ...preview.querySelectorAll(":scope > img, :scope > video"),
+    ];
+    if (medias.length <= 1) {
+      return;
+    }
+    const keeper = medias[medias.length - 1];
+    medias.forEach((media) => {
+      if (media !== keeper) {
+        media.remove();
+      }
+    });
+  }
+
   openCloneTarget() {
-    const sourceRect = this.activeTarget.getBoundingClientRect();
+    const sourceMetrics = this.getFocusSourceMetrics(this.activeTarget);
+    const sourceRect = sourceMetrics.hostRect;
     const destinationRect = this.getDestinationRect(
       sourceRect,
       Boolean(this.payloadEl),
       this.options.payloadPlacement,
+      sourceMetrics,
     );
 
     const clone = this.activeTarget.cloneNode(true);
     clone.classList.add("focus-layer__clone");
-    this.syncCloneSizeVars(clone, sourceRect);
-    this.activeItem.appendChild(clone);
-    this.syncClonedMedia(clone);
-    this.hideActiveTargetForClone();
-    this.syncLayoutRegionVars();
+    this.syncCloneSizeVars(clone, destinationRect);
+    this.applyCloneMediaAspectRatio(clone, sourceMetrics.aspectRatio);
+
+    // Size + inverse transform before paint so we never flash the full-size frame.
+    this.activeItem.style.opacity = "0";
+    this.activeItem.style.transition = "none";
+    this.activeItem.style.willChange = "transform";
+    this.activeItem.style.transformOrigin = "top left";
     this.setActiveItemRect(destinationRect);
 
     const deltaX = sourceRect.left - destinationRect.left;
     const deltaY = sourceRect.top - destinationRect.top;
-    const scaleX = sourceRect.width / destinationRect.width;
-    const scaleY = sourceRect.height / destinationRect.height;
+    // Uniform scale — caption height stays in px, so X/Y ratios differ and
+    // non-uniform scale makes the video look briefly stretched.
+    const scale = sourceRect.width / destinationRect.width;
+    this.activeItem.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scale})`;
 
-    this.activeItem.style.willChange = "transform";
-    this.activeItem.style.transformOrigin = "top left";
-    this.activeItem.style.transition = "none";
-    this.activeItem.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+    this.activeItem.appendChild(clone);
+    this.applyCloneMediaAspectRatio(clone, sourceMetrics.aspectRatio);
+    this.reconcileClonedFigMedia(clone);
+    this.syncClonedMedia(clone);
+    this.hideActiveTargetForClone();
+    this.syncLayoutRegionVars();
+
     this.activeItem.getBoundingClientRect();
+    this.activeItem.style.opacity = "";
     this.activeItem.style.transition = "";
 
     requestAnimationFrame(() => {
@@ -1027,8 +1128,54 @@ class FocusLayer {
         return;
       }
       this.activeItem.classList.add("is-open");
-      this.activeItem.style.transform = "translate(0px, 0px) scale(1, 1)";
+      this.activeItem.style.transform = "translate(0px, 0px) scale(1)";
+      this.scheduleZoomedTextReveal();
     });
+  }
+
+  clearZoomedTextReveal() {
+    if (this.textRevealTimer != null) {
+      clearTimeout(this.textRevealTimer);
+      this.textRevealTimer = null;
+    }
+    if (this.activeItem && this.boundZoomTransitionEnd) {
+      this.activeItem.removeEventListener(
+        "transitionend",
+        this.boundZoomTransitionEnd,
+      );
+    }
+    this.boundZoomTransitionEnd = null;
+    this.activeItem?.classList.remove("is-settled");
+  }
+
+  scheduleZoomedTextReveal() {
+    this.clearZoomedTextReveal();
+    if (!this.activeItem) {
+      return;
+    }
+
+    const item = this.activeItem;
+    const duration = this.options?.durationMs ?? 260;
+    const reveal = () => {
+      if (!this.activeItem || this.activeItem !== item || this.isClosing) {
+        return;
+      }
+      item.classList.add("is-settled");
+      this.textRevealTimer = null;
+      if (this.boundZoomTransitionEnd) {
+        item.removeEventListener("transitionend", this.boundZoomTransitionEnd);
+        this.boundZoomTransitionEnd = null;
+      }
+    };
+
+    this.boundZoomTransitionEnd = (event) => {
+      if (event.target !== item || event.propertyName !== "transform") {
+        return;
+      }
+      reveal();
+    };
+    item.addEventListener("transitionend", this.boundZoomTransitionEnd);
+    this.textRevealTimer = window.setTimeout(reveal, duration + 40);
   }
 
   syncClonedMedia(clone) {
@@ -1050,41 +1197,105 @@ class FocusLayer {
         return;
       }
       if (media instanceof HTMLImageElement && source instanceof HTMLImageElement) {
-        media.src = source.currentSrc || source.src;
+        const src = source.currentSrc || source.src;
+        if (src) {
+          media.src = src;
+        }
         return;
       }
       if (!(media instanceof HTMLVideoElement) || !(source instanceof HTMLVideoElement)) {
         return;
       }
-      media.muted = source.muted || media.muted;
-      media.playsInline = true;
-      if (source.currentSrc && !media.currentSrc) {
-        media.src = source.currentSrc;
+
+      const src = source.currentSrc || source.src;
+      if (src && media.currentSrc !== src) {
+        media.src = src;
       }
-      try {
-        if (Number.isFinite(source.currentTime)) {
-          media.currentTime = source.currentTime;
-        }
-      } catch {}
-      if (!source.paused || media.autoplay) {
+      media.muted = true;
+      media.playsInline = true;
+      media.autoplay = true;
+      media.loop = source.loop || media.loop;
+
+      const syncTimeAndPlay = () => {
+        try {
+          if (Number.isFinite(source.currentTime)) {
+            media.currentTime = source.currentTime;
+          }
+        } catch {}
         media.play().catch(() => {});
+      };
+
+      if (media.readyState >= 1) {
+        syncTimeAndPlay();
+      } else {
+        media.addEventListener("loadedmetadata", syncTimeAndPlay, { once: true });
+        media.load();
       }
     });
   }
 
   closeCloneTarget() {
-    if (!this.activeItem || !this.activeTarget) {
-      return;
-    }
-    const sourceRect = this.activeTarget.getBoundingClientRect();
-    const destinationRect = this.activeItem.getBoundingClientRect();
-    const deltaX = sourceRect.left - destinationRect.left;
-    const deltaY = sourceRect.top - destinationRect.top;
-    const scaleX = sourceRect.width / destinationRect.width;
-    const scaleY = sourceRect.height / destinationRect.height;
+    return new Promise((resolve) => {
+      if (!this.activeItem || !this.activeTarget) {
+        resolve();
+        return;
+      }
 
-    this.activeItem.classList.remove("is-open");
-    this.activeItem.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${scaleX}, ${scaleY})`;
+      const item = this.activeItem;
+      const target = this.activeTarget;
+      const duration = this.options?.durationMs ?? 260;
+      const destLeft = Number.parseFloat(item.style.left) || 0;
+      const destTop = Number.parseFloat(item.style.top) || 0;
+      const destWidth =
+        Number.parseFloat(item.style.getPropertyValue("--focus-item-width")) ||
+        item.getBoundingClientRect().width ||
+        1;
+
+      item.classList.remove("is-open");
+      item.style.transition = "none";
+      item.style.willChange = "transform";
+      item.style.transformOrigin = "top left";
+
+      const startTime = performance.now();
+      const startX = 0;
+      const startY = 0;
+      const startScale = 1;
+
+      const applyFrame = (progress) => {
+        const sourceRect = target.getBoundingClientRect();
+        const endScale = sourceRect.width / destWidth;
+        const endX = sourceRect.left - destLeft;
+        const endY = sourceRect.top - destTop;
+        const x = startX + (endX - startX) * progress;
+        const y = startY + (endY - startY) * progress;
+        const scale = startScale + (endScale - startScale) * progress;
+        item.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+      };
+
+      const tick = (now) => {
+        if (!this.activeItem || this.activeItem !== item || !this.activeTarget) {
+          this.closeAnimationFrame = null;
+          resolve();
+          return;
+        }
+
+        const t = Math.min(1, (now - startTime) / duration);
+        applyFrame(this.easeCloseProgress(t));
+
+        if (t < 1) {
+          this.closeAnimationFrame = requestAnimationFrame(tick);
+          return;
+        }
+
+        // Final frame: snap to the live pre-zoom rect after any late scroll.
+        applyFrame(1);
+        this.closeAnimationFrame = null;
+        resolve();
+      };
+
+      this.cancelCloseAnimation();
+      this.closeAnimationFrame = requestAnimationFrame(tick);
+    });
   }
 
   hideActiveTargetForClone() {
@@ -1166,40 +1377,59 @@ class FocusLayer {
     }, this.options.durationMs + 10);
   }
 
-  getDestinationRect(sourceRect, hasPayload, payloadPlacement) {
-    if (this.itemRegionEl) {
-      const regionRect = this.itemRegionEl.getBoundingClientRect();
-      if (regionRect.width > 0 && regionRect.height > 0) {
-        const availableHeight = window.innerHeight - this.options.inset * 2;
-        const aspectRatio = sourceRect.width / sourceRect.height || 1;
-        const width = Math.min(regionRect.width, this.options.maxWidth);
-        let height = width / aspectRatio;
-        if (height > availableHeight) {
-          height = Math.min(availableHeight, this.options.maxHeight);
-        }
-        const fitWidth = height * aspectRatio;
-        const left = regionRect.left + (regionRect.width - fitWidth) / 2;
-        const top = regionRect.top + (regionRect.height - height) / 2;
-        return {
-          left,
-          top,
-          width: fitWidth,
-          height,
-        };
-      }
+  getDestinationRect(
+    sourceRect,
+    hasPayload,
+    payloadPlacement,
+    sourceMetrics = null,
+  ) {
+    const metrics = sourceMetrics || {
+      hostRect: sourceRect,
+      mediaRect: sourceRect,
+      aspectRatio: sourceRect.width / sourceRect.height || 1,
+      captionExtra: 0,
+    };
+    const aspectRatio = metrics.aspectRatio || 1;
+    // Captions keep their font size when zoomed — don't scale them with the media.
+    const captionExtra = Math.max(0, metrics.captionExtra || 0);
+    const inset = this.options.inset || 0;
+    const availableWidth = window.innerWidth - inset * 2;
+    const availableHeight = window.innerHeight - inset * 2;
+
+    let regionRect = null;
+    if (hasPayload && this.itemRegionEl) {
+      regionRect = this.itemRegionEl.getBoundingClientRect();
     }
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const width = viewportWidth / 3;
-    const height = Math.min(
-      this.options.maxHeight,
-      viewportHeight - this.options.inset * 2,
+    let mediaWidth = Math.min(
+      this.options.maxWidth,
+      regionRect?.width > 0 ? regionRect.width : availableWidth,
     );
+    let mediaHeight = mediaWidth / aspectRatio;
+    let height = mediaHeight + captionExtra;
+
+    if (height > availableHeight || mediaHeight > this.options.maxHeight) {
+      mediaHeight = Math.min(
+        Math.max(0, availableHeight - captionExtra),
+        this.options.maxHeight,
+      );
+      mediaWidth = mediaHeight * aspectRatio;
+      height = mediaHeight + captionExtra;
+    }
+
+    if (regionRect && regionRect.width > 0 && regionRect.height > 0) {
+      return {
+        left: regionRect.left + (regionRect.width - mediaWidth) / 2,
+        top: regionRect.top + (regionRect.height - height) / 2,
+        width: mediaWidth,
+        height,
+      };
+    }
+
     return {
-      left: (viewportWidth - width) / 2,
-      top: (viewportHeight - height) / 2,
-      width,
+      left: (window.innerWidth - mediaWidth) / 2,
+      top: (window.innerHeight - height) / 2,
+      width: mediaWidth,
       height,
     };
   }

@@ -99,7 +99,7 @@
   --font-sans:
     "Inter", "Satoshi", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  --accent-color: #b9fd8e;
+  --accent-color: #000;
   --figma-color-bg-secondary: var(--color-bg);
   --figma-color-bg-tertiary: #d6d6d6;
   --figma-color-border: #d6d6d6;
@@ -108,7 +108,7 @@
 
 ::selection {
   background-color: var(--accent-color);
-  color: var(--color-text);
+  color: var(--color-bg);
   border-radius: 1rem;
   mix-blend-mode: difference;
 }
@@ -141,11 +141,27 @@ html {
   z-index: 0;
   width: 100vw;
   min-height: 100vh;
-  contain: layout paint;
   overflow: hidden;
   pointer-events: none;
-  background: var(--color-bg);
+  background-color: var(--color-bg);
   transform: translateX(-50%);
+  /* CSS fallback if WebGL paper shader fails to mount */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.93 0 0 0 0 0.91 0 0 0 0 0.86 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+}
+
+/* Paper Shaders sets canvas to z-index: -1 inside an isolated context, which can
+   hide it behind the container background. Keep the canvas on top. */
+#paper-background[data-paper-shader] {
+  background-image: none;
+  isolation: auto;
+  /* Library forces position:relative via :where(); keep document-absolute. */
+  position: absolute !important;
+}
+
+#paper-background[data-paper-shader] canvas {
+  z-index: 0 !important;
 }
 
 body > :not(#paper-background, .focus-layer) {
@@ -191,7 +207,6 @@ h1 {
     "calt" on,
     "liga" on,
     "pnum" on,
-    "zero" on,
     "cpsp" on;
 }
 h2 {
@@ -205,7 +220,6 @@ h2 {
     "calt" on,
     "liga" on,
     "pnum" on,
-    "zero" on,
     "cpsp" on;
 }
 h1,
@@ -230,7 +244,6 @@ blockquote,
     "calt" on,
     "liga" on,
     "pnum" on,
-    "zero" on,
     "cpsp" on;
 }
 caption{
@@ -250,7 +263,7 @@ blockquote {
     position: absolute;
     color: var(--color-text-tertiary);
     opacity: 0.5;
-    font-size: 5rem;
+    font-size: 3rem;
     line-height: 1;
     pointer-events: none;
     mix-blend-mode: multiply;
@@ -258,16 +271,23 @@ blockquote {
   &:before {
     content: "“";
     right: calc(100% + 0.5rem);
-    top: -0.5rem;
+    top: 0.2rem;
     width: 1em;
     text-align: right;
   }
-  
+  /*
   &:after {
     content: "”";
     left: calc(100% + 0.5rem);
     bottom: 0;
     transform: translateY(0.5em);
+  }*/
+  cite{
+    display: block;
+    color: var(--color-text-tertiary);
+    &::before{
+      content: "~";
+    }
   }
 }
 dialog h3 {
@@ -308,13 +328,18 @@ a {
 header {
   text-align: left;
   position: relative;
-  margin-bottom: 0;
+  margin-bottom: 2rem;
+
+  &:has(.page-intro) {
+    margin-bottom: 0;
+  }
 
   h1 {
     display: flex;
     align-items: center;
   }
   &.home {
+    position: relative;
     margin-bottom: 2rem;
 
     h1 {
@@ -332,8 +357,13 @@ header {
     }
 
     .header-icon {
-      width: 5rem;
-      height: 5rem;
+      position: absolute;
+      top: 0;
+      right: calc(100% + 1.5rem);
+      left: auto;
+      z-index: 2;
+      width: 4rem;
+      height: 4rem;
       margin: 0;
     }
   }
@@ -388,7 +418,7 @@ header {
 
   a {
     font-weight: 500;
-    &:has(.draw, .shaders) {
+    &:has(.shaders) {
       color: #00a2c2;
       &:hover {
         cursor:
@@ -397,8 +427,6 @@ header {
       }
     }
   }
-  .figma,
-  .draw, 
   .shaders {
     width: auto;
     height: 1.5em;
@@ -408,14 +436,15 @@ header {
   .horror {
     font-family: "isg";
     text-transform: uppercase;
-    color: #FC5A28;
-    font-size: 1em;
+    color: var(--color-text);
+    font-size: 0.85em;
     letter-spacing: 0.1em;
     line-height: 0.75rem;
     display: inline-block;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+    transition: color 0.2s ease;
 
     b {
       transition: all 0.25s ease;
@@ -464,6 +493,7 @@ header {
       }
     }
     &:hover {
+      color: #fc5a28;
       cursor:
         url(/assets/cursor-slasher.svg) 10 50,
         auto;
@@ -579,9 +609,11 @@ form {
 
   header.home {
     .header-icon {
-      width: 4rem;
-      height: 4rem;
-      margin: 0;
+      position: static;
+      right: auto;
+      width: 3.5rem;
+      height: 3.5rem;
+      margin: 0 0 0.75rem;
     }
   }
 }
@@ -674,6 +706,11 @@ form {
     &:has(img) {
       &::before {
         content: none;
+      }
+    }
+    &.thought {
+      &:before {
+        background: url(/assets/icon-pencil.svg) no-repeat;
       }
     }
     &.plugin {
@@ -1616,7 +1653,7 @@ rk-chat-message {
     position: fixed;
     inset: 0;
     border: 0;
-    will-change: opacity;
+    will-change: opacity, backdrop-filter;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -1625,10 +1662,24 @@ rk-chat-message {
     pointer-events: auto;
     opacity: 0;
     background: rgba(255, 255, 255, var(--focus-layer-dim, 0.6)) !important;
-    backdrop-filter: blur(var(--focus-layer-blur, 8px));
-    transition: opacity var(--focus-layer-duration, 260ms) ease;
-    &:hover{
-      background: transparent !important;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    /* Closing: no delay — clear with the zoom-out. */
+    transition:
+      opacity var(--focus-layer-duration, 260ms) ease,
+      backdrop-filter var(--focus-layer-duration, 260ms) ease,
+      -webkit-backdrop-filter var(--focus-layer-duration, 260ms) ease;
+    appearance: none;
+    -webkit-appearance: none;
+
+    &:hover,
+    &:focus,
+    &:focus-visible,
+    &:active {
+      background: rgba(255, 255, 255, var(--focus-layer-dim, 0.6)) !important;
+      outline: none;
+      box-shadow: none;
+      filter: none;
     }
   }
 
@@ -1685,18 +1736,80 @@ rk-chat-message {
       visibility: visible !important;
       --width: var(--focus-item-width, 0);
       --height: var(--focus-item-height, 0);
+
+      :is(
+        figcaption,
+        p,
+        label,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        small,
+        span,
+        a,
+        li,
+        dt,
+        dd,
+        blockquote,
+        cite,
+        legend,
+        caption,
+        time,
+        em,
+        strong,
+        .focus-layer__text
+      ) {
+        opacity: 0;
+        transition: opacity
+          calc(var(--focus-layer-duration, 260ms) * 0.85) ease;
+      }
+    }
+
+    &.is-settled > .focus-layer__clone {
+      :is(
+        figcaption,
+        p,
+        label,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        small,
+        span,
+        a,
+        li,
+        dt,
+        dd,
+        blockquote,
+        cite,
+        legend,
+        caption,
+        time,
+        em,
+        strong,
+        .focus-layer__text
+      ) {
+        opacity: 1;
+      }
     }
 
     & > .focus-layer__clone:is(fig-media, fig-image, fig-video) {
       --fig-media-size: 100%;
       width: 100%;
+      height: 100%;
       max-width: none;
 
       & > fig-preview {
         width: 100%;
-        height: 100%;
+        height: auto;
         max-width: none;
         min-height: 0;
+        aspect-ratio: var(--fig-media-aspect-ratio, auto);
       }
     }
   }
@@ -1757,6 +1870,15 @@ rk-chat-message {
   &.is-open {
     .focus-layer__backdrop {
       opacity: 1;
+      backdrop-filter: blur(var(--focus-layer-blur, 3px));
+      -webkit-backdrop-filter: blur(var(--focus-layer-blur, 3px));
+      /* Opening: dim with the zoom, blur follows slightly later. */
+      transition:
+        opacity var(--focus-layer-duration, 260ms) ease,
+        backdrop-filter var(--focus-layer-duration, 260ms) ease
+          var(--focus-layer-backdrop-delay, 100ms),
+        -webkit-backdrop-filter var(--focus-layer-duration, 260ms) ease
+          var(--focus-layer-backdrop-delay, 100ms);
     }
   }
 
@@ -1764,6 +1886,36 @@ rk-chat-message {
     & .focus-layer__backdrop,
     & .focus-layer__item,
     & .focus-layer__payload {
+      transition: none !important;
+    }
+
+    & .focus-layer__item > .focus-layer__clone
+      :is(
+        figcaption,
+        p,
+        label,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        small,
+        span,
+        a,
+        li,
+        dt,
+        dd,
+        blockquote,
+        cite,
+        legend,
+        caption,
+        time,
+        em,
+        strong,
+        .focus-layer__text
+      ) {
+      opacity: 1;
       transition: none !important;
     }
   }
@@ -1988,13 +2140,13 @@ fig-image{
 
 
 :root {
-  --figma-color-bg-brand: #FC5A28;
+  --figma-color-bg-brand: #000;
   --figma-color-bg-brand-hover: #90ec40;
   --figma-color-bg-menu-hover: #61b729;
   --figma-color-bg-secondary: #E9E7DF;
   --figma-color-border: rgba(0, 0, 0, 0.1);
-  --figma-color-border-selected-strong: #db4f25;
-  --figma-color-border-selected: #FC5A28;
+  --figma-color-border-selected-strong: #000;
+  --figma-color-border-selected: #000;
   --figma-color-text-onbrand: #000;
   --figma-color-icon-onbrand: #000;
   --figma-color-bg-brand-pressed: #db4f25;

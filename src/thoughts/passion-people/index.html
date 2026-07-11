@@ -1,6 +1,6 @@
 ---
 layout: base.njk
-title: "Passion & People"
+title: "Passion, People & Dreams"
 description: "A story about building Generative Plugins and Shaders at Figma by inviting people into ideas, shaping those ideas together, and giving the work everything."
 heading: "Passion & People"
 intro: "What does it look like to build and ship something that you want to see in the world at a company like Figma? I had the honor of leading a small team with Yassir and Georgia to ship Generative Plugins and Shaders at Config 2026. No, we are not even close to done, but I wanted to talk about how we got here and how a magical group of people got together, built our dreams, and gave it our all."
@@ -179,7 +179,7 @@ intro: "What does it look like to build and ship something that you want to see 
 
       <p>In January, I wanted to show-not-tell a vision in my heart. I vibe coded a WebGPU environment that felt like Figma, but would allow you to add shader effects to any layer. Notably was their composability. Like lego bricks, you could stack them and make something greater than their parts. You could add them to any layer, not just a rectangular box. You could control them with dynamically generated canvas controls, for a more tactile experience that you can touch and feel. But because shaders are hard, I built in the ability to vibe shader effects into the environment.</p>
 
-      <p>Something clicked. Holy shit, it was working! And while I believed in this work, I could not simply record a Loom, throw it into Figma’s Slack, and hope for the best. I needed to give this thing legs, but I was just a small town boy, living in a Figma world.</p>
+      <p>Something clicked. Holy shit, it was working! And while I believed in this work, I could not simply record a Loom, throw it into Figma’s Slack, and hope for the best. I needed to give this thing legs, but I needed help.</p>
 
       <fig-chooser layout="grid" columns="2" overflow="scrollbar">
         <fig-choice>
@@ -235,26 +235,27 @@ intro: "What does it look like to build and ship something that you want to see 
     <section>
       <h2>Yassir</h2>
 
-      <fig-image
-        pull="left"
-        zoomable
-        src="yassir.png"
-        alt="Yassir Solomah"
-        aspect-ratio="1 / 1"
-        fit="auto">
-      </fig-image>
+      <fig-tooltip text="Baby Yass" position="top">
+        <fig-image
+          src="yassir.png"
+          pull="left"
+          alt="Yassir Solomah"
+          aspect-ratio="1 / 1"
+          fit="auto">
+        </fig-image>
+      </fig-tooltip>
 
       <p><a href="https://www.instagram.com/yassirsolomah/" target="_blank">Yassir</a> and I met during the creation of 2025’s Figma Draw launch. As a rendering and animation engineer, we became fast friends, and the deep sort of human friends that share real life, real challenges, and stories. If I had a dream, Yassir could find a way to make it happen. So I shared my concepts with him.</p>
 
-      <p>I’m not sure what I was hoping for, but ultimately I needed guidance and real engineering proving of these concepts. Would this even work? Was I approaching it the right way? Would we put these ideas into Figma, and performance would just tank? After all, a vibe-coded one-off approximation of a WebGPU canvas app was hardly an enterprise-scale, tile-rendered beast of an app.</p>
+      <p>Would this even work? Was I approaching it the right way? Would we put these ideas into Figma, and performance would just tank? After all, a vibe-coded one-off approximation of a WebGPU canvas app was hardly an enterprise-scale, tile-rendered beast of an app.</p>
 
-      <p>Yassir caught the fire and believed in the vision. We ripped out my GLSL, strictly shader-effects system, and replaced it with a WebGPU interlayer pipeline system. Not only was this a bold move, it was a play for leveraging the full power of WebGPU. This meant greater security for user-run scripts, particle systems, compute shaders, 3D support, and more.</p>
+      <p>Yassir caught the fire and believed in the vision. We ripped out my GLSL, strictly shader-effects system, and replaced it with a WebGPU interlayer pipeline system. Not only was this a bold move, it was a play for leveraging the full power of WebGPU. This meant greater security for user-run scripts, logic, particle systems, compute shaders, 3D support, and more.</p>
 
       <p>As our excitement grew, he validated my prototype by producing real working versions of it in Figma design. This was the necessary puzzle piece needed to share our idea with execs.</p>
     </section>
 
     <section>
-      <h2>The pitch</h2>
+      <h2>The art of the cold DM</h2>
 
       <p>Dylan, our CEO and I have worked together on lots of projects throughout my years at Figma. So why not just DM him? So, I did.</p>
 
@@ -265,101 +266,171 @@ intro: "What does it look like to build and ship something that you want to see 
 
       <p>
         Thankfully, Dylan, our CEO is super chill like that, and was totally down to see what we were building,
-        but our pitch lacked a holistic project and team vision. Georgia was the key to make this happen. She helped us see the bigger picture, how this would
+        but our pitch lacked a holistic project and team vision. Luckily, Georgia caught wind of the pitch we were preparing, and hit us up with a DM. Georgia was the key to make this happen. She helped us see the bigger picture, how this would
         fit into efforts our greater team was working on and excited about. She knew how to direct our efforts and get us the resources we needed to make this happen.
       </p>
     </section>
 
     <section>
-      <h2><a href="https://x.com/jjcall" target="_blank">Jason</a></h2>
-
-      <fig-image
-        pull="left"
-        zoomable
-        src="jason.png"
-        alt="Jason Callerio"
-        size="large"
-        aspect-ratio="1 / 1"
-        fit="auto">
-      </fig-image>
-
-      <p>I haven’t mentioned Generative Plugins at all. Similarly, this other fella, Jason, was sharing prototypes of adaptive and generative plugins in Figma design, and the greater team was loving it. Figmates kept tagging me in his posts: “ROGIE, you gotta see this.” “ROGIE, you gotta meet this Jason fella.” “ROGIE, I think you and Jason should meet.” I mean, his ideas were sick, but I was too focused on fanning the flames of this little baby ember of an idea.</p>
-
-      <fig-media
-        type="video"
-        zoomable
-        src="gen-plugins.mov"
-        aria-label="Generative plugins prototype"
-        autoplay
-        fit="cover"
-        loop
-        size="auto"
-        muted>
-      </fig-media>
-    </section>
-
-    <section>
       <h2>Georgia</h2>
 
-      <fig-image
-        pull="left"
-        zoomable
-        src="georgia.png"
-        alt="Georgia Rust"
-        aspect-ratio="1 / 1"
-        fit="auto">
-      </fig-image>
+      <fig-tooltip text="Queen Georgie" position="top">
+        <fig-image
+          src="georgia.png"
+          pull="left"
+          alt="Georgia Rust"
+          aspect-ratio="1 / 1"
+          fit="auto">
+        </fig-image>
+      </fig-tooltip>
 
       <p>
         <a href="https://www.linkedin.com/in/georgia-rust" target="_blank">Georgia</a>
         had deep experience runnning teams, and assembling efforts. Naively, I had no plan other than to pitch our ideas,
         but where would we go after that? Georgia was the glue and the strategist that helped us see the bigger picture.
-        Jason's ideas would fit within our plans — we just didn't see it.
-        "How can we get out of our own way and help people build this stuff themselves?" If we used agents as the glue, folks
-        could build their own generative plugins and shaders. "I think this is something we could get buy in to invest in for Config."
+        There were other ideas would fit into our plans — we just didn't see it. If we combined forces,  used agents as the glue, folks
+        could build their own generative plugins and shaders. 
       </p>
+      <blockquote>
+        How can we get out of our own way and help people build this stuff themselves? I think this is something we could get buy in to invest in for Config.
+      </blockquote>
 
       <p>
-        Georgia connected the dots, and helped us align to execs vision. She was on a mission, and wanted to join us to move it forward.
+       Georgia connected the dots, and helped us align to execs vision. She was on a mission, and wanted to join us to move it forward.
         And boy did she ever. Late night 2am planning sesssions, we grew this up from a few demos, to a real project pitch:
-        people, resources, timelines and a plan execs could believe in. She jumped in and acted like an owner with Yassir and I.
+        people, resources, timelines and a plan execs could believe in. She jumped in and was a true project driver, alongside Yassir and I.
       </p>
+
+      <p>I was blown away by this Queen. How is she so helpful? Like, she's putting in long hours just to give this thing life. And ever since that day, she's been right by my side, not only as a brilliant collaborator, but as a sister. Even to the point, where we got the honor of representing our team's amazing work at the <a href="https://youtu.be/2ZCc4k_IV5w?t=1740" target="_blank">Config 2026 keynote</a>. </p>
+
+      <fig-chooser layout="grid" columns="3" overflow="scrollbar">
+        <fig-choice>
+            <fig-image
+            zoomable
+            src="pitch-slide-1.png"
+            alt="Pitch slides"
+            aspect-ratio="16/9"
+            fit="auto">
+          </fig-image>
+        </fig-choice>
+        <fig-choice>
+            <fig-image
+            zoomable
+            src="pitch-slide-2.png"
+            alt="Pitch slides"
+            aspect-ratio="16/9"
+            fit="auto">
+          </fig-image>
+        </fig-choice>
+        <fig-choice>
+            <fig-image
+            zoomable
+            src="pitch-slide-3.png"
+            alt="Pitch slides"
+            aspect-ratio="16/9"
+            fit="auto">
+          </fig-image>
+        </fig-choice>
+      </fig-chooser>
+
+      
     </section>
 
     <section>
-      <h2>Piers</h2>
+        <h2><a href="https://x.com/jjcall" target="_blank">Jason</a></h2>
+  
+        <fig-tooltip text="Coyote" position="top">
+          <fig-image
+            src="jason.png"
+            alt="Jason Callerio"
+            pull="left"
+            size="large"
+            aspect-ratio="1 / 1"
+            fit="auto">
+          </fig-image>
+        </fig-tooltip>
+  
+        <p>
+            I haven’t mentioned Generative Plugins at all. Similarly, this other fella, 
+            Jason, was sharing prototypes of adaptive and generative plugins in Figma design, and the greater team was loving it. The demos were sick as hell. Figmates kept tagging me in his posts: "Rogie, you gotta see this.” I loved what he was building: it was what I was trying to build, but for plugins.
+        </p>
+  
+        <fig-media
+          type="video"
+          zoomable
+          src="gen-plugins.mov"
+          aria-label="Generative plugins prototype"
+          autoplay
+          fit="cover"
+          loop
+          size="auto"
+          caption="Jason's one of many generative plugin prototypes"
+          muted>
+        </fig-media>
+      </section>
 
-      <fig-image
-        pull="left"
-        zoomable
-        src="piers.png"
-        alt="Piers Cowburn"
-        aspect-ratio="1 / 1"
-        fit="auto">
-      </fig-image>
+      <section>
+        <h2>The pitch</h2>
+        <p>We combined generative shaders and plugins together, in a holistic vision. 
+            Georgia, Yassir and I reworked the deck, clarified our pitch, and got it in front of execs.
+            We wanted Figma to be a platform where you could just make your own tools, and share them with the world. We wanted to superpower Figma.
+        </p>
+        <p>As a trio, we jumped in. I demo'd my working environment, with promptable shader effects, complete with on canvas handles and more. Yassir validated the system and talked engineer nerd. Georgia guided the conversation, and showed we were ready as fuck to handle this challenge. And one response stuck with me: 
+        </p>
+        <blockquote>
+           Fuck yeah!
+           <cite>Dylan</cite>
+        </blockquote>
+        <p>We were greenlit. It was go time. Ship date? Config. We had 2 months to build it.</p>
+      </section>
 
-      <p><a href="https://pierscowburn.com/" target="_blank">Piers</a>, from our Modyfi acquisition, is this brilliant artist and engineer working on Figma Motion. We’ve always found this kinship in being two kids in a creative sandbox, building amazing things and sharing with each other. While we weren’t working together, we were playing with ideas together, usually on a Saturday morning, excitedly exchanging the next sick idea.</p>
+      <section>
+        <h2>A rag-tag team with a new way of working</h2>
+        - Act like a startup
+        - Hype hype, and passion and skrillex 
+        - Swag it out
+        - All hands on deck: PropsKit, PRs, everything everywhere all at once 
+        - Fignation (Full ass team hype)
+        - Collaboration (Vectors, Motion)
+        - The finish line (seeing the team come together)
+      </section>
 
-      <fig-media
-        pull="both"
-        zoomable
-        type="video"
-        src="piers.mov"
-        aria-label="Figma shader prototype demo video"
-        autoplay
-        fit="auto"
-        loop
-        size="auto"
-        muted>
-        <figcaption>Piers playing around with expressive shader-backed stroke effects</figcaption>
-      </fig-media>
+      <section>
+        <h2>Piers</h2>
+  
+        <fig-image
+          pull="left"
+          src="piers.png"
+          alt="Piers Cowburn"
+          aspect-ratio="1 / 1"
+          fit="auto">
+        </fig-image>
+  
+        <fig-media
+          pull="right"
+          zoomable
+          type="video"
+          src="piers.mov"
+          aria-label="Figma shader prototype demo video"
+          autoplay
+          fit="auto"
+          loop
+          size="auto"
+          muted>
+          <figcaption>Piers' experiments with shader-backed stroke effects</figcaption>
+        </fig-media>
+  
+        <p><a href="https://pierscowburn.com/" target="_blank">Piers</a>, from our Modyfi acquisition, is this brilliant artist and engineer working on Figma Motion. 
+            We’ve always found this kinship — like two kids in a digital sandbox, building rad things and sharing with each other. 
+            While we weren’t officially on this project working together, we were playing with ideas together, usually on a Saturday morning, excitedly exchanging the next sick idea. 
+            He was a constant source of inspiration and support, pushing me to think bigger.</p>
+      </section>
 
-      <p>If I’m being honest, I felt like Piers was constantly pushing me to think bigger and blowing my mind with his big-brain, unique, and artistic approach. When I would share this, he, in his own humble way, would say, “Rogie, don’t say that, we’re inspiring each other.”</p>
-    </section>
+    
 
     <section>
       <h2>Better, together</h2>
-      <p>And of course, the team. All of these Figmates played a huge part in support, research, demos, engineering, and so much more to pull this off. I'm incredibly grateful for all of you.</p>
+      <p>We did it! We built a new way of working, and a new way of building. All of these Figmates played a huge part in support, research, demos, engineering, and so much more to pull this off. I'm incredibly grateful for all of you.</p>
 
       <div class="polaroid-strip" aria-label="Team lineup photos">
         <figure class="polaroid" style="--tilt: -3deg">
