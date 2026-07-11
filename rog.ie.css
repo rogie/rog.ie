@@ -880,6 +880,7 @@ rogie-music-list {
   justify-content: center;
   width: 100%;
   height: 9rem;
+  margin-top: 1rem;
   position: relative;
   border-radius: var(--base-radius);
   background:
@@ -1207,7 +1208,7 @@ rogie-movie-list {
   flex-direction: row-reverse;
   align-items: flex-end;
   justify-content: center;
-  margin-top: 0.125rem;
+  margin-top: 1rem;
 
   &[data-ui-focused="true"] {
     rogie-movie {
