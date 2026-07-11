@@ -2158,15 +2158,15 @@ fig-image{
 
 
 :root {
-  --figma-color-bg-brand: #000;
-  --figma-color-bg-brand-hover: #90ec40;
-  --figma-color-bg-menu-hover: #61b729;
+  --figma-color-bg-brand: #fc5a28;
+  --figma-color-bg-brand-hover: #fc5a28;
+  --figma-color-bg-menu-hover: #fc5a28;
   --figma-color-bg-secondary: #E9E7DF;
   --figma-color-border: rgba(0, 0, 0, 0.1);
   --figma-color-border-selected-strong: #000;
   --figma-color-border-selected: #000;
-  --figma-color-text-onbrand: #000;
-  --figma-color-icon-onbrand: #000;
-  --figma-color-bg-brand-pressed: #db4f25;
+  --figma-color-text-onbrand: #fff;
+  --figma-color-icon-onbrand: #fff;
+  --figma-color-bg-brand-pressed: #fc5a28;
   --font-size-small: 0.75rem;
 }

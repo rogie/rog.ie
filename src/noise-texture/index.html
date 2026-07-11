@@ -65,7 +65,7 @@ headExtra: |
                         <p>Apply dynamic noise, textures, and compound effects to layers and images.</p>
                         <fig-button size="large"
                                     type="link"
-                                    style="--figma-color-bg-brand: var(--accent-color);--figma-color-text-onbrand: #000;"
+                                    style="--figma-color-bg-brand: #90ec40; --figma-color-bg-brand-hover: #90ec40; --figma-color-bg-brand-pressed: #90ec40; --figma-color-text-onbrand: #000; --figma-color-icon-onbrand: #000;"
                                     href="https://www.figma.com/community/plugin/1138854718618193875/noise-texture">
                             <svg width="24"
                                  height="24"
@@ -278,7 +278,8 @@ void main() {
         <main>
             <article>
                 <section>
-                    <vstack pull="right">
+                    <h2>Noise</h2>
+                    <vstack>
                         <rk-media>
                             <media-shader width="100%"
                                           eager="true"
@@ -847,13 +848,13 @@ void main() {
                             </div>
                         </rk-media>
                     </vstack>
-                    <h2>Noise</h2>
                     <p>Repeatable noise patterns that can be used to create subtle texture for use in UI design, art
                         and illustration work. </p>
                 </section>
 
                 <section>
-                    <vstack pull="right">
+                    <h2>Texture</h2>
+                    <vstack>
                         <rk-media>
                             <media-shader width="100%"
                                           eager="true"
@@ -1006,14 +1007,14 @@ void main(){
 
                         </rk-media>
                     </vstack>
-                    <h2>Texture</h2>
                     <p>Bring life to your designs with programatically generated textures like wood, rock, marble and
                         more.
                     </p>
                 </section>
 
                 <section>
-                    <vstack pull="right">
+                    <h2>Motion</h2>
+                    <vstack>
                         <rk-media>
                             <media-shader width="100%"
                                           eager="true"
@@ -1057,7 +1058,6 @@ void main(){
                         </rk-media>
                     </vstack>
 
-                    <h2>Motion</h2>
                     <p>Choose from a variety of colorful and endlessly moving gradients, and background animations.
                         Layer on
                         effects to make

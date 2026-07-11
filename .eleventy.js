@@ -53,10 +53,26 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("paper-background.js");
   eleventyConfig.addPassthroughCopy("media-shader.js");
 
-  // Keep generated or not-yet-migrated pages available in the built site.
-  eleventyConfig.addPassthroughCopy({
-    "noise-texture/title.svg": "noise-texture/title.svg",
-  });
+  // Page HTML lives in src/; colocated media still lives in these root dirs.
+  for (const pageDir of [
+    "noise-texture",
+    "dither",
+    "scrambler",
+    "liquor-cabinet",
+  ]) {
+    for (const entry of readdirSync(pageDir, { withFileTypes: true })) {
+      if (!entry.isFile()) continue;
+      if (!thoughtMediaExtensions.has(path.extname(entry.name).toLowerCase())) {
+        continue;
+      }
+
+      const sourcePath = path.join(pageDir, entry.name);
+      eleventyConfig.addPassthroughCopy({
+        [sourcePath]: path.join(pageDir, entry.name).replaceAll(path.sep, "/"),
+      });
+    }
+  }
+
   eleventyConfig.addPassthroughCopy("transforms");
   eleventyConfig.addPassthroughCopy("figui3");
   eleventyConfig.addPassthroughCopy("propskit");
