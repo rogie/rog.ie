@@ -185,6 +185,22 @@ main > section:first-child {
   margin-top: 0;
 }
 
+p {
+  color: var(--color-text-secondary);
+  margin-bottom: 1rem;
+}
+
+a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.1em;
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+  &:hover {
+    text-decoration-color: var(--color-text);
+  }
+}
+
 h1,
 h2,
 h3,
@@ -225,7 +241,7 @@ h1,
 h2,
 h3 {
   margin-bottom: 0.5em;
-  line-height: 1.1;
+  line-height: 1.4;
 }
 header h1:has(+ .page-intro) {
   margin-bottom: 1rem;
@@ -244,6 +260,8 @@ blockquote,
     "liga" on,
     "pnum" on,
     "cpsp" on;
+
+    
 }
 caption{
   font-size: 0.875rem;
@@ -296,18 +314,7 @@ dialog h3 {
   margin-bottom: unset;
 }
 
-p {
-  color: var(--color-text-secondary);
-  margin-bottom: 1rem;
-}
 
-a {
-  color: var(--color-text);
-  text-decoration: none;
-  &:hover {
-    text-decoration: underline;
-  }
-}
 
 .full-width {
   width: 100vw;
@@ -401,7 +408,7 @@ header {
     width: 1.5rem;
     height: 1.5rem;
     position: absolute;
-    top: calc((1.5rem * 1.1 - 1.5rem) / 2);
+    top: calc((1.5rem * 1.4 - 1.5rem) / 2);
     left: -2.5rem;
     box-shadow: none;
     border: 0;
@@ -713,7 +720,7 @@ form {
         content: none;
       }
     }
-    &.thought {
+    &.note {
       &:before {
         background: url(/assets/icon-pencil.svg) no-repeat;
       }
@@ -1422,6 +1429,9 @@ fig-image[pull] {
     width: 100%;
   }
 }
+fig-media, fig-image, fig-video{
+  margin-bottom: 1rem;
+}
 
 .media-grid {
   display: grid;
@@ -1452,6 +1462,15 @@ main {
   fig-chooser{
     width: calc(100% + var(--spacer-3) * 2);
     margin: 0;
+
+    &[layout="grid"] {
+      align-items: start;
+
+      fig-choice {
+        height: fit-content;
+      }
+    }
+
     fig-choice{
       >* {
         width: 100%;
@@ -2161,6 +2180,14 @@ fig-button[variant="primary"] {
 fig-image{
   --figma-color-bg-secondary: transparent;
 }
+
+fig-chooser[layout="grid"] {
+  align-items: start;
+  fig-choice {
+    height: fit-content;
+  }
+}
+
 
 
 :root {

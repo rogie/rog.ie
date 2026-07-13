@@ -1,51 +1,27 @@
-import { readdirSync } from "node:fs";
-import path from "node:path";
-
-const thoughtMediaExtensions = new Set([
-  ".avif",
-  ".gif",
-  ".jpg",
-  ".jpeg",
-  ".m4a",
-  ".mp3",
-  ".mp4",
-  ".mov",
-  ".png",
-  ".svg",
-  ".webm",
-  ".webp",
-]);
-
-const addThoughtMediaPassthrough = (eleventyConfig) => {
-  const sourceRoot = "src/thoughts";
-
-  const walk = (directory) => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const sourcePath = path.join(directory, entry.name);
-
-      if (entry.isDirectory()) {
-        walk(sourcePath);
-        continue;
-      }
-
-      if (!thoughtMediaExtensions.has(path.extname(entry.name).toLowerCase())) {
-        continue;
-      }
-
-      const outputPath = path
-        .join("notes", path.relative(sourceRoot, sourcePath))
-        .replaceAll(path.sep, "/");
-
-      eleventyConfig.addPassthroughCopy({
-        [sourcePath]: outputPath,
-      });
-    }
-  };
-
-  walk(sourceRoot);
-};
+const mediaExtensions = [
+  "avif",
+  "gif",
+  "jpg",
+  "jpeg",
+  "m4a",
+  "mp3",
+  "mp4",
+  "mov",
+  "pdf",
+  "png",
+  "svg",
+  "wav",
+  "webm",
+  "webp",
+];
+const mediaGlob = `**/*.{${mediaExtensions.join(",")}}`;
 
 export default function (eleventyConfig) {
+  // Glob rules keep colocated media live: newly added files are available
+  // immediately in serve mode and preserve their path in production builds.
+  eleventyConfig.addPassthroughCopy(`src/${mediaGlob}`);
+  eleventyConfig.addWatchTarget("src/**/*");
+
   eleventyConfig.addPassthroughCopy("assets");
   eleventyConfig.addPassthroughCopy("rog.ie.css");
   eleventyConfig.addPassthroughCopy("rog.ie.web-components.js");
@@ -55,22 +31,13 @@ export default function (eleventyConfig) {
 
   // Page HTML lives in src/; colocated media still lives in these root dirs.
   for (const pageDir of [
-    "noise-texture",
+    "noise-and-texture",
     "dither",
     "scrambler",
     "liquor-cabinet",
   ]) {
-    for (const entry of readdirSync(pageDir, { withFileTypes: true })) {
-      if (!entry.isFile()) continue;
-      if (!thoughtMediaExtensions.has(path.extname(entry.name).toLowerCase())) {
-        continue;
-      }
-
-      const sourcePath = path.join(pageDir, entry.name);
-      eleventyConfig.addPassthroughCopy({
-        [sourcePath]: path.join(pageDir, entry.name).replaceAll(path.sep, "/"),
-      });
-    }
+    eleventyConfig.addPassthroughCopy(`${pageDir}/${mediaGlob}`);
+    eleventyConfig.addWatchTarget(`${pageDir}/**/*`);
   }
 
   eleventyConfig.addPassthroughCopy("transforms");
@@ -82,7 +49,6 @@ export default function (eleventyConfig) {
     "thoughts/recordings": "notes/recordings",
     "thoughts/update-manifest.mjs": "notes/update-manifest.mjs",
   });
-  addThoughtMediaPassthrough(eleventyConfig);
 
   return {
     dir: {

@@ -1,9 +1,10 @@
 ---
 layout: base.njk
-title: "Passion, People & Building your Dreams"
+title: "Passion & People: How we built Generative Plugins and Shaders at Figma"
 description: "A story about building Generative Plugins and Shaders at Figma by inviting people into ideas, shaping those ideas together, and giving the work everything."
-heading: "Passion & People"
-intro: "What does it look like to build and ship something that you want to see in the world at a company like Figma? I had the honor of leading a small team with Yassir and Georgia to ship Generative Plugins and Shaders at Config 2026. No, we are not even close to done, but I wanted to talk about how we got here and how a magical group of people got together, built our dreams, and gave it our all."
+heading: "Passion & People: How we built Generative Plugins and Shaders at Figma"
+intro: >-
+  What does it look like to build and ship something that you want to see in the world at a company like Figma? I had the honor of leading a small team with Yassir and Georgia to ship Generative Plugins and Shaders at Config 2026. I'll share what it took to build <a href="https://x.com/pwnies/status/2069824401747628403" target="_blank">my</a> <a href="https://x.com/tomjohndesign/status/2070684696124506164" target="_blank">dream</a> features, how we went about pitching the project, and the grit and people necessary to pull it off.
 permalink: "/notes/passion-people/"
 ---
 {% include "back-header.njk" %}
@@ -161,6 +162,38 @@ permalink: "/notes/passion-people/"
     <p>It’s a story about inviting people into your ideas, inviting other ideas into yours, and how we are better together.</p>
 
     <section>
+      <h2>Backstory</h2>
+
+      
+      <fig-video
+      src="shader-button.mp4"
+      pull="right"
+      aria-label="Shader button animation"
+      fit="cover"
+      autoplay
+      loop
+      zoomable
+      muted>
+      <figcaption><a href="https://x.com/rogie/status/1721907720180388167" target="_blank">Shaders in UI</a></figcaption>
+
+    </fig-video>
+      <p>In 2022, I got bit with the shaders bug. Shaders have been around for quite some time, and for the video game developers in the room, they're old hat. That cell shaded character style? Shaders. Liquid glass? Shaders. Progressive blur? Shaders. A boring ass gradient? Shaders. But for most of us, shaders are a mystery. They're very math-nerd, and hard to write. Like get a math-degree hard. But, they are incredibly powerful GPU programs that can bend, and modify pixels in real-time. If you're really curious, Dan Hollick wrote up <a href="https://www.makingsoftware.com/chapters/shaders" target="_blank">a great post</a> about them. And Patricio Gonzales made <a href="https://thebookofshaders.com/" target="_blank">a whole ass interactive "book"</a> about shaders</a>. </p>
+      
+
+    <fig-image
+        src="noise-texture-plugin.png"
+        pull="right"
+        alt="Noise & Texture shader plugin"
+        aspect-ratio="16 / 9"
+        fit="contain"
+        zoomable>
+        <figcaption><a href="https://x.com/rogie/status/1600870952010534918" target="_blank">Noise & Texture plugin</a></figcaption>
+      </fig-image>
+      <p>In 2022, I built a plugin, <a href="/noise-and-texture">Noise & texture</a>, as a fun side-quest to bring the power of shaders into Figma. But, it was too limited as a plugin. I wanted deeper integration into the canvas on any layer, not just a box. Figma needed to support shaders natively as a primitive and API to support this.</p>
+    </section>
+   
+
+    <section>
       <h2>Shaders, everywhere</h2>
 
       <fig-media
@@ -178,9 +211,9 @@ permalink: "/notes/passion-people/"
         zoomable>
       </fig-media>
 
-      <p>In January, I wanted to show-not-tell a vision in my heart. I vibe coded a WebGPU environment that felt like Figma, but would allow you to add shader effects to any layer. Notably was their composability. Like lego bricks, you could stack them and make something greater than their parts. You could add them to any layer, not just a rectangular box. You could control them with dynamically generated canvas controls, for a more tactile experience that you can touch and feel. But because shaders are hard, I built in the ability to vibe shader effects into the environment.</p>
+      <p>In January, I wanted to show-not-tell a vision in my heart; shaders in Figma. But not your grandma's shaders — more like a deep integration of shaders into every layer on the canvas. Vectors? yes. 3D layers? also yes. Particle systems? absolutely. I vibe coded a WebGPU environment that felt like Figma, but would allow you to add shader effects to any layer. Most notably, I focused on composability, creation with LLMs, and editor ergonomics. Like lego bricks, you could stack them and make something greater than their parts. You could add them to any layer, not just a rectangular box. You could control them with dynamically generated canvas controls, for a more tactile experience that you can touch and feel. But, because shaders are hard, I built in the ability to vibe shader effects into the environment just by describing them.</p>
 
-      <p>Something clicked. Holy shit, it was working! And while I believed in this work, I could not simply record a Loom, throw it into Figma’s Slack, and hope for the best. I needed to give this thing legs, but I needed help.</p>
+      <p>And Holy shit, it worked. And while I believed in this work, I could not simply record a Loom, throw it into Figma’s Slack, and hope for the best. I needed to give this thing legs, and I needed help to get there.</p>
 
       <fig-chooser layout="grid" columns="2" overflow="scrollbar">
         <fig-choice>
@@ -233,8 +266,8 @@ permalink: "/notes/passion-people/"
       </fig-chooser>
     </section>
 
-    <section>
-      <h2>Yassir</h2>
+    <section id="yassir">
+      <h2>Yassir (Yass)</h2>
 
       <fig-tooltip text="Baby Yass" position="top">
         <fig-image
@@ -248,31 +281,44 @@ permalink: "/notes/passion-people/"
 
       <p><a href="https://www.instagram.com/yassirsolomah/" target="_blank">Yassir</a> and I met during the creation of 2025’s Figma Draw launch. As a rendering and animation engineer, we became fast friends, and the deep sort of human friends that share real life, real challenges, and stories. If I had a dream, Yassir could find a way to make it happen. So I shared my concepts with him.</p>
 
-      <p>Would this even work? Was I approaching it the right way? Would we put these ideas into Figma, and performance would just tank? After all, a vibe-coded one-off approximation of a WebGPU canvas app was hardly an enterprise-scale, tile-rendered beast of an app.</p>
+      <p>Would this even work? Was I approaching it the right way? Would we put these ideas into Figma, and performance would just tank? After all, a vibe-coded one-off approximation of a WebGPU canvas app was hardly an enterprise-scale, tile-rendered beast of an app. Try making a performant infinite canvas app...it's deceptively challenging.</p>
 
-      <p>Yassir caught the fire and believed in the vision. We ripped out my GLSL, strictly shader-effects system, and replaced it with a WebGPU interlayer pipeline system. Not only was this a bold move, it was a play for leveraging the full power of WebGPU. This meant greater security for user-run scripts, logic, particle systems, compute shaders, 3D support, and more.</p>
+      <fig-media
+      type="video"
+          src="yassir-demo.mp4"
+          zoomable
+          full
+          loop
+          autoplay
+          muted
+          aspect-ratio="1 / 1"
+          fit="auto"
+          caption="Yassir's demo in Figma ">
+        </fig-media>
 
-      <p>As our excitement grew, he validated my prototype by producing real working versions of it in Figma design. This was the necessary puzzle piece needed to share our idea with execs.</p>
+      <p>Yassir caught the fire and believed in the vision. We ripped out my GLSL, strictly fragment shader based effects system, and replaced it with a WebGPU interlayer pipeline system. Not only was this a bold move, it was a play for leveraging the full power of WebGPU. This meant greater security for user-run scripts, logic, particle systems, compute shaders, 3D support, logic, and more.</p>
+
+      <p>As our excitement grew, he validated my prototype by producing real working versions of it in Figma design. This was the necessary puzzle piece needed to share our idea with our leaders.</p>
     </section>
 
     <section>
-      <h2>The art of the cold DM</h2>
+      <h2>A cold DM</h2>
 
       <p>Dylan, our CEO and I have worked together on lots of projects throughout my years at Figma. So why not just DM him? So, I did.</p>
 
       <blockquote>
         Yooo, Yassir and I have been grinding on a pitch for an implementation of effects,
-        that are ai promptable to move toward not only shaders in figma, but more than that.
+        that are ai promptable to move toward not only shaders in figma, but more than that&hellip;
       </blockquote>
 
       <p>
         Thankfully, Dylan, our CEO is super chill like that, and was totally down to see what we were building,
-        but our pitch lacked a holistic project and team vision. Luckily, Georgia caught wind of the pitch we were preparing, and hit us up with a DM. Georgia was the key to make this happen. She helped us see the bigger picture, how this would
+        but our pitch as-is, lacked a holistic project and team vision. Luckily, <a href="#georgia">Georgia</a> caught wind of the pitch we were preparing, and hit us up with a DM. Georgia was the next key to make this happen. She helped us see the bigger picture, how this could
         fit into efforts our greater team was working on and excited about. She knew how to direct our efforts and get us the resources we needed to make this happen.
       </p>
     </section>
 
-    <section>
+    <section id="georgia">
       <h2>Georgia</h2>
 
       <fig-tooltip text="Queen Georgie" position="top">
@@ -289,7 +335,7 @@ permalink: "/notes/passion-people/"
         <a href="https://www.linkedin.com/in/georgia-rust" target="_blank">Georgia</a>
         had deep experience runnning teams, and assembling efforts. Naively, I had no plan other than to pitch our ideas,
         but where would we go after that? Georgia was the glue and the strategist that helped us see the bigger picture.
-        There were other ideas would fit into our plans — we just didn't see it. If we combined forces,  used agents as the glue, folks
+        There were other ideas would fit into our plans — we just didn't see it. If we combined forces, used agents as the glue, folks
         could build their own generative plugins and shaders. 
       </p>
       <blockquote>
@@ -297,12 +343,12 @@ permalink: "/notes/passion-people/"
       </blockquote>
 
       <p>
-       Georgia connected the dots, and helped us align to execs vision. She was on a mission, and wanted to join us to move it forward.
+       Georgia connected the dots, and helped us align to our greater company's vision. She was on a mission, and wanted to join us to move it forward.
         And boy did she ever. Late night 2am planning sesssions, we grew this up from a few demos, to a real project pitch:
         people, resources, timelines and a plan execs could believe in. She jumped in and was a true project driver, alongside Yassir and I.
       </p>
 
-      <p>I was blown away by this Queen. How is she so helpful? Like, she's putting in long hours just to give this thing life. And ever since that day, she's been right by my side, not only as a brilliant collaborator, but as a sister. Even to the point, where we got the honor of representing our team's amazing work at the <a href="https://youtu.be/2ZCc4k_IV5w?t=1740" target="_blank">Config 2026 keynote</a>. </p>
+      <p>I was blown away by this Queen. How is she so helpful? Like, she's putting in long hours just to give this thing life. And ever since that day, she's been right by my side, not only as a brilliant collaborator, but as a sister. We even got the honor of representing our team's amazing work at the <a href="https://youtu.be/2ZCc4k_IV5w?t=1740" target="_blank">Config 2026 keynote</a>. </p>
 
       <fig-chooser layout="grid" columns="3" overflow="scrollbar">
         <fig-choice>
@@ -311,7 +357,7 @@ permalink: "/notes/passion-people/"
             src="pitch-slide-1.png"
             alt="Pitch slides"
             aspect-ratio="16/9"
-            fit="auto">
+            fit="cover">
           </fig-image>
         </fig-choice>
         <fig-choice>
@@ -320,7 +366,7 @@ permalink: "/notes/passion-people/"
             src="pitch-slide-2.png"
             alt="Pitch slides"
             aspect-ratio="16/9"
-            fit="auto">
+            fit="cover">
           </fig-image>
         </fig-choice>
         <fig-choice>
@@ -329,7 +375,7 @@ permalink: "/notes/passion-people/"
             src="pitch-slide-3.png"
             alt="Pitch slides"
             aspect-ratio="16/9"
-            fit="auto">
+            fit="cover">
           </fig-image>
         </fig-choice>
       </fig-chooser>
@@ -410,11 +456,27 @@ permalink: "/notes/passion-people/"
         in retrospect, we should have just locked ourselves in a room with engineers, as well as pushed our own PRs onto the main Figma codebase.
         </p>
 
+        <p>
+
+        </p>
+
 
         - All hands on deck: PropsKit, PRs, everything everywhere all at once 
         - Fignation (Full ass team hype)
         - Collaboration (Vectors, Motion)
         - The finish line (seeing the team come together)
+
+        <iframe
+          pull="both"
+          src="https://www.youtube-nocookie.com/embed/2ZCc4k_IV5w?start=1740"
+          title="Figma Config 2026 keynote"
+          width="560"
+          height="315"
+          style="aspect-ratio: 16 / 9; border: 0;"
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
       </section>
 
       <section>
