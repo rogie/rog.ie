@@ -614,7 +614,13 @@ form {
 
 @media (width < 480px) {
   html {
-    padding: 2rem;
+    padding: 0 2rem;
+
+    header {
+      fig-button.back[variant="secondary"] {
+        display: none;
+      }
+    }
   }
   body {
     padding: 0;
