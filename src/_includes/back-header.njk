@@ -10,11 +10,10 @@
         playsinline>
     </video>
     {% else %}
-    <fig-image
+    <img
         class="page-hero"
         src="{{ hero.src }}"
-        alt="{{ hero.alt or heading or title }}">
-    </fig-image>
+        alt="{{ hero.alt or heading or title }}" />
     {% endif %}
 {% endif %}
 <header class="page-header">
