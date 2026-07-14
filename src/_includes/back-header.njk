@@ -1,4 +1,24 @@
-<header>
+{% if hero %}
+    {% if hero.type == "video" %}
+    <video
+        class="page-hero"
+        src="{{ hero.src }}"
+        aria-label="{{ hero.alt or heading or title }}"
+        autoplay
+        loop
+        muted
+        playsinline>
+    </video>
+    {% else %}
+    <fig-image
+        class="page-hero"
+        src="{{ hero.src }}"
+        alt="{{ hero.alt or heading or title }}">
+    </fig-image>
+    {% endif %}
+{% endif %}
+<header class="page-header">
+    
     <fig-tooltip text="Home">
         <fig-button type="link"
                     class="back"
@@ -12,4 +32,5 @@
     {% if intro %}
     <p class="page-intro">{{ intro | safe }}</p>
     {% endif %}
+    
 </header>

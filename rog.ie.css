@@ -131,7 +131,7 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   text-wrap: pretty;
-  padding: 2rem 4em;
+  padding: 0 4em;
 }
 
 #paper-background {
@@ -331,6 +331,14 @@ dialog h3 {
   pointer-events: none;
 }
 
+.page-hero {
+  display: block;
+  width: 100vw;
+  max-width: none;
+  margin-inline: calc(50% - 50vw);
+  height: 300px;
+  object-fit: cover;
+}
 header {
   text-align: left;
   position: relative;
@@ -340,13 +348,18 @@ header {
     margin-bottom: 0;
   }
 
+  &.page-header,
+  &.home{
+    margin: 2rem 0;
+  }
+
   h1 {
     display: flex;
     align-items: center;
   }
   &.home {
     position: relative;
-    margin-bottom: 2rem;
+    
 
     h1 {
       flex-direction: column;
@@ -1433,6 +1446,7 @@ fig-media, fig-image, fig-video{
   margin-bottom: 1rem;
 }
 
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1460,7 +1474,7 @@ main {
   }
 
   fig-chooser{
-    width: calc(100% + var(--spacer-3) * 2);
+    width: 100%;
     margin: 0;
 
     &[layout="grid"] {
@@ -1474,6 +1488,9 @@ main {
     fig-choice{
       >* {
         width: 100%;
+      }
+      fig-media, fig-image, fig-video{
+        margin-bottom: 0;
       }
     }
   }
@@ -1522,10 +1539,6 @@ main {
   }
   fig-media{
     width: 100%;
-  }
-
-  iframe{
-    border-radius: var(--base-radius);
   }
 
   /* A 25rem post plus both 9rem pull gutters needs ~43rem of viewport.
@@ -2202,14 +2215,6 @@ fig-button[variant="primary"] {
 fig-image{
   --figma-color-bg-secondary: transparent;
 }
-
-fig-chooser[layout="grid"] {
-  align-items: start;
-  fig-choice {
-    height: fit-content;
-  }
-}
-
 
 
 :root {
