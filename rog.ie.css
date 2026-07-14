@@ -1478,10 +1478,6 @@ main {
     }
   }
 
-  @media (width < 480px) {
-    --pull-width: 0rem;
-  }
-
   [pull]{
     --pull-width: 8rem;
     --pull-margin: 1rem;
@@ -1526,6 +1522,32 @@ main {
   }
   fig-media{
     width: 100%;
+  }
+
+  iframe{
+    border-radius: var(--base-radius);
+  }
+
+  /* A 25rem post plus both 9rem pull gutters needs ~43rem of viewport.
+     Inline pulled content before its negative margins can reach the edge. */
+  @media (width < 44rem) {
+    [pull="left"],
+    [pull="right"],
+    [pull="both"] {
+      --size: 100%;
+      --width: 100%;
+      --margin: 0;
+      float: none;
+      clear: both;
+      width: 100%;
+      max-width: 100%;
+      margin: 1rem 0;
+    }
+
+    :is(fig-media, fig-image)[pull] {
+      width: 100%;
+      max-width: 100%;
+    }
   }
 }
 article {
