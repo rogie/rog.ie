@@ -45,11 +45,6 @@ export default function (eleventyConfig) {
   eleventyConfig.addPassthroughCopy("propskit");
   eleventyConfig.addPassthroughCopy("propkit");
 
-  eleventyConfig.addPassthroughCopy({
-    "thoughts/recordings": "notes/recordings",
-    "thoughts/update-manifest.mjs": "notes/update-manifest.mjs",
-  });
-
   return {
     dir: {
       input: "src",

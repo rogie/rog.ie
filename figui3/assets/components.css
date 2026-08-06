@@ -253,6 +253,7 @@
   --bg-selected-active: #e5f4ff;
   --bg-tooltip: var(--figma-color-bg-menu);
   --color-tooltip: var(--figma-color-text);
+  --input-opacity-width: calc(3.25rem - 2px);
 
   /* Transparent Backgrounds - use light-dark() */
   --figma-color-bordertranslucent: light-dark(
@@ -353,8 +354,9 @@
 
   /* Icons - colorless shapes for use with mask-image */
   --icon-16-chevron: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.87868 7.12132L8 9.24264L10.1213 7.12132' stroke='grey' stroke-linecap='round'/%3E%3C/svg%3E%0A");
-  --icon-16-checkmark: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.084 4.22266C11.2372 3.99292 11.5476 3.93084 11.7773 4.08398C12.0071 4.23716 12.0692 4.54758 11.916 4.77734L7.91602 10.7773C7.83292 10.902 7.6979 10.9833 7.54883 10.998C7.39993 11.0126 7.25229 10.9593 7.14648 10.8535L4.14648 7.85352C3.95126 7.65825 3.95123 7.34173 4.14648 7.14648C4.34174 6.95124 4.65825 6.95126 4.85352 7.14648L7.42188 9.71484L11.084 4.22266Z' fill='white'/%3E%3C/svg%3E%0A");
+  --icon-16-checkmark: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5839 3.72266C11.7371 3.49298 12.0476 3.43085 12.2773 3.58399C12.5069 3.73716 12.569 4.04762 12.416 4.27735L7.41596 11.7773C7.33289 11.9019 7.19778 11.9833 7.04877 11.998C6.8999 12.0126 6.75223 11.9593 6.64642 11.8535L3.64642 8.85352C3.4512 8.65826 3.45119 8.34174 3.64642 8.14649C3.84169 7.95133 4.15822 7.95128 4.35346 8.14649L6.92182 10.7148L11.5839 3.72266Z' fill='white'/%3E%3C/svg%3E");
   --icon-16-reset: url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' fill-rule='evenodd' d='M6.354 2.146a.5.5 0 0 1 0 .708L5.207 4H8.5a5 5 0 1 1-5 5 .5.5 0 0 1 1 0 4 4 0 1 0 4-4H5.207l1.147 1.146a.5.5 0 1 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2a.5.5 0 0 1 .708 0' clip-rule='evenodd'/%3E%3C/svg%3E");
+  --icon-24-reset: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.22473 5.08203C8.41872 4.9541 8.68285 4.97586 8.85364 5.14648C9.0244 5.31725 9.046 5.58134 8.91809 5.77539L8.85364 5.85352L7.70715 7H12.0001C15.3136 7.00005 17.9999 9.68652 18.0001 13C18.0001 16.3137 15.3138 19 12.0001 19C8.68641 19 6.00012 16.3137 6.00012 13C6.00036 12.7241 6.22413 12.5 6.50012 12.5C6.77608 12.5 6.99989 12.7241 7.00012 13C7.00012 15.7614 9.2387 18 12.0001 18C14.7615 18 17.0001 15.7614 17.0001 13C16.9999 10.2388 14.7614 8.00005 12.0001 8H7.70715L8.85364 9.14648L8.91809 9.22461C9.04619 9.41859 9.02426 9.68264 8.85364 9.85352C8.68277 10.0244 8.41881 10.0461 8.22473 9.91797L8.14661 9.85352L6.14661 7.85352C5.95152 7.65824 5.9514 7.34169 6.14661 7.14648L8.14661 5.14648L8.22473 5.08203Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-steppers: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.7245 6.08191C11.9186 5.95386 12.1826 5.97562 12.3534 6.14637L14.3534 8.14637L14.4179 8.22449C14.546 8.41852 14.5242 8.68253 14.3534 8.8534C14.1826 9.02426 13.9186 9.04601 13.7245 8.91785L13.6464 8.8534L11.9999 7.20691L10.3534 8.8534C10.1582 9.04866 9.84166 9.04866 9.6464 8.8534C9.45123 8.65813 9.45117 8.3416 9.6464 8.14637L11.6464 6.14637L11.7245 6.08191Z' fill='black'/%3E%3Cpath d='M13.7248 15.0822C13.9189 14.9541 14.1829 14.9758 14.3537 15.1467C14.5246 15.3176 14.5463 15.5815 14.4182 15.7756L14.3537 15.8537L12.3537 17.8537C12.1829 18.0246 11.9189 18.0463 11.7248 17.9182L11.6467 17.8537L9.64669 15.8537L9.58224 15.7756C9.45407 15.5815 9.47583 15.3176 9.64669 15.1467C9.81756 14.9758 10.0815 14.9541 10.2756 15.0822L10.3537 15.1467L12.0002 16.7932L13.6467 15.1467L13.7248 15.0822Z' fill='black' /%3E%3C/svg%3E%0A");
   --icon-24-add: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 6C12.2761 6 12.5 6.22386 12.5 6.5V11.5H17.5C17.7761 11.5 18 11.7239 18 12C18 12.2761 17.7761 12.5 17.5 12.5H12.5V17.5C12.5 17.7761 12.2761 18 12 18C11.7239 18 11.5 17.7761 11.5 17.5V12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H11.5V6.5C11.5 6.22386 11.7239 6 12 6Z' fill='currentColor'/%3E%3C/svg%3E");
   --icon-24-minus: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M18 12C18 12.2761 17.7761 12.5 17.5 12.5H6.5C6.22386 12.5 6 12.2761 6 12C6 11.7239 6.22386 11.5 6.5 11.5H17.5C17.7761 11.5 18 11.7239 18 12Z' fill='currentColor'/%3E%3C/svg%3E");
@@ -382,6 +384,13 @@
   --icon-16-settings: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.31951 2.0081C8.63957 2.02541 8.95246 2.06727 9.25717 2.13234C9.2583 2.13285 9.36317 2.16083 9.37434 2.16381C9.86377 2.31521 10.1341 2.72145 10.2216 3.10097C10.2215 3.11507 10.2503 3.27344 10.2503 3.27344C10.2503 3.2735 10.2738 3.39069 10.2738 3.39069C10.311 3.50552 10.3889 3.60576 10.5002 3.67049C10.5021 3.67258 10.5989 3.71411 10.6088 3.71839C10.7275 3.75177 10.8515 3.74099 10.9611 3.68991C10.9645 3.68638 11.1103 3.63071 11.1242 3.6254C11.4964 3.51228 11.9813 3.54148 12.3574 3.88434C12.3628 3.8861 12.4389 3.96209 12.4452 3.96834C12.4453 3.96838 12.6484 4.21056 12.6484 4.21056C13.1165 4.78066 13.4804 5.44161 13.7121 6.16246C13.7149 6.17767 13.7423 6.28045 13.7425 6.28125C13.8537 6.7773 13.638 7.21289 13.353 7.47774C13.3387 7.48737 13.219 7.58594 13.219 7.58594C13.1002 7.66994 13.0226 7.79446 13.0041 7.93741C13.0003 7.9375 13.0003 8.0625 13.0003 8.0625C13.0209 8.20342 13.0968 8.3265 13.2097 8.40716C13.2124 8.40722 13.3418 8.50782 13.3513 8.5152C13.6316 8.78218 13.8484 9.21484 13.7414 9.7107C13.7401 9.71973 13.7112 9.82812 13.7112 9.82812C13.4814 10.5549 13.1173 11.2176 12.6503 11.7903C12.6345 11.806 12.4456 12.0312 12.4456 12.0312C12.0587 12.4531 11.5262 12.4978 11.1256 12.374C11.1113 12.3697 10.9612 12.3125 10.9612 12.3125C10.8714 12.2692 10.774 12.2547 10.6802 12.267C10.669 12.2686 10.594 12.2891 10.594 12.2891C10.5828 12.2912 10.5702 12.2967 10.5546 12.3038C10.535 12.3127 10.5177 12.3209 10.5007 12.329C10.4925 12.3337 10.4456 12.3672 10.4456 12.3672C10.3352 12.4513 10.2694 12.5733 10.2536 12.703C10.2503 12.7031 10.2503 12.8359 10.2503 12.8359C10.2442 13.3005 9.95141 13.6315 9.61658 13.7713C9.60265 13.7784 9.47686 13.8203 9.47686 13.8203C9.11934 13.9072 8.75211 13.9651 8.37555 13.9884C8.34697 13.9856 8.0003 14 8.0003 14C7.6749 13.9999 7.35708 13.9743 7.04672 13.9247C7.0243 13.9178 6.74249 13.8672 6.74249 13.8672C6.09697 13.7294 5.78931 13.1754 5.74986 12.7268C5.73805 12.5892 5.67401 12.4628 5.56973 12.375C5.55432 12.368 5.54439 12.3624 5.53419 12.3567C5.49568 12.335 5.45758 12.3137 5.42943 12.2979C5.29224 12.2472 5.15454 12.2569 5.03853 12.3107C4.65161 12.4919 4.06725 12.5131 3.63238 12.1102C3.62614 12.1024 3.54717 12.0234 3.54717 12.0234C3.05356 11.4759 2.65946 10.8398 2.39223 10.1401C2.38729 10.1297 2.28936 9.83594 2.28936 9.83594C2.085 9.21085 2.41443 8.66774 2.78342 8.41082C2.79058 8.39903 2.86592 8.33596 2.8745 8.32879C2.95214 8.24176 2.99865 8.12765 2.99971 8.00029C3.00029 8 2.9853 7.87997 2.98469 7.87515C2.96344 7.79641 2.92483 7.72547 2.87233 7.66672C2.86594 7.65626 2.78155 7.58594 2.78155 7.58594C2.41249 7.3283 2.08643 6.78669 2.2855 6.16347C2.29278 6.15352 2.38586 5.87456 2.39073 5.85997C2.65941 5.15978 3.05409 4.52282 3.54692 3.97763C3.54759 3.97618 3.62427 3.89947 3.63241 3.89132C4.01092 3.54098 4.50075 3.51189 4.87356 3.62734C4.87942 3.62669 5.02584 3.68236 5.03849 3.68717C5.03847 3.68718 5.14785 3.72624 5.14785 3.72624C5.26334 3.75075 5.38729 3.7341 5.49848 3.67092C5.50161 3.67079 5.54722 3.63835 5.55412 3.63343C5.66764 3.54677 5.73526 3.41922 5.74777 3.28141C5.75102 3.27518 5.77244 3.11146 5.77368 3.10199C5.86963 2.69196 6.17657 2.25047 6.74082 2.13122C6.75426 2.13063 7.02637 2.08186 7.04605 2.07833C7.3559 2.02585 7.67443 2.00001 7.99878 2C8.01175 2.00028 8.29947 2.0073 8.31951 2.00779L8.31951 2.0081ZM7.72576 3.0081C7.45937 3.02159 7.19902 3.05647 6.94759 3.10961C6.82933 3.13709 6.75511 3.24295 6.74474 3.35958C6.70491 3.83399 6.44257 4.27973 6.00147 4.53524C5.55557 4.79143 5.03756 4.79553 4.611 4.59522C4.50004 4.54497 4.37104 4.55747 4.29216 4.64445C3.8193 5.1675 3.45727 5.78594 3.23829 6.46713C3.20344 6.58123 3.25696 6.69751 3.35141 6.765C3.74158 7.03654 3.9959 7.48327 3.99971 7.99219C3.99964 8.50887 3.74503 8.96046 3.35586 9.23077C3.26732 9.29396 3.21553 9.39274 3.22898 9.4919C3.22812 9.49846 3.23467 9.53125 3.23467 9.53125C3.45757 10.2146 3.81993 10.8334 4.29239 11.3566C4.37514 11.4448 4.50317 11.4563 4.60905 11.4076C4.99448 11.2266 5.44844 11.2119 5.86557 11.397C5.87329 11.4006 5.878 11.403 5.88258 11.4055C5.93014 11.4321 6.12689 11.5425 6.13257 11.5463C6.45081 11.7791 6.65504 12.1186 6.72476 12.4848C6.72758 12.4916 6.74249 12.6406 6.74249 12.6406C6.75672 12.757 6.83123 12.8627 6.94501 12.8887C7.20079 12.9434 7.46048 12.9784 7.72575 12.9927C7.72694 12.9922 7.98043 12.9994 7.9992 13C8.42545 12.9999 8.8382 12.9467 9.23265 12.8482C9.23643 12.8471 9.23915 12.8458 9.24139 12.8441C9.24245 12.8437 9.24846 12.8318 9.24996 12.8288C9.24952 12.8159 9.2501 12.795 9.24995 12.7828C9.24458 12.2581 9.51191 11.749 9.99339 11.4646C9.99762 11.4621 9.99686 11.4624 9.99919 11.4612C10.0003 11.4609 10.1273 11.3974 10.1399 11.3911C10.1399 11.391 10.2805 11.3363 10.2805 11.3363C10.6508 11.216 11.0457 11.2461 11.388 11.4061C11.4725 11.4442 11.5655 11.4457 11.6399 11.4067C11.6409 11.4062 11.6951 11.3656 11.7026 11.36C12.1759 10.8367 12.5388 10.2173 12.7554 9.53102C12.783 9.44305 12.7587 9.35546 12.7042 9.28847C12.6966 9.28221 12.6409 9.22656 12.6409 9.22656C12.3005 8.99086 12.0652 8.61779 12.0115 8.18821C12.0082 8.18749 12.0006 8.00777 12.0003 8.00024C12.0012 7.49012 12.2547 7.04097 12.645 6.76749C12.7326 6.70328 12.7824 6.60607 12.7692 6.50857C12.766 6.5078 12.7585 6.47058 12.7581 6.46881C12.5396 5.78254 12.1753 5.16178 11.7042 4.6439C11.6206 4.55669 11.4943 4.54567 11.3896 4.59351C11.01 4.7706 10.5697 4.78846 10.1706 4.62098C10.1545 4.60915 10.0003 4.53906 10.0003 4.53906C9.55722 4.28004 9.29427 3.83328 9.25301 3.36095C9.24274 3.25618 9.1845 3.16342 9.09421 3.12463C9.08637 3.12244 9.04717 3.10938 9.04717 3.10938C8.79259 3.05581 8.53203 3.02103 8.26596 3.00712C8.24594 3.00722 8.0003 3 8.0003 3C7.99919 3.00003 7.72575 3.00784 7.72575 3.00784L7.72576 3.0081ZM10.4445 12.3519L10.4758 12.344C10.4804 12.3378 10.4863 12.3346 10.4928 12.3309C10.4773 12.3403 10.4616 12.3481 10.4474 12.3551L10.4445 12.3519ZM8.20232 6.0081C9.21117 6.1121 9.99877 6.96407 9.99877 8C9.99861 9.10458 9.10347 9.99977 7.99919 10C6.89429 10 5.99892 9.10473 5.99877 8.00029C5.99919 8.00029 6.00701 7.79716 6.00701 7.79716C6.11047 6.78796 6.9626 6 7.99877 6C7.99919 6.00029 8.20232 6.0081 8.20232 6.0081ZM7.89763 7.0081C7.39268 7.05592 6.99877 7.48196 6.99877 8C6.99927 8.00656 7.00658 8.10156 7.00658 8.10156C7.0517 8.57298 7.42607 8.94726 7.89693 8.99488C7.90839 8.99305 7.99877 9 7.99877 9C8.51682 8.99978 8.9425 8.60628 8.99362 8.10208C8.9916 8.09411 8.99833 8.00564 8.99875 8.00026C8.99877 7.48225 8.60529 7.0564 8.10105 7.00517C8.09279 7.00714 8.0062 7.00057 7.99921 7.00003C7.99919 7.00029 7.89763 7.0081 7.89763 7.0081Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-more: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.5 12C7.5 12.8284 6.82843 13.5 6 13.5C5.17157 13.5 4.5 12.8284 4.5 12C4.5 11.1716 5.17157 10.5 6 10.5C6.82843 10.5 7.5 11.1716 7.5 12ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM18 13.5C18.8284 13.5 19.5 12.8284 19.5 12C19.5 11.1716 18.8284 10.5 18 10.5C17.1716 10.5 16.5 11.1716 16.5 12C16.5 12.8284 17.1716 13.5 18 13.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-16-more: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M5 8C5 8.55228 4.55228 9 4 9C3.44772 9 3 8.55228 3 8C3 7.44772 3.44772 7 4 7C4.55228 7 5 7.44772 5 8ZM9 8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7C8.55228 7 9 7.44772 9 8ZM12 9C12.5523 9 13 8.55228 13 8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8C11 8.55228 11.4477 9 12 9Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+
+  --icon-24-download: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M17.5 13C17.7761 13 18 13.2239 18 13.5V16.5C18 17.3284 17.3284 18 16.5 18H7.5C6.67157 18 6 17.3284 6 16.5V13.5C6 13.2239 6.22386 13 6.5 13C6.77614 13 7 13.2239 7 13.5V16.5C7 16.7761 7.22386 17 7.5 17H16.5C16.7761 17 17 16.7761 17 16.5V13.5C17 13.2239 17.2239 13 17.5 13ZM12 6C12.2761 6 12.5 6.22386 12.5 6.5V12.293L14.6465 10.1465C14.8417 9.95122 15.1583 9.95122 15.3535 10.1465C15.5488 10.3417 15.5488 10.6583 15.3535 10.8535L12.3535 13.8535C12.1583 14.0488 11.8417 14.0488 11.6465 13.8535L8.64648 10.8535C8.45122 10.6583 8.45122 10.3417 8.64648 10.1465C8.84175 9.95122 9.15825 9.95122 9.35352 10.1465L11.5 12.293V6.5C11.5 6.22386 11.7239 6 12 6Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-upload: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12.3536 6.14645C12.1583 5.95118 11.8417 5.95118 11.6464 6.14645L8.64645 9.14645C8.45118 9.34171 8.45118 9.65829 8.64645 9.85355C8.84171 10.0488 9.15829 10.0488 9.35355 9.85355L11.5 7.70711V13.5C11.5 13.7761 11.7239 14 12 14C12.2761 14 12.5 13.7761 12.5 13.5V7.70711L14.6464 9.85355C14.8417 10.0488 15.1583 10.0488 15.3536 9.85355C15.5488 9.65829 15.5488 9.34171 15.3536 9.14645L12.3536 6.14645ZM7 13.5C7 13.2239 6.77614 13 6.5 13C6.22386 13 6 13.2239 6 13.5V16.5C6 17.3284 6.67157 18 7.5 18H16.5C17.3284 18 18 17.3284 18 16.5V13.5C18 13.2239 17.7761 13 17.5 13C17.2239 13 17 13.2239 17 13.5V16.5C17 16.7761 16.7761 17 16.5 17H7.5C7.22386 17 7 16.7761 7 16.5V13.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-sun: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5C12.2761 5 12.5 5.22386 12.5 5.5V6.5C12.5 6.77614 12.2761 7 12 7C11.7239 7 11.5 6.77614 11.5 6.5V5.5C11.5 5.22386 11.7239 5 12 5ZM16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12ZM12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15ZM7.75687 7.05026C7.56161 6.85499 7.24503 6.85499 7.04977 7.05026C6.8545 7.24552 6.8545 7.5621 7.04977 7.75736L7.75687 8.46447C7.95214 8.65973 8.26872 8.65973 8.46398 8.46447C8.65924 8.26921 8.65924 7.95262 8.46398 7.75736L7.75687 7.05026ZM19 12C19 12.2761 18.7761 12.5 18.5 12.5H17.5C17.2239 12.5 17 12.2761 17 12C17 11.7239 17.2239 11.5 17.5 11.5H18.5C18.7761 11.5 19 11.7239 19 12ZM16.9502 7.75736C17.1455 7.5621 17.1455 7.24552 16.9502 7.05026C16.755 6.85499 16.4384 6.85499 16.2431 7.05026L15.536 7.75736C15.3408 7.95262 15.3408 8.26921 15.536 8.46447C15.7313 8.65973 16.0479 8.65973 16.2431 8.46447L16.9502 7.75736ZM12 17C12.2761 17 12.5 17.2239 12.5 17.5V18.5C12.5 18.7761 12.2761 19 12 19C11.7239 19 11.5 18.7761 11.5 18.5V17.5C11.5 17.2239 11.7239 17 12 17ZM16.2422 15.5356C16.047 15.3403 15.7304 15.3403 15.5351 15.5356C15.3399 15.7309 15.3399 16.0475 15.5351 16.2427L16.2422 16.9498C16.4375 17.1451 16.7541 17.1451 16.9493 16.9498C17.1446 16.7546 17.1446 16.438 16.9493 16.2427L16.2422 15.5356ZM7 12C7 12.2761 6.77614 12.5 6.5 12.5H5.5C5.22386 12.5 5 12.2761 5 12C5 11.7239 5.22386 11.5 5.5 11.5H6.5C6.77614 11.5 7 11.7239 7 12ZM8.46488 16.2427C8.66014 16.0475 8.66014 15.7309 8.46488 15.5356C8.26962 15.3403 7.95304 15.3403 7.75777 15.5356L7.05067 16.2427C6.85541 16.438 6.85541 16.7546 7.05067 16.9498C7.24593 17.1451 7.56251 17.1451 7.75777 16.9498L8.46488 16.2427Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-moon: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M15 14.9999C15.3647 14.9999 15.7224 14.9672 16.0703 14.9045C15.1624 16.1743 13.677 16.9997 12 16.9997C9.23858 16.9997 7 14.7611 7 11.9997C7 10.3226 7.82546 8.8371 9.09542 7.92923C9.03267 8.27722 9 8.63509 9 8.99986C9 12.3136 11.6863 14.9999 15 14.9999ZM17.3039 14.8075C17.6193 14.2129 16.8933 13.678 16.2412 13.8446C15.8443 13.946 15.4285 13.9999 15 13.9999C12.2386 13.9999 10 11.7613 10 8.99986C10 8.57132 10.0539 8.15537 10.1553 7.75842C10.3219 7.10631 9.78711 6.38032 9.19252 6.6957C7.29348 7.70298 6 9.70029 6 11.9997C6 15.3134 8.68629 17.9997 12 17.9997C14.2993 17.9997 16.2965 16.7064 17.3039 14.8075ZM16 7.49993C16 7.22379 15.7761 6.99993 15.5 6.99993C15.2239 6.99993 15 7.22379 15 7.49993V7.99993H14.5C14.2239 7.99993 14 8.22379 14 8.49993C14 8.77607 14.2239 8.99993 14.5 8.99993H15V9.49993C15 9.77607 15.2239 9.99993 15.5 9.99993C15.7761 9.99993 16 9.77607 16 9.49993V8.99993H16.5C16.7761 8.99993 17 8.77607 17 8.49993C17 8.22379 16.7761 7.99993 16.5 7.99993H16V7.49993Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-adjust: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.5 18C8.77614 18 9 17.7761 9 17.5V15.9492C10.141 15.7175 11 14.7094 11 13.5C11 12.2905 10.1411 11.2814 9 11.0498V6.5C9 6.22386 8.77614 6 8.5 6C8.22386 6 8 6.22386 8 6.5V11.0498C6.85886 11.2814 6 12.2905 6 13.5C6 14.7094 6.85895 15.7175 8 15.9492V17.5C8 17.7761 8.22386 18 8.5 18ZM15.5 18C15.7761 18 16 17.7761 16 17.5V12.9502C17.1411 12.7186 18 11.7095 18 10.5C18 9.29057 17.141 8.28247 16 8.05078V6.5C16 6.22386 15.7761 6 15.5 6C15.2239 6 15 6.22386 15 6.5V8.05078C13.859 8.28247 13 9.29057 13 10.5C13 11.7095 13.8589 12.7186 15 12.9502V17.5C15 17.7761 15.2239 18 15.5 18ZM15.5 12C14.6716 12 14 11.3284 14 10.5C14 9.67157 14.6716 9 15.5 9C16.3284 9 17 9.67157 17 10.5C17 11.3284 16.3284 12 15.5 12ZM8.5 15C7.67157 15 7 14.3284 7 13.5C7 12.6716 7.67157 12 8.5 12C9.32843 12 10 12.6716 10 13.5C10 14.3284 9.32843 15 8.5 15Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-16-adjust: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 13C5.77614 13 6 12.7761 6 12.5V11.5C6 11.478 5.99591 11.4568 5.99316 11.4355C6.85886 11.2156 7.5 10.4341 7.5 9.5C7.5 8.56581 6.85898 7.7833 5.99316 7.56348C5.99583 7.54257 6 7.52163 6 7.5V3.5C6 3.22386 5.77614 3 5.5 3C5.22386 3 5 3.22386 5 3.5V7.5C5 7.52158 5.00321 7.54261 5.00586 7.56348C4.14051 7.78362 3.5 8.56614 3.5 9.5C3.5 10.4338 4.14063 11.2153 5.00586 11.4355C5.00313 11.4567 5 11.4781 5 11.5V12.5C5 12.7761 5.22386 13 5.5 13ZM10.5 13C10.7761 13 11 12.7761 11 12.5V8.5C11 8.47837 10.9958 8.45743 10.9932 8.43652C11.859 8.2167 12.5 7.43419 12.5 6.5C12.5 5.56589 11.8589 4.78435 10.9932 4.56445C10.9959 4.54324 11 4.52196 11 4.5V3.5C11 3.22386 10.7761 3 10.5 3C10.2239 3 10 3.22386 10 3.5V4.5C10 4.52192 10.0031 4.54328 10.0059 4.56445C9.14063 4.78468 8.5 5.56622 8.5 6.5C8.5 7.43386 9.14051 8.21638 10.0059 8.43652C10.0032 8.45739 10 8.47842 10 8.5V12.5C10 12.7761 10.2239 13 10.5 13ZM10.5 7.5C9.94772 7.5 9.5 7.05228 9.5 6.5C9.5 5.94772 9.94772 5.5 10.5 5.5C11.0523 5.5 11.5 5.94772 11.5 6.5C11.5 7.05228 11.0523 7.5 10.5 7.5ZM5.5 10.5C4.94772 10.5 4.5 10.0523 4.5 9.5C4.5 8.94772 4.94772 8.5 5.5 8.5C6.05228 8.5 6.5 8.94772 6.5 9.5C6.5 10.0523 6.05228 10.5 5.5 10.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
 
   --tip-pointer: path("M8 6L2 0H14L8 6Z");
 
@@ -698,192 +707,6 @@ input[type="text"][list] {
   }
 }
 
-@supports (appearance: base-select) {
-  fig-dropdown[experimental~="modern"] {
-    &[type="dropdown"] {
-      select:before {
-        content: attr(aria-label);
-      }
-      option::checkmark {
-        display: none;
-      }
-      option {
-        padding-left: var(--spacer-3);
-      }
-    }
-    select {
-      --option-height: 1.5rem;
-      --max-width: 20rem;
-      @media (hover) and (pointer: fine) {
-        &,
-        &::picker(select) {
-          appearance: base-select;
-        }
-      }
-
-      padding-block: 0;
-      will-change: scale;
-
-      @supports (-webkit-touch-callout: none) {
-        font-size: 16px;
-      }
-
-      option::checkmark {
-        content: "";
-        display: block;
-        width: 1rem;
-        height: 1rem;
-        background-color: currentColor;
-        -webkit-mask-image: var(--icon-16-checkmark);
-        mask-image: var(--icon-16-checkmark);
-        -webkit-mask-repeat: no-repeat;
-        mask-repeat: no-repeat;
-        -webkit-mask-position: center;
-        mask-position: center;
-        -webkit-mask-size: contain;
-        mask-size: contain;
-      }
-
-      option {
-        display: flex;
-        gap: var(--spacer-1);
-        padding: 0 var(--spacer-4) 0 calc(var(--spacer-1) * 2 + var(--spacer-1));
-        font-weight: var(--body-medium-fontWeight);
-        color: var(--figma-color-text-menu);
-        position: relative;
-        & * {
-          color: inherit;
-        }
-        &[hidden] {
-          display: none;
-        }
-        &:before {
-          content: "";
-          display: block;
-          position: absolute;
-          inset: 0 var(--spacer-2);
-          border-radius: var(--radius-medium);
-          z-index: -1;
-        }
-        &:checked:before {
-          background-color: transparent;
-        }
-        &:not(:checked):before {
-          background-color: transparent;
-        }
-        &:not(:disabled) {
-          &:hover,
-          &:active,
-          &:focus-visible {
-            background-color: transparent;
-            outline: 0;
-            &:before {
-              background-color: var(--figma-color-bg-menu-hover);
-            }
-          }
-        }
-      }
-
-      optgroup {
-        color: var(--figma-color-text-menu-secondary);
-        text-align: left;
-        position: relative;
-        padding: 0 var(--spacer-1) 0 calc(var(--spacer-1) * 2 + var(--spacer-1));
-        font-weight: var(--body-medium-fontWeight);
-        &[label]:not([label=""]) {
-          padding-top: var(--spacer-2);
-          option:first-child {
-            margin-top: var(--spacer-2);
-          }
-        }
-        legend {
-          padding: var(--spacer-1, 0.3rem) var(--spacer-1, 1rem);
-        }
-        option {
-          margin: 0 calc(var(--spacer-1) * -1);
-          margin-left: calc((var(--spacer-1) * 2 + var(--spacer-1)) * -1);
-        }
-        &:not(:first-child):not(:first-of-type) {
-          margin-top: var(--spacer-2);
-          padding-top: var(--spacer-3);
-
-          &:before {
-            content: "";
-            display: block;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 1px;
-            height: 1px;
-            background-color: var(--figma-color-border-menu);
-            margin-bottom: var(--spacer-2);
-          }
-        }
-      }
-      option[hidden="true"]:first-child + optgroup {
-        margin-top: 0;
-        padding-top: var(--spacer-2);
-        &:before {
-          display: none;
-        }
-      }
-
-      & > button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: flex-start;
-        gap: var(--spacer-1, 0.25rem);
-        width: 100%;
-        border: 0;
-        background: transparent;
-        padding: 0;
-        margin: 0;
-        color: inherit;
-        font: inherit;
-        height: 100%;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        overflow: hidden;
-
-        & > selectedcontent {
-          display: flex;
-          align-items: center;
-          gap: 0;
-          min-width: 0;
-          text-overflow: ellipsis;
-          overflow: hidden;
-          width: 100%;
-          &:has(> svg) {
-            margin-left: calc(var(--spacer-2) * -1);
-          }
-
-          & svg {
-            flex-shrink: 0;
-          }
-        }
-      }
-    }
-    ::picker-icon {
-      display: none;
-    }
-
-    ::picker(select) {
-      appearance: base-select;
-      color-scheme: dark;
-
-      /* Appearance/style */
-      scrollbar-width: thin;
-      outline: 0;
-      scrollbar-color: var(--figma-color-text-menu-tertiary)
-        var(--figma-color-bg-menu);
-      border-radius: var(--radius-large);
-      border: 0;
-      background-color: var(--figma-color-bg-menu);
-      padding: var(--spacer-2) 0;
-      box-shadow: var(--figma-elevation-400-menu-panel);
-    }
-  }
-}
 
 input[type="text"][list],
 select:not([multiple]) {
@@ -901,7 +724,7 @@ fig-dropdown {
 /* Native select popups in Chromium webviews do not reliably inherit themed
    option colors. Style only the popup rows so the closed control continues
    to resolve FigUI's light-dark tokens from the application color scheme. */
-fig-dropdown:not([experimental~="modern"]) > select {
+fig-dropdown > select {
   color: inherit;
 
   option,
@@ -1838,7 +1661,6 @@ fig-media-controls {
   align-items: center;
   gap: var(--spacer-1);
   width: 100%;
-  
 
   &[overlay]:not([overlay="false"]) {
     border-radius: var(--radius-medium);
@@ -1847,6 +1669,15 @@ fig-media-controls {
     color-scheme: light;
     padding: var(--spacer-1);
     box-shadow: 0 0 0 1px var(--figma-color-bordertranslucent);
+  }
+
+  &[disabled]:not([disabled="false"]) {
+    pointer-events: none;
+    color: var(--figma-color-text-disabled);
+
+    .fig-media-controls-time {
+      color: var(--figma-color-text-disabled);
+    }
   }
 
   > fig-slider {
@@ -1867,7 +1698,7 @@ fig-easing-curve {
   display: flex;
   flex-direction: column;
   gap: var(--spacer-2);
-  --stroke-width: 1;
+  --stroke-width: 2;
   --easing-bezier-handle-radius: 5;
   --easing-spring-handle-radius: 5;
   --easing-handle-fill: var(--figma-color-border-strong);
@@ -1906,14 +1737,14 @@ fig-easing-curve {
       cursor: ns-resize;
     }
   }
-  .fig-easing-curve-diagonal,
+  .fig-easing-curve-boundary,
   .fig-easing-curve-bounds,
   .fig-easing-curve-arm,
   .fig-easing-curve-path,
   .fig-easing-curve-target {
     pointer-events: none;
   }
-  .fig-easing-curve-diagonal {
+  .fig-easing-curve-boundary {
     stroke: var(--figma-color-bordertranslucent);
     stroke-width: var(--stroke-width);
     stroke-linejoin: round;
@@ -1955,11 +1786,8 @@ fig-easing-curve {
   &.spring-mode .fig-easing-curve-handle[data-handle="bounce"] .fig-handle-hit-area {
     cursor: ns-resize;
   }
-  .fig-easing-curve-endpoint {
-    fill: var(--easing-handle-fill);
-  }
-  .fig-easing-curve-dropdown {
-    option svg {
+  .fig-easing-curve-select {
+    [slot="prepend"] svg {
       vertical-align: middle;
     }
   }
@@ -1995,7 +1823,8 @@ fig-3d-rotate {
   }
 
   > fig-input-number {
-    flex: 1 0 3rem;
+    flex: 0 0 auto;
+    width: 100%;
   }
 
   .fig-3d-rotate-container {
@@ -2344,9 +2173,14 @@ fig-origin-grid {
   }
 
   .origin-values {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
     gap: var(--spacer-2);
+
+    > fig-input-number {
+      flex: 1 1 0;
+      min-width: 0;
+      width: 0;
+    }
   }
 }
 
@@ -2782,6 +2616,12 @@ fig-slider {
   min-width: 0;
   height: var(--slider-field-height);
   transition: var(--slider-transition);
+  outline: none;
+
+  &:has(input[type="range"]:focus-visible) {
+    outline: var(--figma-focus-outline);
+    outline-offset: var(--figma-focus-outline-offset);
+  }
 
   & .slider {
     flex: 1 1 0;
@@ -2887,16 +2727,7 @@ fig-slider {
     }
 
     &:focus-visible {
-      &::-webkit-slider-thumb {
-        --figma-focus-outline-offset: 1px;
-        outline: var(--figma-focus-outline);
-        outline-offset: var(--figma-focus-outline-offset);
-      }
-      &::-moz-range-thumb {
-        --figma-focus-outline-offset: 1px;
-        outline: var(--figma-focus-outline);
-        outline-offset: var(--figma-focus-outline-offset);
-      }
+      outline: none;
     }
 
     &:disabled {
@@ -3061,6 +2892,7 @@ fig-slider {
     --slider-thumb-size: 0.75rem;
     --slider-tick-width: calc(var(--slider-height) / 2);
     --slider-tick-height: calc(var(--slider-height) / 2);
+    --slider-number-width: var(--input-opacity-width);
     --handle-transition: none;
     --slider-transition: none;
     --slider-handle-shadow:
@@ -3088,7 +2920,7 @@ fig-slider {
     }
     fig-input-text,
     fig-input-number {
-      flex-basis: 3rem;
+      flex-basis: var(--slider-number-width);
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 1px solid var(--figma-color-bg);
@@ -3144,8 +2976,7 @@ dialog,
   }
 }
 dialog[is="fig-dialog"] {
-  --z-index: 999999;
-  z-index: var(--z-index);
+  /* Non-modal stacking is assigned in FigDialog.show() via figGetHighestZIndex. */
 
   &[autoresize]:not([autoresize="false"]) {
     height: max-content;
@@ -3216,6 +3047,12 @@ dialog[is="fig-popup"] {
     padding: var(--spacer-2) 0;
     min-width: 6rem;
     box-shadow: var(--figma-elevation-100);
+
+    &.fig-menu-popup {
+      max-height: calc(100vh - 1rem);
+      padding: 0;
+      overflow: hidden;
+    }
   }
 
   &[variant="tooltip"],
@@ -3432,11 +3269,18 @@ fig-header {
     --fig-header-height: var(--spacer-5);
   }
 
-  fig-button[icon]:not([icon="false"])[variant="ghost"]:not(fig-input-text fig-button) {
+  & > fig-button:last-child[icon]:not([icon="false"])[variant="ghost"],
+  & > fig-tooltip:last-child > fig-button[icon]:not([icon="false"])[variant="ghost"],
+  & > fig-menu:last-child > fig-button[fig-menu-trigger][icon]:not([icon="false"])[variant="ghost"] {
     margin-right: calc(var(--spacer-2) * -1);
   }
 
-  &>fig-dropdown{
+  & > fig-input-text:only-child {
+    width: 100%;
+  }
+
+  &>fig-dropdown,
+  &>fig-select{
     &:first-child{
       margin-left: calc(var(--spacer-2) * -1);
     }
@@ -3625,6 +3469,10 @@ fig-content {
   }
 }
 
+fig-content[padding]:not([padding="false"]) {
+  padding-inline: var(--spacer-3);
+}
+
 vstack,
 .vstack,
 [vstack] {
@@ -3659,6 +3507,14 @@ hstack,
   &[align="stretch"] {
     --hstack-align: stretch;
   }
+
+  & > fig-field:has(+ fig-field) {
+    --fig-field-right-padding: var(--spacer-1);
+  }
+
+  & > fig-field + fig-field {
+    --fig-field-left-padding: var(--spacer-1);
+  }
 }
 
 fig-input-text,
@@ -3675,11 +3531,6 @@ fig-input-number {
   flex: 0 1 auto;
   color: var(--figma-color-text);
 
-  fig-field:not([direction="vertical"]) & {
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-  }
 
   &[full]:not([full="false"]) {
     display: flex;
@@ -3866,14 +3717,14 @@ fig-input-fill {
   }
 
   & > .input-combo > fig-tooltip > .fig-input-fill-opacity {
-    flex: 0 0 3rem;
-    width: 3rem;
-    min-width: 3rem;
+    flex: 0 0 var(--input-opacity-width);
+    width: var(--input-opacity-width);
+    min-width: var(--input-opacity-width);
   }
 
   fig-input-number {
     flex: 0;
-    flex-basis: 3rem;
+    flex-basis: var(--input-opacity-width);
     box-shadow: inset 1px 0 0 0 var(--figma-color-bg) !important;
     background-color: transparent !important;
     outline: 0 !important;
@@ -3924,9 +3775,9 @@ fig-input-fill {
 
 fig-input-color {
   & > .input-combo > fig-tooltip > fig-input-number {
-    flex: 0 0 3rem;
-    width: 3rem;
-    min-width: 3rem;
+    flex: 0 0 var(--input-opacity-width);
+    width: var(--input-opacity-width);
+    min-width: var(--input-opacity-width);    
   }
 
   & > .input-combo > fig-input-text {
@@ -4188,6 +4039,43 @@ fig-field {
   gap: 0;
   align-items: start;
 
+  &:not([direction="vertical"]):has(> label):has(
+      > :not(label):not(.fig-field-chevron):not(
+          fig-button[icon]:not([icon="false"])
+        )
+        + fig-button[icon]:not([icon="false"])
+    ) {
+    & > :not(label):not(.fig-field-chevron):not(
+        fig-button[icon]:not([icon="false"])
+      ):has(+ fig-button[icon]:not([icon="false"])) {
+      justify-self: start;
+      width: calc(100% - var(--spacer-4) - var(--spacer-1));
+    }
+
+    & > :not(label):not(.fig-field-chevron):not(
+        fig-button[icon]:not([icon="false"])
+      ):has(+ fig-button[icon]:not([icon="false"])[variant="ghost"]) {
+      width: calc(100% - var(--spacer-4));
+    }
+
+    & > :not(label):not(.fig-field-chevron):not(
+        fig-button[icon]:not([icon="false"])
+      )
+      + fig-button[icon]:not([icon="false"]) {
+      grid-area: input;
+      justify-self: end;
+      z-index: 1;
+    }
+
+    & > :not(label):not(.fig-field-chevron):not(
+        fig-button[icon]:not([icon="false"])
+      )
+      + fig-button[icon]:not([icon="false"])[variant="ghost"] {
+      margin-right: calc(var(--spacer-1) * -1);
+    }
+  }
+
+
   &[columns="half"] {
     --fig-field-label-ratio: 2fr;
   }
@@ -4298,6 +4186,52 @@ fig-spinner {
     width: var(--spacer-3);
     height: var(--spacer-3);
     mask-image: var(--icon-16-spinner);
+  }
+}
+
+fig-interpolation-swatch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+  color: var(--figma-color-bordertranslucent);
+  overflow: visible;
+
+  &[size="large"] {
+    width: 2rem;
+    height: 2rem;
+
+    .fig-interpolation-swatch-svg,
+    .fig-interpolation-swatch-fill {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  .fig-interpolation-swatch-svg {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    overflow: visible;
+  }
+
+  .fig-interpolation-swatch-fill {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1rem;
+    height: 1rem;
+    background: linear-gradient(90deg, #ff0000, #4f9eff);
+    -webkit-mask-size: 100% 100%;
+    mask-size: 100% 100%;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
   }
 }
 
@@ -5050,6 +4984,137 @@ fig-chooser {
   }
 }
 
+fig-card {
+  --fig-card-label-line-clamp: 1;
+  --fig-card-media-radius: var(--radius-medium);
+  display: block;
+  width: 100%;
+  min-width: 0;
+
+  &[full]:not([full="false"]) {
+    width: 100%;
+  }
+
+  .fig-card-link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-1);
+    padding: var(--spacer-1);
+    border-radius: 0.5625rem;
+    text-decoration: none;
+    color: inherit;
+    outline: none;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .fig-card-link:focus-visible {
+    outline: var(--figma-focus-outline);
+    outline-offset: var(--figma-focus-outline-offset);
+  }
+
+  .fig-card-media {
+    position: relative;
+    border-radius: var(--fig-card-media-radius);
+    background: var(--figma-color-bg-secondary);
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .fig-card-media > fig-image,
+  .fig-card-media > fig-media,
+  .fig-card-media > fig-preview {
+    display: block;
+    width: 100%;
+    max-width: none;
+    gap: 0;
+    border-radius: var(--fig-card-media-radius);
+  }
+
+  .fig-card-media > fig-image > fig-preview,
+  .fig-card-media > fig-media > fig-preview,
+  .fig-card-media > fig-preview {
+    width: 100%;
+    max-width: none;
+    border-radius: var(--fig-card-media-radius);
+    min-height: auto;
+  }
+
+  .fig-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 0;
+  }
+
+  .fig-card-text[hidden] {
+    display: none;
+  }
+
+  .fig-card-label {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height);
+    color: var(--figma-color-text);
+    min-width: 0;
+    padding-inline: var(--spacer-1);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--fig-card-label-line-clamp);
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  .fig-card-label[hidden] {
+    display: none;
+  }
+
+  .fig-card-sublabel {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height);
+    color: var(--figma-color-text-secondary);
+    padding-inline: var(--spacer-1);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .fig-card-sublabel[hidden] {
+    display: none;
+  }
+
+  &:hover:not([selected]:not([selected="false"])):not(
+      [disabled]:not([disabled="false"])
+    ):not([aria-disabled="true"])
+    .fig-card-link {
+    background: var(--figma-color-bg-secondary);
+  }
+
+  &[selected]:not([selected="false"]) .fig-card-link {
+    background: var(--figma-color-bg-selected);
+  }
+
+  &[selected]:not([selected="false"]) .fig-card-media {
+    outline: var(--figma-focus-outline);
+    outline-offset: var(--figma-focus-outline-offset);
+  }
+
+  &[selected]:not([selected="false"])
+    .fig-card-media
+    > :is(fig-image, fig-media)
+    > fig-preview::after,
+  &[selected]:not([selected="false"]) .fig-card-media > fig-preview::after {
+    box-shadow: inset 0 0 0 1px var(--figma-color-border-selected);
+  }
+
+  &[disabled]:not([disabled="false"]),
+  &[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+}
+
 fig-choice {
   --fig-choice-selection-ring-width: 1px;
   --fig-choice-padding: 0px;
@@ -5220,7 +5285,7 @@ fig-handle {
       --fig-handle-inner-bg: var(--figma-color-bg-brand);
     }
     &[selected]:not([selected="false"]){
-      --fig-handle-padding: 1px;
+      --fig-handle-padding: 2px;
       --fig-handle-inner-bg: var(--figma-color-bg-brand);
     }
   }
@@ -5340,8 +5405,273 @@ fig-menu {
   }
 }
 
+/* Select — host chrome; trigger/listbox live in shadow (options slotted) */
+fig-select {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  min-width: 0;
+  height: var(--spacer-4);
+  border-radius: var(--radius-medium);
+  background-color: var(--figma-color-bg);
+  color: var(--figma-color-text);
+  box-shadow: inset 0 0 0 1px var(--figma-color-border);
+
+  &[full]:not([full="false"]) {
+    display: flex;
+    width: 100%;
+  }
+
+  &[disabled]:not([disabled="false"]) {
+    pointer-events: none;
+    color: var(--figma-color-text-tertiary);
+
+    &::after {
+      background-color: var(--figma-color-icon-disabled);
+    }
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    mask-image: var(--icon-16-chevron);
+    mask-size: contain;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    background-color: var(--figma-color-icon);
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
+/*
+ * Internal listbox is a fig-popup inside fig-select's shadow, so document
+ * dialog[is="fig-popup"] rules don't apply. Expose part=listbox and mirror
+ * the menu-theme popup chrome (same tokens as components.css).
+ */
+fig-select::part(listbox) {
+  --z-index: 999999;
+  --fig-popup-radius: var(--radius-large);
+  --fig-popup-bg-color: var(--figma-color-bg-menu);
+
+  z-index: var(--z-index);
+  position: fixed;
+  /* Do not set inset here — ::part inset beats inline left/top and
+     prevents edge clamping from moving the menu back into view. */
+  margin: 0;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: var(--fig-popup-radius);
+  background-color: var(--fig-popup-bg-color);
+  color: var(--figma-color-text-menu);
+  color-scheme: dark;
+  box-shadow: var(--figma-elevation-400-menu-panel);
+  /* width/min/max set in JS — ::part width rules override element.style. */
+  max-height: calc(100vh - 1rem);
+  height: max-content;
+}
+
+/* Vertical option panels own their scroller and shared top/bottom paging buttons. */
+fig-select-options,
+.fig-menu-options {
+  --fig-vertical-overflow-size: var(--spacer-4);
+
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(100vh - 1rem);
+  /* No block padding — sticky overflow buttons must sit flush to the popup edges. */
+  padding: 0;
+  overflow: hidden auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  & > :not(.fig-overflow) {
+    flex-shrink: 0;
+  }
+
+  /* List breathing room (not on the scroller itself). */
+  & > :not(.fig-overflow):first-child,
+  & > .fig-overflow-start + :not(.fig-overflow) {
+    margin-top: var(--spacer-2);
+  }
+
+  & > :not(.fig-overflow):last-child,
+  & > :not(.fig-overflow):has(+ .fig-overflow-end) {
+    margin-bottom: var(--spacer-2);
+  }
+
+  & > .fig-overflow {
+    position: sticky;
+    left: 0;
+    flex: 0 0 var(--fig-vertical-overflow-size);
+    width: 100%;
+    height: var(--fig-vertical-overflow-size);
+    margin: 0;
+    z-index: 3;
+    /* Menu chrome — not option hover (bg-menu-hover is brand blue). */
+    color: var(--figma-color-text-menu);
+    background: var(--figma-color-bg-menu) !important;
+
+    &::before {
+      inset: 0;
+      border-radius: 0;
+      background: var(--figma-color-bg-menu) !important;
+    }
+
+    &:hover::before {
+      background: light-dark(
+          rgba(0, 0, 0, 0.06),
+          rgba(255, 255, 255, 0.08)
+        )
+        !important;
+    }
+
+    &:hover {
+      color: var(--figma-color-text-menu);
+    }
+  }
+
+  & > .fig-overflow-start {
+    order: -1;
+    top: 0;
+    margin-block-end: calc(-1 * var(--fig-vertical-overflow-size));
+
+    &::before {
+      border-radius: var(--radius-large) var(--radius-large) 0 0;
+    }
+
+    .fig-overflow-chevron {
+      rotate: 180deg;
+    }
+  }
+
+  & > .fig-overflow-end {
+    order: 1;
+    bottom: 0;
+    margin-block-start: calc(-1 * var(--fig-vertical-overflow-size));
+
+    &::before {
+      border-radius: 0 0 var(--radius-large) var(--radius-large);
+    }
+  }
+
+}
+
+fig-select-options > fig-menu-separator {
+  /* Align labels with select option text after the checkmark column. */
+  &[label]:not([label=""]) {
+    padding-left: var(--spacer-5);
+    padding-right: var(--spacer-2);
+
+    &::before {
+      margin-inline: unset;
+      margin-left: calc(-1 * var(--spacer-5));
+      margin-right: calc(-1 * var(--spacer-2));
+    }
+  }
+}
+
+fig-select-option {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  position: relative;
+  min-height: var(--spacer-4);
+  height: auto;
+  padding: var(--spacer-1) var(--spacer-2);
+  padding-right: var(--spacer-3);
+  border-radius: var(--radius-medium);
+  color: var(--figma-color-text-menu);
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    display: block;
+    position: absolute;
+    inset: 0 var(--spacer-2);
+    border-radius: var(--radius-medium);
+    z-index: -1;
+    background-color: transparent;
+  }
+
+  &::after {
+    content: "";
+    display: block;
+    flex: 0 0 1rem;
+    order: -1;
+    width: 1rem;
+    height: 1rem;
+    margin-left: var(--spacer-1);
+    margin-right: var(--spacer-1);
+    background-color: currentColor;
+    -webkit-mask-image: var(--icon-16-checkmark);
+    mask-image: var(--icon-16-checkmark);
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    visibility: hidden;
+  }
+
+  & > [slot="prepend"] {
+    margin-top: calc(var(--spacer-1) * -1);
+    margin-bottom: calc(var(--spacer-1) * -1);
+    margin-right: var(--spacer-1);
+  }
+
+
+  & > :not([slot="prepend"]):not([slot="append"]) {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  & > [slot="append"] {
+    flex: 0 0 auto;
+    margin-inline-start: auto;
+    color: var(--figma-color-text-tertiary);
+  }
+
+  &:hover,
+  &:focus-visible {
+    outline: none;
+
+    &::before {
+      background-color: var(--figma-color-bg-menu-hover);
+    }
+  }
+
+  &[selected]:not([selected="false"])::after,
+  &[aria-selected="true"]::after {
+    visibility: visible;
+  }
+
+  &[disabled]:not([disabled="false"]),
+  &[aria-disabled="true"] {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+}
+
 fig-menu-item {
-  --fig-menu-item-padding: var(--spacer-3);
+  --fig-menu-item-padding: var(--spacer-4);
   display: flex;
   align-items: center;
   gap: var(--spacer-2);
@@ -5379,8 +5709,57 @@ fig-menu-item {
 }
 
 fig-menu-separator {
+  --fig-menu-separator-color: var(--figma-color-border);
+  --fig-menu-separator-label-color: var(--figma-color-text-secondary);
+
   display: block;
   height: 1px;
-  background: var(--figma-color-border);
   margin: var(--spacer-2) 0;
+  padding: 0;
+  border: 0;
+  background: var(--fig-menu-separator-color);
+  color: var(--fig-menu-separator-label-color);
+  font-weight: var(--body-medium-fontWeight);
+  pointer-events: none;
+  user-select: none;
+
+  &:first-of-type{
+    &[label]:not([label=""])::before {
+     display: none;
+    }
+  }
+
+  /* Labeled: rule, then secondary group label (same pattern as menu optgroups). */
+  &[label]:not([label=""]) {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacer-2);
+    height: auto;
+    margin: var(--spacer-2) 0;
+    margin-bottom: var(--spacer-1);
+    padding: 0 var(--fig-menu-item-padding, var(--spacer-4));
+    background: transparent;
+
+    &::before {
+      content: "";
+      display: block;
+      height: 1px;
+      margin-inline: calc(-1 * var(--fig-menu-item-padding, var(--spacer-4)));
+      background: var(--fig-menu-separator-color);
+    }
+
+    &::after {
+      content: attr(label);
+      display: block;
+      color: var(--fig-menu-separator-label-color);
+      line-height: var(--spacer-4);
+      min-height: var(--spacer-4);
+    }
+  }
+}
+
+dialog[is="fig-popup"][theme="menu"] fig-menu-separator,
+fig-select-options > fig-menu-separator {
+  --fig-menu-separator-color: var(--figma-color-border-menu);
+  --fig-menu-separator-label-color: var(--figma-color-text-menu-secondary);
 }

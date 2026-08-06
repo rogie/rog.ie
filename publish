@@ -72,6 +72,11 @@ build_figui3_dist_outputs() {
     exit 1
   fi
 
+  # The playground imports generated library assets from the root dist/.
+  # Build the library first so a fresh clone has those dependencies available.
+  npm ci --prefix "$FIGUI3_TMP_DIR"
+  npm run build --prefix "$FIGUI3_TMP_DIR"
+
   if [[ ! -d "$playground_dir/node_modules" ]]; then
     npm ci --prefix "$playground_dir"
   fi
