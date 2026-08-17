@@ -27,6 +27,51 @@ function createFigIcon(name, options = {}) {
   return icon;
 }
 
+const FIG_SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+
+function figAppendChildren(parent, children) {
+  const append = (child) => {
+    if (child === null || child === undefined || child === false) return;
+    if (Array.isArray(child)) {
+      child.forEach(append);
+      return;
+    }
+    parent.append(child instanceof Node ? child : String(child));
+  };
+  append(children);
+  return parent;
+}
+
+function figSetAttributes(element, attributes = {}) {
+  for (const [name, value] of Object.entries(attributes)) {
+    if (value === null || value === undefined || value === false) continue;
+    if (name === "className") {
+      if (element.namespaceURI === FIG_SVG_NAMESPACE) {
+        element.setAttribute("class", String(value));
+      } else {
+        element.className = String(value);
+      }
+    } else if (value === true) {
+      element.setAttribute(name, "");
+    } else {
+      element.setAttribute(name, String(value));
+    }
+  }
+  return element;
+}
+
+function figCreateElement(tagName, attributes, children) {
+  const element = document.createElement(tagName);
+  figSetAttributes(element, attributes);
+  return figAppendChildren(element, children);
+}
+
+function figCreateSvgElement(tagName, attributes, children) {
+  const element = document.createElementNS(FIG_SVG_NAMESPACE, tagName);
+  figSetAttributes(element, attributes);
+  return figAppendChildren(element, children);
+}
+
 /** Run callback on the next frame; skip if the host disconnected first. */
 function figNextFrame(host, callback) {
   requestAnimationFrame(() => {
@@ -37,6 +82,20 @@ function figNextFrame(host, callback) {
 
 function figBooleanAttribute(element, name) {
   return element.hasAttribute(name) && element.getAttribute(name) !== "false";
+}
+
+function figColorEventAliases(color, alpha, opacity) {
+  const numericAlpha = Number(alpha);
+  const numericOpacity = Number(opacity);
+  const normalizedAlpha = Number.isFinite(numericAlpha)
+    ? Math.max(0, Math.min(1, numericAlpha))
+    : Number.isFinite(numericOpacity)
+      ? Math.max(0, Math.min(100, numericOpacity)) / 100
+      : 1;
+  const normalizedOpacity = Number.isFinite(numericOpacity)
+    ? Math.max(0, Math.min(100, numericOpacity))
+    : Math.round(normalizedAlpha * 100);
+  return { color, alpha: normalizedAlpha, opacity: normalizedOpacity };
 }
 
 function figNormalizeTextOnlyInputSlots(host) {
@@ -338,6 +397,7 @@ function figSupportsPopover() {
 
 /**
  * A custom button element that supports different types and states.
+ * @attr {string} variant - Visual style: "primary", "secondary", "destructive", "destructiveSecondary", "destructiveGhost", "destructiveLink", "ghost", "link", "input", or "overlay"
  * @attr {string} type - The button type: "button" (default), "toggle", "submit", or "link"
  * @attr {boolean} selected - Whether the button is in a selected state
  * @attr {boolean} disabled - Whether the button is disabled
@@ -372,46 +432,50 @@ class FigButton extends HTMLElement {
       // Custom button modes are implemented by the host. Keep the shadow
       // control inert so invalid native types (for example "toggle") cannot
       // normalize to "submit" inside a form.
-      const typeAttr = isControlWrapper ? "" : ' type="button"';
-      this.shadowRoot.innerHTML = `
-            <style>
-                button, button:hover, button:active, .fig-button-control {
-                    padding: 0 var(--spacer-2);
-                    appearance: none;
-                    display: flex;
-                    border: 0;
-                    flex: 1;
-                    text-align: center;
-                    align-items: stretch;
-                    justify-content: center;
-                    font: inherit;
-                    color: inherit;
-                    outline: 0;
-                    place-items: center; 
-                    background: transparent;
-                    margin: calc(var(--spacer-2)*-1);
-                    height: var(--spacer-4);
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    width: 100%;
-                    min-width: 0;
-                }
-                :host([size="large"]) button,
-                :host([size="large"]) .fig-button-control {
-                    height: var(--spacer-5);
-                }
-                :host([size="large"][icon]) button,
-                :host([size="large"][icon]) .fig-button-control {
-                    padding: 0;
-                }
-            </style>
-            <${controlTag} class="fig-button-control"${typeAttr}>
-                <slot></slot>
-            </${controlTag}>
-            `;
+      const style = document.createElement("style");
+      style.textContent = `
+        button, button:hover, button:active, .fig-button-control {
+          padding: 0 var(--spacer-2);
+          appearance: none;
+          display: flex;
+          border: 0;
+          flex: 1;
+          text-align: center;
+          align-items: stretch;
+          justify-content: center;
+          font: inherit;
+          color: inherit;
+          outline: 0;
+          place-items: center;
+          background: transparent;
+          margin: calc(var(--spacer-2)*-1);
+          height: var(--spacer-4);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          width: 100%;
+          min-width: 0;
+        }
+        :host([size="large"]) button,
+        :host([size="large"]) .fig-button-control {
+          height: var(--spacer-5);
+        }
+        :host([size="large"][icon]) button,
+        :host([size="large"][icon]) .fig-button-control {
+          padding: 0;
+        }
+      `;
+      const control = figCreateElement(
+        controlTag,
+        {
+          className: "fig-button-control",
+          type: isControlWrapper ? null : "button",
+        },
+        document.createElement("slot"),
+      );
+      this.shadowRoot.replaceChildren(style, control);
 
-      this.button = this.shadowRoot.querySelector("button, .fig-button-control");
+      this.button = control;
       this.button.addEventListener("click", this.#boundHandleClick);
       this.button.addEventListener("focus", this.#boundHandleFocus);
       this.button.addEventListener("blur", this.#boundHandleBlur);
@@ -1149,9 +1213,16 @@ class FigTooltip extends HTMLElement {
     return false;
   }
 
-  showDelayedPopup() {
+  showDelayedPopup(event) {
     if (this.#showPersisted) return;
     clearTimeout(this.timeout);
+    if (event?.type === "pointerenter") {
+      const trigger = this.#triggerEl;
+      const openSelect =
+        trigger?.matches?.("fig-select[open]") ||
+        trigger?.querySelector?.("fig-select[open]");
+      if (openSelect) return;
+    }
     if (this.#isWarmSession()) {
       this.render();
       this.showPopup();
@@ -1551,7 +1622,7 @@ class FigTruncate extends HTMLElement {
       } else {
         splitIndex = Math.ceil(text.length / 2);
       }
-      this.innerHTML = "";
+      this.replaceChildren();
       const startSpan = document.createElement("span");
       startSpan.className = "start";
       startSpan.textContent = text.slice(0, splitIndex);
@@ -2224,6 +2295,17 @@ class FigDialog extends HTMLDialogElement {
 figDefineCustomizedBuiltIn("fig-dialog", FigDialog, { extends: "dialog" });
 
 /* Toast */
+/* Toast */
+/**
+ * A temporary toast notification based on &lt;dialog&gt;.
+ * @attr {number|string} duration - Auto-dismiss ms (default 5000; 0 = no dismiss).
+ * @attr {number|string} offset - Distance from bottom in px (default 16).
+ * @attr {string} theme - Visual theme: "dark", "light", "danger", "brand", "success", or "auto".
+ * @attr {string} live - Set to "assertive" for urgent announcements.
+ * @attr {string} icon - Optional fig-icon name prepended when set; omit for no icon.
+ * @attr {boolean|string} dismiss - When true, appends a ghost close button that hides the toast.
+ * @attr {boolean|string} open - Open when present and not "false".
+ */
 class FigToast extends HTMLDialogElement {
   constructor() {
     super();
@@ -2239,6 +2321,9 @@ class FigToast extends HTMLDialogElement {
     this._syncingOpen = false;
     this._managedRole = null;
     this._managedLive = null;
+    this._managedIcon = null;
+    this._managedDismiss = null;
+    this._managedDismissSeparator = null;
     this._boundHandleClose = this.handleClose.bind(this);
   }
 
@@ -2246,6 +2331,8 @@ class FigToast extends HTMLDialogElement {
     this._figInit();
     if (!this.hasAttribute("theme")) this.setAttribute("theme", "dark");
     this.syncLiveRegion();
+    this.syncIcon();
+    this.syncDismiss();
     this.addCloseListeners();
     this.applyPosition();
     if (this.hasAttribute("open") && this.getAttribute("open") !== "false") {
@@ -2313,6 +2400,101 @@ class FigToast extends HTMLDialogElement {
     }
   }
 
+  syncIcon() {
+    const name = this.getAttribute("icon");
+    let icon = this._managedIcon;
+    if (!icon || icon.parentNode !== this) {
+      icon = this.querySelector(":scope > fig-icon[data-fig-toast-icon]");
+    }
+
+    if (!name) {
+      if (icon) icon.remove();
+      this._managedIcon = null;
+      return;
+    }
+
+    if (!icon) {
+      icon = document.createElement("fig-icon");
+      icon.setAttribute("data-fig-toast-icon", "");
+      icon.setAttribute("aria-hidden", "true");
+      this.prepend(icon);
+    } else if (this.firstElementChild !== icon) {
+      this.prepend(icon);
+    }
+
+    if (icon.getAttribute("size") !== "medium") {
+      icon.setAttribute("size", "medium");
+    }
+    if (icon.getAttribute("name") !== name) {
+      icon.setAttribute("name", name);
+    }
+    this._managedIcon = icon;
+  }
+
+  syncDismiss() {
+    const enabled = figBooleanAttribute(this, "dismiss");
+    let button = this._managedDismiss;
+    if (!button || button.parentNode !== this) {
+      button = this.querySelector(":scope > fig-button[data-fig-toast-dismiss]");
+    }
+    let separator = this._managedDismissSeparator;
+    if (!separator || separator.parentNode !== this) {
+      separator = this.querySelector(
+        ":scope > fig-separator[data-fig-toast-dismiss-separator]",
+      );
+    }
+
+    if (!enabled) {
+      if (button) {
+        button.removeEventListener("click", this._boundHandleClose);
+        button.remove();
+      }
+      if (separator) separator.remove();
+      this._managedDismiss = null;
+      this._managedDismissSeparator = null;
+      return;
+    }
+
+    if (!separator) {
+      separator = document.createElement("fig-separator");
+      separator.setAttribute("data-fig-toast-dismiss-separator", "");
+      separator.setAttribute("direction", "vertical");
+      separator.setAttribute("aria-orientation", "vertical");
+      separator.setAttribute("aria-hidden", "true");
+    }
+
+    if (!button) {
+      button = document.createElement("fig-button");
+      button.setAttribute("data-fig-toast-dismiss", "");
+      button.setAttribute("variant", "ghost");
+      button.setAttribute("icon", "");
+      button.setAttribute("close-toast", "");
+      button.setAttribute("aria-label", "Close notification");
+      const icon = document.createElement("fig-icon");
+      icon.setAttribute("name", "close");
+      icon.setAttribute("aria-hidden", "true");
+      button.append(icon);
+    }
+
+    if (separator.parentNode !== this || button.parentNode !== this) {
+      this.append(separator, button);
+    } else if (
+      this.lastElementChild !== button ||
+      button.previousElementSibling !== separator
+    ) {
+      this.append(separator, button);
+    }
+
+    if (separator.getAttribute("direction") !== "vertical") {
+      separator.setAttribute("direction", "vertical");
+    }
+
+    button.removeEventListener("click", this._boundHandleClose);
+    button.addEventListener("click", this._boundHandleClose);
+    this._managedDismiss = button;
+    this._managedDismissSeparator = separator;
+  }
+
   startAutoClose() {
     this.clearAutoClose();
     const duration = parseInt(this.getAttribute("duration") ?? "5000");
@@ -2338,6 +2520,8 @@ class FigToast extends HTMLDialogElement {
   showToast() {
     const wasVisible = this._toastVisible;
     this.syncLiveRegion();
+    this.syncIcon();
+    this.syncDismiss();
     this._resolveAutoTheme();
     this._syncingOpen = true;
     try {
@@ -2370,7 +2554,7 @@ class FigToast extends HTMLDialogElement {
   }
 
   static get observedAttributes() {
-    return ["duration", "offset", "open", "theme", "live"];
+    return ["duration", "offset", "open", "theme", "live", "icon", "dismiss"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -2389,6 +2573,8 @@ class FigToast extends HTMLDialogElement {
       else this.style.removeProperty("color-scheme");
     }
     if (name === "theme" || name === "live") this.syncLiveRegion();
+    if (name === "icon") this.syncIcon();
+    if (name === "dismiss") this.syncDismiss();
   }
 }
 figDefineCustomizedBuiltIn("fig-toast", FigToast, { extends: "dialog" });
@@ -4938,7 +5124,7 @@ class FigOptions extends HTMLElement {
   }
 
   #renderSegments() {
-    this.innerHTML = "";
+    this.replaceChildren();
     if (this.#parsedOptions.length === 0) return;
 
     const sc = document.createElement("fig-segmented-control");
@@ -4997,7 +5183,7 @@ class FigOptions extends HTMLElement {
   }
 
   #renderDropdown() {
-    this.innerHTML = "";
+    this.replaceChildren();
     if (this.#parsedOptions.length === 0) return;
 
     const dd = document.createElement("fig-dropdown");
@@ -5133,1138 +5319,6 @@ class FigOptions extends HTMLElement {
 }
 figDefineElement("fig-options", FigOptions);
 
-/* Select — dropdown-styled trigger + fig-popup listbox */
-/** Parse options attr — same formats as fig-options / propskit-select. */
-function figSelectParseOptionsAttribute(raw) {
-  const text = raw || "";
-  if (text.startsWith("[")) {
-    try {
-      const parsed = JSON.parse(text);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      /* fall through */
-    }
-  }
-  const delimiter = text.includes("\n") ? "\n" : ",";
-  return text
-    .split(delimiter)
-    .map((s) => s.trim())
-    .filter(Boolean);
-}
-
-function figSelectOptionEntryValue(opt) {
-  if (opt && typeof opt === "object") {
-    return String(opt.value ?? opt.label ?? "");
-  }
-  return String(opt ?? "");
-}
-
-function figSelectOptionEntryLabel(opt) {
-  if (opt && typeof opt === "object") {
-    return String(opt.label ?? opt.value ?? "");
-  }
-  return String(opt ?? "");
-}
-
-/**
- * A selectable option for fig-select.
- * Supports light-DOM slots: `slot="prepend"` (leading) and `slot="append"` (trailing).
- * Use the `label` attribute for the closed-trigger label when option content is rich.
- *
- * @attr {string} value - Option value
- * @attr {string} label - Optional display label for the select trigger
- * @attr {boolean} disabled - Whether the option is disabled
- * @attr {boolean} selected - Whether the option is selected
- */
-class FigSelectOption extends HTMLElement {
-  static get observedAttributes() {
-    return ["value", "disabled", "selected", "label"];
-  }
-
-  get value() {
-    const attr = this.getAttribute("value");
-    if (attr !== null) return attr;
-    return (this.textContent || "").trim();
-  }
-
-  set value(val) {
-    if (val === null || val === undefined) {
-      this.removeAttribute("value");
-    } else {
-      this.setAttribute("value", String(val));
-    }
-  }
-
-  get disabled() {
-    return figBooleanAttribute(this, "disabled");
-  }
-
-  set disabled(val) {
-    if (val) this.setAttribute("disabled", "");
-    else this.removeAttribute("disabled");
-  }
-
-  get selected() {
-    return figBooleanAttribute(this, "selected");
-  }
-
-  set selected(val) {
-    if (val) this.setAttribute("selected", "");
-    else this.removeAttribute("selected");
-  }
-
-  connectedCallback() {
-    if (!this.hasAttribute("role")) this.setAttribute("role", "option");
-    if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "-1");
-    this.#syncDisabled();
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue === newValue) return;
-    if (name === "disabled") this.#syncDisabled();
-  }
-
-  #syncDisabled() {
-    const disabled = this.disabled;
-    if (disabled) {
-      this.setAttribute("aria-disabled", "true");
-      this.setAttribute("tabindex", "-1");
-    } else {
-      this.removeAttribute("aria-disabled");
-      if (!this.hasAttribute("tabindex")) this.setAttribute("tabindex", "-1");
-    }
-  }
-}
-figDefineElement("fig-select-option", FigSelectOption);
-
-/** Light-DOM panel wrapper projected into fig-select's popup; owns overflow buttons. */
-class FigSelectOptions extends HTMLElement {
-  #navStart = null;
-  #navEnd = null;
-  #resizeObserver = null;
-  #boundSyncOverflow = this.syncOverflow.bind(this);
-
-  connectedCallback() {
-    if (!this.hasAttribute("slot")) this.setAttribute("slot", "panel");
-    this.#unwrapLegacyChooser();
-    this.#ensureNavButtons();
-    this.addEventListener("scroll", this.#boundSyncOverflow, { passive: true });
-    this.#resizeObserver?.disconnect();
-    this.#resizeObserver = new ResizeObserver(() => this.syncOverflow());
-    this.#resizeObserver.observe(this);
-    requestAnimationFrame(() => this.syncOverflow());
-  }
-
-  disconnectedCallback() {
-    this.removeEventListener("scroll", this.#boundSyncOverflow);
-    this.#resizeObserver?.disconnect();
-    this.#resizeObserver = null;
-    this.#removeNavButtons();
-  }
-
-  syncOverflow() {
-    return figSyncOverflowState(this, this, "y");
-  }
-
-  scrollToOption(option, behavior = "auto") {
-    figScrollElementToCenter(this, option, "y", behavior);
-  }
-
-  #unwrapLegacyChooser() {
-    const chooser = this.querySelector(":scope > fig-chooser");
-    if (!chooser) return;
-    while (chooser.firstChild) {
-      this.insertBefore(chooser.firstChild, chooser);
-    }
-    chooser.remove();
-  }
-
-  #ensureNavButtons() {
-    if (
-      this.#navStart &&
-      this.#navEnd &&
-      this.contains(this.#navStart) &&
-      this.contains(this.#navEnd)
-    ) {
-      return;
-    }
-    this.#removeNavButtons();
-    const buttons = createFigOverflowButtons({
-      owner: "select",
-      startLabel: "Scroll up",
-      endLabel: "Scroll down",
-      onStart: () => figScrollOverflowPage(this, "y", -1),
-      onEnd: () => figScrollOverflowPage(this, "y", 1),
-    });
-    this.#navStart = buttons.start;
-    this.#navEnd = buttons.end;
-    this.prepend(this.#navStart);
-    this.append(this.#navEnd);
-  }
-
-  #removeNavButtons() {
-    this.#navStart?.remove();
-    this.#navEnd?.remove();
-    this.#navStart = null;
-    this.#navEnd = null;
-    this.classList.remove("overflow-start", "overflow-end");
-  }
-}
-figDefineElement("fig-select-options", FigSelectOptions);
-
-class FigSelect extends HTMLElement {
-  #button = null;
-  #popup = null;
-  #prependEl = null;
-  #labelEl = null;
-  #panelSlot = null;
-  #observer = null;
-  #initialized = false;
-  #focusedIndex = -1;
-  #syncingValue = false;
-  #popupPositionPatched = false;
-  #originalPositionPopup = null;
-  /**
-   * After open align, ignore content/scroll-driven positionPopup passes so
-   * overflow paging isn't yanked back. Still realign when the trigger moves
-   * or the viewport size changes (window resize, layout shift, page scroll).
-   */
-  #freezeMenuPosition = false;
-  #frozenLabelRect = null;
-  #frozenViewport = null;
-  #syncingOptions = false;
-  #boundTriggerClick = this.#handleTriggerClick.bind(this);
-  #boundOptionClick = this.#handleOptionClick.bind(this);
-  #boundKeydown = this.#handleKeydown.bind(this);
-  #boundPopupClose = this.#handlePopupClose.bind(this);
-  #boundSlotChange = this.#handleSlotChange.bind(this);
-
-  static get observedAttributes() {
-    return [
-      "value",
-      "disabled",
-      "label",
-      "options",
-      "position",
-      "offset",
-      "closedby",
-      "open",
-    ];
-  }
-
-  get value() {
-    return this.getAttribute("value") ?? "";
-  }
-
-  set value(val) {
-    if (val === null || val === undefined) this.removeAttribute("value");
-    else this.setAttribute("value", String(val));
-  }
-
-  get open() {
-    return figBooleanAttribute(this, "open");
-  }
-
-  set open(val) {
-    if (val) this.setAttribute("open", "");
-    else this.removeAttribute("open");
-  }
-
-  connectedCallback() {
-    if (!this.#initialized) this.#initialize();
-    this.#ensurePanelSlotAttrs();
-    this.#syncOptionsFromAttribute();
-    this.#syncDisabled();
-    this.#syncPopupAttrs();
-    this.#syncValue();
-    this.#setupObserver();
-    if (this.open) this.#openList();
-  }
-
-  disconnectedCallback() {
-    this.#teardownListeners();
-    document.removeEventListener("keydown", this.#boundKeydown, true);
-    this.#observer?.disconnect();
-    this.#observer = null;
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue === newValue || !this.#initialized) return;
-    if (name === "options") {
-      this.#syncOptionsFromAttribute();
-      this.#syncValue();
-      return;
-    }
-    if (name === "value" || name === "label") {
-      this.#syncValue();
-      return;
-    }
-    if (name === "disabled") {
-      this.#syncDisabled();
-      return;
-    }
-    if (name === "open") {
-      if (newValue === null || newValue === "false") this.#closeList();
-      else this.#openList();
-      return;
-    }
-    if (name === "position" || name === "offset" || name === "closedby") {
-      this.#syncPopupAttrs();
-    }
-  }
-
-  focus(options) {
-    this.#button?.focus(options);
-  }
-
-  blur() {
-    this.#button?.blur();
-  }
-
-  #isMenuChild(node) {
-    return (
-      node?.nodeType === 1 &&
-      (node.tagName === "FIG-SELECT-OPTION" ||
-        node.tagName === "FIG-MENU-SEPARATOR" ||
-        node.tagName === "FIG-SELECT-OPTIONS")
-    );
-  }
-
-  #ensurePanelSlotAttrs() {
-    for (const panel of this.querySelectorAll(":scope > fig-select-options")) {
-      if (!panel.hasAttribute("slot")) panel.setAttribute("slot", "panel");
-    }
-  }
-
-  #getPanel() {
-    const assigned = this.#panelSlot?.assignedElements({ flatten: true }) ?? [];
-    const fromSlot = assigned.find(
-      (el) => el.tagName === "FIG-SELECT-OPTIONS",
-    );
-    if (fromSlot) return fromSlot;
-    return this.querySelector(":scope > fig-select-options");
-  }
-
-  #hasAuthoredOptions() {
-    return Boolean(
-      this.querySelector(
-        ":scope > fig-select-option:not([data-fig-generated]), :scope > fig-select-options > fig-select-option:not([data-fig-generated])",
-      ),
-    );
-  }
-
-  #ensureOptionsPanel() {
-    let panel = this.#getPanel();
-    if (panel) {
-      if (!panel.hasAttribute("slot")) panel.setAttribute("slot", "panel");
-      return panel;
-    }
-    panel = document.createElement("fig-select-options");
-    panel.setAttribute("slot", "panel");
-    panel.setAttribute("data-fig-generated", "");
-    this.appendChild(panel);
-    return panel;
-  }
-
-  /**
-   * When no authored fig-select-option exists, build panel/options from the
-   * options attribute (comma / newline / JSON — same as fig-options).
-   */
-  #syncOptionsFromAttribute() {
-    if (this.#hasAuthoredOptions()) return;
-
-    const hasOptionsAttr = this.hasAttribute("options");
-    const panel = hasOptionsAttr
-      ? this.#ensureOptionsPanel()
-      : this.#getPanel();
-    if (!panel) return;
-
-    this.#syncingOptions = true;
-    try {
-      for (const opt of panel.querySelectorAll(
-        ":scope > fig-select-option[data-fig-generated]",
-      )) {
-        opt.remove();
-      }
-
-      if (!hasOptionsAttr) return;
-
-      const parsed = figSelectParseOptionsAttribute(this.getAttribute("options"));
-      const endBtn = panel.querySelector(":scope > .fig-overflow-end");
-      for (const entry of parsed) {
-        const el = document.createElement("fig-select-option");
-        el.setAttribute("data-fig-generated", "");
-        el.setAttribute("value", figSelectOptionEntryValue(entry));
-        el.textContent = figSelectOptionEntryLabel(entry);
-        if (endBtn) panel.insertBefore(el, endBtn);
-        else panel.appendChild(el);
-      }
-    } finally {
-      this.#syncingOptions = false;
-    }
-  }
-
-  #initialize() {
-    this.#initialized = true;
-    const shadow = this.attachShadow({ mode: "open" });
-    shadow.innerHTML = `
-      <style>
-        :host {
-          display: inline-flex;
-          position: relative;
-          align-items: center;
-          min-width: 0;
-        }
-        :host([full]:not([full="false"])) {
-          display: flex;
-          width: 100%;
-        }
-        .fig-select-trigger {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-          flex: 1;
-          min-width: 0;
-          width: var(--fig-select-trigger-width, 100%);
-          height: 100%;
-          margin: 0;
-          padding: 0 var(--spacer-4, 1rem) 0 var(--spacer-2, 0.5rem);
-          border: 0;
-          border-radius: inherit;
-          background: transparent;
-          box-shadow: none;
-          color: inherit;
-          font: inherit;
-          font-weight: inherit;
-          text-align: left;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          cursor: default;
-        }
-        .fig-select-trigger:has(.fig-select-prepend:not(:empty)) {
-          padding-left: 0;
-        }
-        .fig-select-trigger:hover,
-        .fig-select-trigger:active,
-        .fig-select-trigger:active:hover {
-          background: transparent;
-          box-shadow: none;
-          color: inherit;
-        }
-        .fig-select-trigger:focus-visible,
-        .fig-select-trigger[data-focus-visible] {
-          outline: var(--figma-focus-outline);
-          outline-offset: var(--figma-focus-outline-offset);
-        }
-        :host([disabled]:not([disabled="false"])) .fig-select-trigger,
-        :host([disabled]:not([disabled="false"])) .fig-select-label {
-          color: var(--figma-color-text-tertiary);
-        }
-        .fig-select-label {
-          display: block;
-          width: 100%;
-          min-width: 0;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          text-align: left;
-        }
-        .fig-select-prepend {
-          display: inline-flex;
-          flex: 0 0 auto;
-          align-items: center;
-          margin-right: var(--spacer-1, 0.25rem);
-          pointer-events: none;
-        }
-        .fig-select-prepend:empty {
-          display: none;
-        }
-        /* Listbox chrome from document fig-select::part(listbox).
-           Overflow UI lives on slotted fig-select-options.
-           Never set display except when open — closed <dialog> must stay display:none. */
-        dialog[is="fig-popup"] {
-          flex-direction: column;
-          overflow: hidden;
-        }
-        dialog[is="fig-popup"][open] {
-          display: flex;
-        }
-        ::slotted(fig-select-options) {
-          flex: 1 1 auto;
-          min-height: 0;
-          max-height: inherit;
-        }
-      </style>
-    `;
-
-    const button = document.createElement("fig-button");
-    button.className = "fig-select-trigger";
-    button.setAttribute("part", "trigger");
-    button.setAttribute("variant", "ghost");
-    button.setAttribute("aria-haspopup", "listbox");
-    button.setAttribute("aria-expanded", "false");
-
-    const prependEl = document.createElement("span");
-    prependEl.className = "fig-select-prepend";
-    prependEl.setAttribute("part", "prepend");
-    prependEl.setAttribute("aria-hidden", "true");
-
-    const labelEl = document.createElement("span");
-    labelEl.className = "fig-select-label";
-    labelEl.setAttribute("part", "label");
-    button.append(prependEl, labelEl);
-
-    const popup = document.createElement("dialog", { is: "fig-popup" });
-    popup.setAttribute("is", "fig-popup");
-    popup.setAttribute("part", "listbox");
-    popup.setAttribute("theme", "menu");
-    popup.setAttribute("role", "listbox");
-    // Top-layer via popover so the menu escapes ancestor contain/overflow
-    // (e.g. fig-fill-picker-dialog). Stays in shadow so option slots still work —
-    // unlike tooltips, we cannot portal this popup to the overlay root.
-    if ("popover" in HTMLElement.prototype) {
-      popup.setAttribute("popover", "manual");
-    }
-    popup.id = figUniqueId();
-    button.setAttribute("aria-controls", popup.id);
-
-    const panelSlot = document.createElement("slot");
-    panelSlot.setAttribute("name", "panel");
-    popup.appendChild(panelSlot);
-
-    shadow.append(button, popup);
-
-    this.#button = button;
-    this.#prependEl = prependEl;
-    this.#labelEl = labelEl;
-    this.#popup = popup;
-    this.#panelSlot = panelSlot;
-    popup.anchor = button;
-
-    this.#ensurePanelSlotAttrs();
-    this.#setupListeners();
-    this.#installPopupPositioning();
-
-    if (!this.hasAttribute("value")) {
-      const selected = this.#getOptions().find((opt) =>
-        figBooleanAttribute(opt, "selected"),
-      );
-      if (selected) this.setAttribute("value", selected.value);
-    }
-  }
-
-  #installPopupPositioning() {
-    if (!this.#popup || this.#popupPositionPatched) return;
-    if (typeof this.#popup.positionPopup !== "function") return;
-    this.#originalPositionPopup = this.#popup.positionPopup.bind(this.#popup);
-    this.#popup.positionPopup = () => {
-      if (!this.open) {
-        this.#originalPositionPopup?.();
-        return;
-      }
-      this.#positionPopupOverSelected();
-    };
-    this.#popupPositionPatched = true;
-  }
-
-  #getOptionTextRect(option) {
-    if (!option) return null;
-    const range = document.createRange();
-    range.selectNodeContents(option);
-    const rects = [...range.getClientRects()].filter(
-      (rect) => rect.width > 0 && rect.height > 0,
-    );
-    if (rects.length) return rects[0];
-    return option.getBoundingClientRect();
-  }
-
-  #getViewportMargins() {
-    if (typeof this.#popup?.parseViewportMargins === "function") {
-      return this.#popup.parseViewportMargins();
-    }
-    return { top: 8, right: 8, bottom: 8, left: 8 };
-  }
-
-  #readLabelRectSnapshot() {
-    const rect = this.#labelEl?.getBoundingClientRect();
-    if (!rect) return null;
-    return {
-      x: rect.x,
-      y: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
-  }
-
-  #readViewportSnapshot() {
-    const vv = window.visualViewport;
-    return {
-      width: vv?.width ?? window.innerWidth,
-      height: vv?.height ?? window.innerHeight,
-      offsetLeft: vv?.offsetLeft ?? 0,
-      offsetTop: vv?.offsetTop ?? 0,
-    };
-  }
-
-  #rectSnapshotChanged(prev, next, epsilon = 0.25) {
-    if (!prev && !next) return false;
-    if (!prev || !next) return true;
-    return (
-      Math.abs(prev.x - next.x) > epsilon ||
-      Math.abs(prev.y - next.y) > epsilon ||
-      Math.abs(prev.width - next.width) > epsilon ||
-      Math.abs(prev.height - next.height) > epsilon
-    );
-  }
-
-  #viewportSnapshotChanged(prev, next, epsilon = 0.25) {
-    if (!prev && !next) return false;
-    if (!prev || !next) return true;
-    return (
-      Math.abs(prev.width - next.width) > epsilon ||
-      Math.abs(prev.height - next.height) > epsilon ||
-      Math.abs(prev.offsetLeft - next.offsetLeft) > epsilon ||
-      Math.abs(prev.offsetTop - next.offsetTop) > epsilon
-    );
-  }
-
-  #shouldSkipFrozenPositionPass() {
-    if (!this.#freezeMenuPosition) return false;
-    const labelMoved = this.#rectSnapshotChanged(
-      this.#frozenLabelRect,
-      this.#readLabelRectSnapshot(),
-    );
-    const viewportChanged = this.#viewportSnapshotChanged(
-      this.#frozenViewport,
-      this.#readViewportSnapshot(),
-    );
-    // Skip only when neither the trigger nor the viewport moved — typical of
-    // overflow scroll / content sync fighting the open-time alignment.
-    return !labelMoved && !viewportChanged;
-  }
-
-  #rememberFrozenGeometry() {
-    this.#frozenLabelRect = this.#readLabelRectSnapshot();
-    this.#frozenViewport = this.#readViewportSnapshot();
-  }
-
-  #positionPopupOverSelected() {
-    // Content ResizeObserver / overflow scroll re-enter here; keep the
-    // open-time alignment unless the trigger or viewport actually changed.
-    if (this.#shouldSkipFrozenPositionPass()) return;
-
-    const popup = this.#popup;
-    const label = this.#labelEl;
-    if (!popup || !label) {
-      this.#originalPositionPopup?.();
-      return;
-    }
-
-    const options = this.#getOptions();
-    const selected =
-      options.find((opt) => this.#optionValue(opt) === this.value) ||
-      options[0];
-    if (!selected) {
-      this.#originalPositionPopup?.();
-      return;
-    }
-
-    // Lay out with the default positioning first so option metrics are valid.
-    this.#originalPositionPopup?.();
-
-    const popupRect = popup.getBoundingClientRect();
-    const labelRect = label.getBoundingClientRect();
-    const optionTextRect = this.#getOptionTextRect(selected);
-    if (
-      !popupRect.width ||
-      !popupRect.height ||
-      !labelRect.width ||
-      !optionTextRect
-    ) {
-      return;
-    }
-
-    const selectedOffsetX = optionTextRect.left - popupRect.left;
-    const selectedOffsetY = optionTextRect.top - popupRect.top;
-    const full = figBooleanAttribute(this, "full");
-    // [full]: pin menu to host width/edges. Otherwise overlay selected
-    // option text on the trigger label (blend-mode style).
-    let left = full
-      ? this.getBoundingClientRect().left
-      : labelRect.left - selectedOffsetX;
-    let top = labelRect.top - selectedOffsetY;
-
-    // Keep the whole menu in-view when aligning over the selected option
-    // would otherwise push it past a viewport edge (corners / far sides).
-    const margins = this.#getViewportMargins();
-    if (typeof popup.clampToViewport === "function") {
-      ({ left, top } = popup.clampToViewport({ left, top }, popupRect, margins));
-    } else {
-      const minLeft = margins.left;
-      const minTop = margins.top;
-      const maxLeft = window.innerWidth - popupRect.width - margins.right;
-      const maxTop = window.innerHeight - popupRect.height - margins.bottom;
-      left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft));
-      top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop));
-    }
-
-    // !important: fig-select::part(listbox) and dialog UA rules can otherwise
-    // keep the menu at its static/anchor position past the viewport edge.
-    popup.style.setProperty("right", "auto", "important");
-    popup.style.setProperty("bottom", "auto", "important");
-    popup.style.setProperty("left", `${Math.round(left)}px`, "important");
-    popup.style.setProperty("top", `${Math.round(top)}px`, "important");
-
-    // Nudge the panel scroller so the selected label stays over the trigger.
-    const panel = this.#getPanel();
-    const alignedTextRect = this.#getOptionTextRect(selected);
-    if (
-      alignedTextRect &&
-      panel &&
-      panel.scrollHeight > panel.clientHeight + 1
-    ) {
-      const deltaY = alignedTextRect.top - labelRect.top;
-      if (Math.abs(deltaY) > 0.5) {
-        panel.scrollTop += deltaY;
-      }
-      panel.syncOverflow?.();
-    }
-
-    if (this.#freezeMenuPosition || this.open) {
-      this.#rememberFrozenGeometry();
-    }
-  }
-
-  #setupListeners() {
-    this.#button?.addEventListener("click", this.#boundTriggerClick);
-    this.#button?.addEventListener("keydown", this.#boundKeydown);
-    // Host click: slotted options stay in light DOM (not dialog.contains).
-    this.addEventListener("click", this.#boundOptionClick);
-    this.#popup?.addEventListener("keydown", this.#boundKeydown);
-    this.#popup?.addEventListener("close", this.#boundPopupClose);
-    this.#panelSlot?.addEventListener("slotchange", this.#boundSlotChange);
-  }
-
-  #teardownListeners() {
-    this.#button?.removeEventListener("click", this.#boundTriggerClick);
-    this.#button?.removeEventListener("keydown", this.#boundKeydown);
-    this.removeEventListener("click", this.#boundOptionClick);
-    this.#popup?.removeEventListener("keydown", this.#boundKeydown);
-    this.#popup?.removeEventListener("close", this.#boundPopupClose);
-    this.#panelSlot?.removeEventListener("slotchange", this.#boundSlotChange);
-  }
-
-  #handleSlotChange() {
-    this.#ensurePanelSlotAttrs();
-    this.#syncValue();
-  }
-
-  #setupObserver() {
-    if (this.#observer) return;
-    this.#observer = new MutationObserver((mutations) => {
-      if (this.#syncingValue || this.#syncingOptions) return;
-      let needsSync = false;
-      for (const mutation of mutations) {
-        if (mutation.type === "childList") {
-          if (
-            [...mutation.addedNodes].some((node) => this.#isMenuChild(node)) ||
-            [...mutation.removedNodes].some((node) => this.#isMenuChild(node)) ||
-            mutation.target?.closest?.("fig-select-option")
-          ) {
-            needsSync = true;
-          }
-        }
-        if (
-          mutation.type === "attributes" &&
-          mutation.target?.tagName === "FIG-SELECT-OPTION" &&
-          (mutation.attributeName === "value" ||
-            mutation.attributeName === "disabled" ||
-            mutation.attributeName === "label")
-        ) {
-          needsSync = true;
-        }
-        if (
-          mutation.type === "characterData" &&
-          mutation.target?.parentElement?.tagName === "FIG-SELECT-OPTION"
-        ) {
-          needsSync = true;
-        }
-      }
-      if (needsSync) this.#syncValue();
-    });
-    this.#observer.observe(this, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true,
-      attributeFilter: ["value", "disabled", "selected", "label"],
-    });
-  }
-
-  #getOptions({ enabledOnly = false } = {}) {
-    const panel = this.#getPanel();
-    const options = panel
-      ? Array.from(panel.querySelectorAll(":scope > fig-select-option"))
-      : [];
-    if (!enabledOnly) return options;
-    return options.filter((opt) => !figBooleanAttribute(opt, "disabled"));
-  }
-
-  #optionValue(option) {
-    if (!option) return "";
-    if (typeof option.value === "string") return option.value;
-    const attr = option.getAttribute?.("value");
-    if (attr != null) return attr;
-    return (option.textContent || "").trim();
-  }
-
-  #optionLabel(option) {
-    if (!option) return "";
-    const labelAttr = option.getAttribute?.("label");
-    if (labelAttr != null && labelAttr !== "") return labelAttr.trim();
-
-    // Ignore prepend/append slot content when deriving a label from children.
-    const parts = [];
-    for (const node of option.childNodes) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent?.trim();
-        if (text) parts.push(text);
-        continue;
-      }
-      if (!(node instanceof Element)) continue;
-      const slot = node.getAttribute("slot");
-      if (slot === "prepend" || slot === "append") continue;
-      const text = node.textContent?.trim();
-      if (text) parts.push(text);
-    }
-    if (parts.length) return parts.join(" ").trim();
-    return (option.textContent || "").trim();
-  }
-
-  #syncPrepend(option) {
-    if (!this.#prependEl) return;
-    const source = option?.querySelector?.(':scope > [slot="prepend"]');
-    this.#prependEl.replaceChildren(
-      ...Array.from(source?.childNodes ?? [], (node) => node.cloneNode(true)),
-    );
-  }
-
-  #syncPopupAttrs() {
-    if (!this.#popup) return;
-    this.#popup.setAttribute(
-      "position",
-      this.getAttribute("position") || "bottom left",
-    );
-    const offset = this.getAttribute("offset");
-    if (offset) this.#popup.setAttribute("offset", offset);
-    else this.#popup.removeAttribute("offset");
-    const closedby = this.getAttribute("closedby");
-    if (closedby) this.#popup.setAttribute("closedby", closedby);
-    else this.#popup.removeAttribute("closedby");
-  }
-
-  #syncDisabled() {
-    const disabled = figBooleanAttribute(this, "disabled");
-    if (this.#button) {
-      if (disabled) this.#button.setAttribute("disabled", "");
-      else this.#button.removeAttribute("disabled");
-    }
-    if (disabled && this.open) this.open = false;
-  }
-
-  #pickFallbackOption(options) {
-    if (!options.length) return null;
-    const selected = options.find((opt) =>
-      figBooleanAttribute(opt, "selected"),
-    );
-    if (selected && !figBooleanAttribute(selected, "disabled")) {
-      return selected;
-    }
-    return (
-      options.find((opt) => !figBooleanAttribute(opt, "disabled")) ||
-      options[0] ||
-      null
-    );
-  }
-
-  #emitValueEvents(value) {
-    this.dispatchEvent(
-      new CustomEvent("input", {
-        detail: value,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-    this.dispatchEvent(
-      new CustomEvent("change", {
-        detail: value,
-        bubbles: true,
-        composed: true,
-      }),
-    );
-  }
-
-  #syncValue() {
-    if (this.#syncingValue) return;
-    this.#syncingValue = true;
-    try {
-      const options = this.#getOptions();
-      const hasValueAttr = this.hasAttribute("value");
-      const previousValue = hasValueAttr ? this.getAttribute("value") : null;
-      let match = hasValueAttr
-        ? options.find((opt) => this.#optionValue(opt) === previousValue)
-        : null;
-      let valueCorrected = false;
-
-      if (!match) {
-        if (hasValueAttr) {
-          // Options may not be built yet (options attr sync). Keep value until then.
-          if (!options.length) {
-            if (this.#labelEl) {
-              this.#labelEl.textContent =
-                previousValue || this.getAttribute("label") || "";
-            }
-            return;
-          }
-          // Value orphaned (option removed / value attr changed) — clamp or clear.
-          match = this.#pickFallbackOption(options);
-          if (match) {
-            const nextValue = this.#optionValue(match);
-            if (previousValue !== nextValue) {
-              this.setAttribute("value", nextValue);
-              valueCorrected = true;
-            }
-          } else {
-            this.removeAttribute("value");
-            valueCorrected = true;
-          }
-        } else {
-          // No host value yet — honor a selected option if present.
-          match = options.find((opt) =>
-            figBooleanAttribute(opt, "selected"),
-          );
-          if (match) {
-            this.setAttribute("value", this.#optionValue(match));
-            valueCorrected = true;
-          }
-        }
-      }
-
-      for (const opt of options) {
-        const selected = opt === match;
-        opt.setAttribute("aria-selected", selected ? "true" : "false");
-        if (selected) opt.setAttribute("selected", "");
-        else opt.removeAttribute("selected");
-      }
-
-      const label =
-        (match && this.#optionLabel(match)) || this.getAttribute("label") || "";
-      if (this.#labelEl) this.#labelEl.textContent = label;
-      this.#syncPrepend(match);
-
-      const ariaLabel = this.getAttribute("label") || "Select";
-      this.#button?.setAttribute("aria-label", ariaLabel);
-
-      // Don't scrollToOption while open — reposition/sync would fight overflow paging.
-      this.#getPanel()?.syncOverflow?.();
-
-      if (valueCorrected) {
-        this.#emitValueEvents(this.getAttribute("value") ?? "");
-      }
-    } finally {
-      this.#syncingValue = false;
-    }
-  }
-
-  #handleTriggerClick(e) {
-    if (figBooleanAttribute(this, "disabled")) return;
-    e.preventDefault();
-    e.stopPropagation();
-    const nextOpen = !this.open;
-    if (nextOpen && this.#popup && this.#button) {
-      this.#popup.anchor = this.#button;
-    }
-    this.open = nextOpen;
-  }
-
-  #handleOptionClick(e) {
-    const path = typeof e.composedPath === "function" ? e.composedPath() : [];
-    const option = path.find(
-      (node) => node?.tagName === "FIG-SELECT-OPTION",
-    );
-    if (!option || !this.contains(option)) return;
-    if (figBooleanAttribute(option, "disabled")) return;
-    // Do not stopPropagation — React light-DOM onClick must still fire.
-    this.#selectOption(option);
-  }
-
-  #handleKeydown(e) {
-    if (e.currentTarget === document && e.key !== "Escape") return;
-
-    const listOpen = this.open && (this.#popup?.matches?.(":open") ?? false);
-    if (!listOpen) {
-      if (
-        this.#button?.contains(e.target) &&
-        (e.key === "ArrowDown" || e.key === "Enter" || e.key === " ")
-      ) {
-        e.preventDefault();
-        if (this.#popup && this.#button) this.#popup.anchor = this.#button;
-        this.open = true;
-        requestAnimationFrame(() => {
-          const options = this.#getOptions({ enabledOnly: true });
-          const selectedIndex = options.findIndex(
-            (opt) => this.#optionValue(opt) === this.value,
-          );
-          this.#focusOptionAt(selectedIndex >= 0 ? selectedIndex : 0);
-        });
-      }
-      return;
-    }
-
-    const options = this.#getOptions({ enabledOnly: true });
-    if (!options.length) return;
-
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        this.#syncFocusedIndex();
-        this.#focusOptionAt(this.#focusedIndex + 1);
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        this.#syncFocusedIndex();
-        this.#focusOptionAt(this.#focusedIndex - 1);
-        break;
-      case "Home":
-        e.preventDefault();
-        this.#focusOptionAt(0);
-        break;
-      case "End":
-        e.preventDefault();
-        this.#focusOptionAt(options.length - 1);
-        break;
-      case "Escape":
-        e.preventDefault();
-        this.open = false;
-        this.#button?.focus();
-        break;
-      case "Enter":
-      case " ": {
-        this.#syncFocusedIndex();
-        const focused = options[this.#focusedIndex];
-        if (!focused) return;
-        e.preventDefault();
-        this.#selectOption(focused);
-        break;
-      }
-    }
-  }
-
-  #handlePopupClose() {
-    if (this.hasAttribute("open")) this.removeAttribute("open");
-    this.#button?.setAttribute("aria-expanded", "false");
-    this.#button?.focus();
-    this.#focusedIndex = -1;
-  }
-
-  #selectOption(option) {
-    const value = this.#optionValue(option);
-    this.setAttribute("value", value);
-    this.#syncValue();
-    this.#emitValueEvents(value);
-    this.open = false;
-  }
-
-  #getEnabledOptions() {
-    return this.#getOptions({ enabledOnly: true });
-  }
-
-  #syncFocusedIndex() {
-    const options = this.#getEnabledOptions();
-    if (!options.length) {
-      this.#focusedIndex = -1;
-      return;
-    }
-    const active = options.find((opt) => opt === document.activeElement);
-    const index = active ? options.indexOf(active) : -1;
-    this.#focusedIndex = index >= 0 ? index : this.#focusedIndex;
-  }
-
-  #focusOptionAt(index) {
-    const options = this.#getEnabledOptions();
-    if (!options.length) return;
-    const next = ((index % options.length) + options.length) % options.length;
-    this.#focusedIndex = next;
-    options[next]?.focus();
-  }
-
-  #syncPopupWidth() {
-    if (!this.#popup || !this.#button) return;
-    const hostWidth = Math.ceil(this.getBoundingClientRect().width);
-    const triggerWidth = Math.ceil(this.#button.getBoundingClientRect().width);
-    const anchorWidth = Math.max(hostWidth, triggerWidth, 96);
-
-    // Use !important — fig-select::part(listbox) width rules beat element.style.
-    // Menus size to their options while remaining at least as wide as the trigger.
-    this.#popup.style.setProperty("width", "max-content", "important");
-    this.#popup.style.setProperty("min-width", `${anchorWidth}px`, "important");
-    this.#popup.style.setProperty(
-      "max-width",
-      "min(20rem, calc(100vw - 1rem))",
-      "important",
-    );
-  }
-
-  #openList() {
-    if (!this.#popup || figBooleanAttribute(this, "disabled")) return;
-    if (this.#button) this.#popup.anchor = this.#button;
-    this.#installPopupPositioning();
-    this.#freezeMenuPosition = false;
-    this.#frozenLabelRect = null;
-    this.#frozenViewport = null;
-    this.#syncValue();
-    this.#syncPopupWidth();
-    this.#popup.open = true;
-    document.addEventListener("keydown", this.#boundKeydown, true);
-    this.#button?.setAttribute("aria-expanded", "true");
-    this.#focusedIndex = -1;
-    requestAnimationFrame(() => {
-      this.#syncPopupWidth();
-      this.#positionPopupOverSelected();
-      const panel = this.#getPanel();
-      const options = this.#getEnabledOptions();
-      const selectedIndex = options.findIndex(
-        (opt) => this.#optionValue(opt) === this.value,
-      );
-      if (selectedIndex >= 0) {
-        this.#focusOptionAt(selectedIndex);
-      } else if (
-        this.#button?.hasAttribute("data-focus-visible") ||
-        this.#button?.matches?.(":focus-visible")
-      ) {
-        this.#focusOptionAt(0);
-      }
-      panel?.syncOverflow?.();
-      // Freeze after open align so later positionPopup passes don't undo scroll.
-      // Window resize / trigger movement still realigns via geometry checks.
-      this.#freezeMenuPosition = true;
-      this.#rememberFrozenGeometry();
-    });
-  }
-
-  #closeList() {
-    if (!this.#popup) return;
-    this.#freezeMenuPosition = false;
-    this.#frozenLabelRect = null;
-    this.#frozenViewport = null;
-    document.removeEventListener("keydown", this.#boundKeydown, true);
-    this.#popup.open = false;
-    this.#button?.setAttribute("aria-expanded", "false");
-  }
-}
-figDefineElement("fig-select", FigSelect);
-
 /* Slider */
 /**
  * A custom slider input element.
@@ -6282,7 +5336,7 @@ figDefineElement("fig-select", FigSelect);
  */
 class FigSlider extends HTMLElement {
   #isInteracting = false;
-  #showEmptyTextValue = false;
+  #pendingRegeneration = false;
   #isSyncingValueAttribute = false;
   #value = "";
   #a11yAttributes = [
@@ -6317,7 +5371,7 @@ class FigSlider extends HTMLElement {
   constructor() {
     super();
     // Parser-created custom elements do not have their children yet here.
-    this.initialInnerHTML = null;
+    this.initialChildren = null;
 
     // Bind the event handlers
     this.#boundHandleInput = (e) => {
@@ -6347,6 +5401,10 @@ class FigSlider extends HTMLElement {
     };
     this.#boundRangePointerUp = () => {
       this.#isInteracting = false;
+      if (this.#pendingRegeneration && this.isConnected) {
+        this.#pendingRegeneration = false;
+        this.#regenerateMarkup();
+      }
     };
   }
 
@@ -6383,10 +5441,6 @@ class FigSlider extends HTMLElement {
       : this.type === "delta"
         ? 0
         : this.min;
-    this.#showEmptyTextValue =
-      this.type !== "range" &&
-      (rawValue === null ||
-        (typeof rawValue === "string" && rawValue.trim() === ""));
     this.value = this.#normalizeSliderValue(rawValue);
   }
 
@@ -6426,10 +5480,7 @@ class FigSlider extends HTMLElement {
       this.figInputNumber.setAttribute("max", String(this.max));
       this.figInputNumber.setAttribute("transform", String(this.transform));
       this.figInputNumber.setAttribute("step", String(this.step));
-      this.figInputNumber.setAttribute(
-        "value",
-        this.#showEmptyTextValue ? "" : String(this.value),
-      );
+      this.figInputNumber.setAttribute("value", String(this.value));
       if (this.units) this.figInputNumber.setAttribute("units", this.units);
       else this.figInputNumber.removeAttribute("units");
       if (this.precision !== null) {
@@ -6485,48 +5536,57 @@ class FigSlider extends HTMLElement {
     }
   }
 
-  #regenerateInnerHTML() {
+  #regenerateMarkup() {
     this.#readAttributesFromMarkup();
 
     if (this.color) {
       this.style.setProperty("--color", this.color);
     }
 
-    let html = "";
-    let slider = `<div class="fig-slider-input-container" role="group">
-                <input 
-                    type="range"
-                    ${this.text ? 'tabindex="-1"' : ""}
-                    ${this.disabled ? "disabled" : ""}
-                    min="${this.min}"
-                    max="${this.max}"
-                    step="${this.step}"
-                    class="${this.type}"
-                    value="${this.value}"
-                    aria-valuemin="${this.min}"
-                    aria-valuemax="${this.max}"
-                    aria-valuenow="${this.value}">
-                ${this.initialInnerHTML}
-            </div>`;
-    if (this.text) {
-      html = `${slider}
-                    <fig-input-number
-                        placeholder="${figEscapeAttribute(this.placeholder)}"
-                        min="${this.min}"
-                        max="${this.max}"
-                        transform="${this.transform}"
-                        step="${this.step}"
-                        value="${this.#showEmptyTextValue ? "" : this.value}"
-                        ${this.units ? `units="${figEscapeAttribute(this.units)}"` : ""}
-                        ${this.precision !== null ? `precision="${this.precision}"` : ""}>
-                    </fig-input-number>`;
-    } else {
-      html = slider;
+    const input = figCreateElement("input", {
+      type: "range",
+      tabindex: this.text ? "-1" : null,
+      disabled: this.disabled,
+      min: this.min,
+      max: this.max,
+      step: this.step,
+      className: this.type,
+      value: this.value,
+      "aria-valuemin": this.min,
+      "aria-valuemax": this.max,
+      "aria-valuenow": this.value,
+    });
+    const inputContainer = figCreateElement(
+      "div",
+      {
+        className: "fig-slider-input-container",
+        role: "group",
+      },
+      input,
+    );
+    for (const child of this.initialChildren ?? []) {
+      inputContainer.appendChild(child);
     }
-    this.innerHTML = html;
 
-    this.input = this.querySelector("[type=range]");
-    this.inputContainer = this.querySelector(".fig-slider-input-container");
+    const renderedChildren = [inputContainer];
+    if (this.text) {
+      renderedChildren.push(
+        figCreateElement("fig-input-number", {
+          placeholder: this.placeholder,
+          min: this.min,
+          max: this.max,
+          transform: this.transform,
+          step: this.step,
+          value: this.value,
+          units: this.units || null,
+          precision: this.precision,
+        }),
+      );
+    }
+    this.replaceChildren(...renderedChildren);
+
+    this.input = input;
+    this.inputContainer = inputContainer;
     this.figInputNumber = this.querySelector("fig-input-number");
     this.#bindControlListeners();
 
@@ -6562,8 +5622,8 @@ class FigSlider extends HTMLElement {
       this.input.setAttribute("list", this.datalist.getAttribute("id"));
     }
     if (this.datalist) {
-      let defaultOption = this.datalist.querySelector(
-        `option[value='${this.default}']`,
+      const defaultOption = [...this.datalist.querySelectorAll("option")].find(
+        (option) => option.value === String(this.default),
       );
       if (defaultOption) {
         defaultOption.setAttribute("default", "true");
@@ -6573,14 +5633,16 @@ class FigSlider extends HTMLElement {
   }
 
   connectedCallback() {
-    if (this.initialInnerHTML === null) this.initialInnerHTML = this.innerHTML;
+    if (this.initialChildren === null) {
+      this.initialChildren = Array.from(this.childNodes);
+    }
     if (this.#canReuseRenderedMarkup()) {
       this.#updateRenderedMarkup();
       this.#bindControlListeners();
       this.#syncValue();
       return;
     }
-    this.#regenerateInnerHTML();
+    this.#regenerateMarkup();
   }
 
   get value() {
@@ -6607,15 +5669,13 @@ class FigSlider extends HTMLElement {
       this.input.setAttribute("aria-valuenow", normalized);
     }
     if (this.figInputNumber) {
-      this.figInputNumber.setAttribute(
-        "value",
-        this.#showEmptyTextValue ? "" : normalized,
-      );
+      this.figInputNumber.setAttribute("value", normalized);
     }
     if (this.input) this.#syncProperties();
   }
 
   disconnectedCallback() {
+    this.#pendingRegeneration = false;
     if (this.input) {
       this.input.removeEventListener("input", this.#boundHandleInput);
       this.input.removeEventListener("change", this.#boundHandleChange);
@@ -6639,10 +5699,6 @@ class FigSlider extends HTMLElement {
   #handleTextInput() {
     if (this.figInputNumber) {
       const rawTextValue = this.figInputNumber.value;
-      this.#showEmptyTextValue =
-        rawTextValue === null ||
-        rawTextValue === undefined ||
-        (typeof rawTextValue === "string" && rawTextValue.trim() === "");
       const normalized = this.#normalizeSliderValue(rawTextValue);
       this.value = normalized;
       this.input.value = String(normalized);
@@ -6726,10 +5782,7 @@ class FigSlider extends HTMLElement {
     // Update ARIA value
     this.input.setAttribute("aria-valuenow", val);
     if (this.figInputNumber) {
-      this.figInputNumber.setAttribute(
-        "value",
-        this.#showEmptyTextValue ? "" : val,
-      );
+      this.figInputNumber.setAttribute("value", val);
     }
   }
   #syncInputA11yAttributes() {
@@ -6767,7 +5820,6 @@ class FigSlider extends HTMLElement {
   }
 
   #handleInput() {
-    this.#showEmptyTextValue = false;
     this.#syncValue();
     this.dispatchEvent(
       new CustomEvent("input", { detail: this.value, bubbles: true }),
@@ -6776,7 +5828,6 @@ class FigSlider extends HTMLElement {
 
   #handleChange() {
     this.#isInteracting = false;
-    this.#showEmptyTextValue = false;
     this.#syncValue();
     this.dispatchEvent(
       new CustomEvent("change", { detail: this.value, bubbles: true }),
@@ -6792,7 +5843,6 @@ class FigSlider extends HTMLElement {
     }
 
     event.preventDefault();
-    this.#showEmptyTextValue = false;
 
     const direction =
       event.key === "ArrowRight" || event.key === "ArrowUp" ? 1 : -1;
@@ -6814,10 +5864,6 @@ class FigSlider extends HTMLElement {
   #handleTextChange() {
     if (this.figInputNumber) {
       const rawTextValue = this.figInputNumber.value;
-      this.#showEmptyTextValue =
-        rawTextValue === null ||
-        rawTextValue === undefined ||
-        (typeof rawTextValue === "string" && rawTextValue.trim() === "");
       const normalized = this.#normalizeSliderValue(rawTextValue);
       this.value = normalized;
       this.input.value = String(normalized);
@@ -6826,6 +5872,62 @@ class FigSlider extends HTMLElement {
         new CustomEvent("change", { detail: this.value, bubbles: true }),
       );
     }
+  }
+
+  #syncRangeConstraint(name, rawValue) {
+    if (!this.input) return;
+    const defaults = this.#typeDefaults[this.type] || this.#typeDefaults.range;
+    const parsed =
+      rawValue === null || String(rawValue).trim() === ""
+        ? defaults[name]
+        : Number(rawValue);
+    let next = Number.isFinite(parsed) ? parsed : defaults[name];
+    if (name === "step" && !(next > 0)) {
+      next = defaults.step > 0 ? defaults.step : 1;
+    }
+    if (this[name] === next && this.input[name] === String(next)) return;
+
+    this[name] = next;
+    this.input[name] = String(next);
+    if (name === "min") {
+      this.input.setAttribute("aria-valuemin", String(next));
+    } else if (name === "max") {
+      this.input.setAttribute("aria-valuemax", String(next));
+    }
+    if (this.figInputNumber) {
+      this.figInputNumber.setAttribute(name, String(next));
+    }
+    if (!this.hasAttribute("default") && this.type !== "delta") {
+      this.default = this.min;
+    }
+    this.value = this.#normalizeSliderValue(this.value);
+    this.#syncProperties();
+    this.#syncStepperDatalist();
+  }
+
+  #syncStepperDatalist() {
+    if (this.type !== "stepper" || !this.datalist) return;
+    const steps = Math.min(
+      1001,
+      Math.max(0, Math.floor((this.max - this.min) / this.step) + 1),
+    );
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < steps; i++) {
+      const option = document.createElement("option");
+      option.setAttribute("value", this.min + i * this.step);
+      fragment.append(option);
+    }
+    this.datalist.replaceChildren(fragment);
+    this.input.setAttribute("list", this.datalist.id);
+  }
+
+  #regenerateWhenIdle() {
+    if (this.#isInteracting) {
+      this.#pendingRegeneration = true;
+      return;
+    }
+    this.#pendingRegeneration = false;
+    this.#regenerateMarkup();
   }
 
   static get observedAttributes() {
@@ -6862,6 +5964,7 @@ class FigSlider extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) return;
     if (name === "value" && this.#isSyncingValueAttribute) return;
     if (this.input) {
       switch (name) {
@@ -6879,18 +5982,8 @@ class FigSlider extends HTMLElement {
           break;
         case "value":
           if (this.#isInteracting) break;
-          this.#showEmptyTextValue =
-            newValue === null ||
-            (typeof newValue === "string" && newValue.trim() === "");
-          this.value = this.#normalizeSliderValue(newValue);
-          this.input.value = String(this.value);
+          this.value = newValue;
           this.#syncValue();
-          if (this.figInputNumber) {
-            this.figInputNumber.setAttribute(
-              "value",
-              this.#showEmptyTextValue ? "" : this.value,
-            );
-          }
           break;
         case "transform":
           this.transform = Number(newValue) || 1;
@@ -6922,15 +6015,26 @@ class FigSlider extends HTMLElement {
         case "min":
         case "max":
         case "step":
+          this.#syncRangeConstraint(name, newValue);
+          break;
+        case "units":
+          this.units = newValue || "";
+          if (this.figInputNumber) {
+            if (this.units) {
+              this.figInputNumber.setAttribute("units", this.units);
+            } else {
+              this.figInputNumber.removeAttribute("units");
+            }
+          }
+          break;
         case "type":
         case "variant":
-        case "units":
-          this[name] = newValue;
-          this.#regenerateInnerHTML();
+          if (!this.#isInteracting) this[name] = newValue;
+          this.#regenerateWhenIdle();
           break;
         case "text":
-          this.text = newValue !== "false";
-          this.#regenerateInnerHTML();
+          if (!this.#isInteracting) this.text = newValue !== "false";
+          this.#regenerateWhenIdle();
           break;
         case "aria-label":
         case "aria-labelledby":
@@ -7652,9 +6756,18 @@ class FigInputNumber extends HTMLElement {
     if (hasSteppers && !this.#stepperEl) {
       this.#stepperEl = document.createElement("span");
       this.#stepperEl.className = "fig-steppers";
-      this.#stepperEl.innerHTML =
-        `<button class="fig-stepper-up" tabindex="-1" aria-label="Increase"></button>` +
-        `<button class="fig-stepper-down" tabindex="-1" aria-label="Decrease"></button>`;
+      this.#stepperEl.append(
+        figCreateElement("button", {
+          className: "fig-stepper-up",
+          tabindex: "-1",
+          "aria-label": "Increase",
+        }),
+        figCreateElement("button", {
+          className: "fig-stepper-down",
+          tabindex: "-1",
+          "aria-label": "Decrease",
+        }),
+      );
       this.#stepperEl.addEventListener("pointerdown", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -8582,7 +7695,9 @@ class FigInputColor extends HTMLElement {
         name !== "picker-anchor" &&
         name !== "picker-experimental"
       ) {
-        attrs[name.slice(7)] = value;
+        const forwardedName = name.slice(7);
+        if (/^on/i.test(forwardedName)) continue;
+        attrs[forwardedName] = value;
       }
     }
     if (!attrs["dialog-position"]) attrs["dialog-position"] = "left";
@@ -8701,41 +7816,49 @@ class FigInputColor extends HTMLElement {
 
     const showAlpha = this.getAttribute("alpha") !== "false";
     const disabled = this.#disabled;
-    const disabledAttr = disabled ? " disabled" : "";
-
-    let html = ``;
     const showText = this.getAttribute("text") !== "false";
+    const swatch = figCreateElement("fig-swatch", {
+      background: this.hexOpaque,
+      alpha: this.rgba.a,
+      disabled,
+    });
+
     if (showText) {
-      let label = `<fig-input-text 
-        type="text"
-        placeholder="000000"
-        value="${this.hexOpaque.slice(1).toUpperCase()}"${disabledAttr}>
-      </fig-input-text>`;
+      const combo = figCreateElement(
+        "div",
+        { className: "input-combo" },
+        [
+          swatch,
+          figCreateElement("fig-input-text", {
+            type: "text",
+            placeholder: "000000",
+            value: this.hexOpaque.slice(1).toUpperCase(),
+            disabled,
+          }),
+        ],
+      );
       if (showAlpha) {
-        label += `<fig-tooltip text="Opacity">
-                    <fig-input-number 
-                        placeholder="##" 
-                        min="0"
-                        max="100"
-                        value="${this.#alphaPercent}"
-                        units="%"${disabledAttr}>
-                    </fig-input-number>
-                </fig-tooltip>`;
+        combo.appendChild(
+          figCreateElement(
+            "fig-tooltip",
+            { text: "Opacity" },
+            figCreateElement("fig-input-number", {
+              placeholder: "##",
+              min: "0",
+              max: "100",
+              value: this.#alphaPercent,
+              units: "%",
+              disabled,
+            }),
+          ),
+        );
       }
-
-      let swatchElement = "";
-      swatchElement = `<fig-swatch background="${this.hexOpaque}" alpha="${this.rgba.a}"${disabledAttr}></fig-swatch>`;
-
-      html = `<div class="input-combo">
-                ${swatchElement}
-                ${label}
-            </div>`;
+      this.replaceChildren(combo);
     } else {
-      html = `<fig-swatch background="${this.hexOpaque}" alpha="${this.rgba.a}"${disabledAttr}></fig-swatch>`;
+      this.replaceChildren(swatch);
     }
-    this.innerHTML = html;
 
-    this.#swatch = this.querySelector("fig-swatch");
+    this.#swatch = swatch;
     this.#fillPicker = this.querySelector("fig-fill-picker");
     this.#textInput = this.querySelector("fig-input-text:not([type=number])");
     this.#alphaInput = this.querySelector("fig-input-number");
@@ -8787,7 +7910,7 @@ class FigInputColor extends HTMLElement {
     }
 
     const picker = document.createElement("fig-fill-picker");
-    picker.innerHTML = "<span hidden></span>";
+    picker.appendChild(figCreateElement("span", { hidden: true }));
     picker.addEventListener("input", this.#boundFillPickerInput);
     picker.addEventListener("change", this.#boundChange);
     this.appendChild(picker);
@@ -9041,7 +8164,7 @@ class FigInputColor extends HTMLElement {
       new CustomEvent("input", {
         bubbles: true,
         cancelable: true,
-        detail: { value: this.value, hex: this.hex, rgba: this.rgba },
+        detail: this.#eventDetail(),
       }),
     );
   }
@@ -9050,9 +8173,22 @@ class FigInputColor extends HTMLElement {
       new CustomEvent("change", {
         bubbles: true,
         cancelable: true,
-        detail: { value: this.value, hex: this.hex, rgba: this.rgba },
+        detail: this.#eventDetail(),
       }),
     );
+  }
+
+  #eventDetail() {
+    return {
+      value: this.value,
+      hex: this.hex,
+      rgba: this.rgba,
+      ...figColorEventAliases(
+        this.hexOpaque,
+        this.rgba?.a,
+        Math.round((this.rgba?.a ?? 1) * 100),
+      ),
+    };
   }
 
   static get observedAttributes() {
@@ -9694,13 +8830,13 @@ class FigInputFill extends HTMLElement {
         name !== "picker-anchor" &&
         name !== "picker-experimental"
       ) {
-        attrs[name.slice(7)] = value;
+        const forwardedName = name.slice(7);
+        if (/^on/i.test(forwardedName)) continue;
+        attrs[forwardedName] = value;
       }
     }
     if (!attrs["dialog-position"]) attrs["dialog-position"] = "left";
-    return Object.entries(attrs)
-      .map(([k, v]) => `${k}="${figEscapeAttribute(v)}"`)
-      .join(" ");
+    return attrs;
   }
 
   #fillPickerSwatchBackground() {
@@ -9720,10 +8856,22 @@ class FigInputFill extends HTMLElement {
           })
           .join(", ");
         const interpolation = gradientInterpolationClause(this.#gradient);
-        return `linear-gradient(${this.#gradient.angle}deg${interpolation ? ` ${interpolation}` : ""}, ${stops})`;
+        const interpolationSuffix = interpolation ? ` ${interpolation}` : "";
+        switch (this.#gradient.type) {
+          case "radial":
+            return `radial-gradient(circle${interpolationSuffix}, ${stops})`;
+          case "angular":
+            return `conic-gradient(from ${this.#gradient.angle}deg${interpolationSuffix}, ${stops})`;
+          default:
+            return `linear-gradient(${this.#gradient.angle}deg${interpolationSuffix}, ${stops})`;
+        }
       }
       case "image":
         return this.#image.url ? `url(${this.#image.url})` : "#D9D9D9";
+      case "webcam":
+        return this.#webcam.snapshot
+          ? `url(${this.#webcam.snapshot})`
+          : "#D9D9D9";
       default:
         return "#D9D9D9";
     }
@@ -9791,81 +8939,97 @@ class FigInputFill extends HTMLElement {
     syncState(this.#opacityInput, `${name} opacity`);
   }
 
+  #createOpacityControl(value, disabled) {
+    if (this.getAttribute("alpha") === "false") return null;
+    return figCreateElement(
+      "fig-tooltip",
+      { text: "Opacity" },
+      figCreateElement("fig-input-number", {
+        className: "fig-input-fill-opacity",
+        placeholder: "##",
+        min: "0",
+        max: "100",
+        value,
+        units: "%",
+        disabled,
+      }),
+    );
+  }
+
+  #createControls(disabled) {
+    let label = null;
+    let opacity = 1;
+
+    switch (this.#fillType) {
+      case "solid":
+        return [
+          figCreateElement("fig-input-text", {
+            type: "text",
+            className: "fig-input-fill-hex",
+            placeholder: "000000",
+            value: this.#solid.color.slice(1).toUpperCase(),
+            disabled,
+          }),
+          this.#createOpacityControl(
+            Math.round(this.#solid.alpha * 100),
+            disabled,
+          ),
+        ].filter(Boolean);
+      case "gradient":
+        label =
+          this.#gradient.type.charAt(0).toUpperCase() +
+          this.#gradient.type.slice(1);
+        opacity = this.#gradient.opacity ?? 1;
+        break;
+      case "image":
+        label = "Image";
+        opacity = this.#image.opacity ?? 1;
+        break;
+      case "video":
+        label = "Video";
+        opacity = this.#video.opacity ?? 1;
+        break;
+      case "webcam":
+        label = "Webcam";
+        opacity = this.#webcam.opacity ?? 1;
+        break;
+    }
+
+    return [
+      figCreateElement(
+        "label",
+        { className: "fig-input-fill-label" },
+        label,
+      ),
+      this.#createOpacityControl(Math.round(opacity * 100), disabled),
+    ].filter(Boolean);
+  }
+
   #render() {
     const disabled =
       this.hasAttribute("disabled") && this.getAttribute("disabled") !== "false";
     const fillPickerValue = JSON.stringify(this.value);
-    const showAlpha = this.getAttribute("alpha") !== "false";
-
-    const opacityHtml = (value) =>
-      showAlpha
-        ? `<fig-tooltip text="Opacity">
-            <fig-input-number
-              class="fig-input-fill-opacity"
-              placeholder="##"
-              min="0"
-              max="100"
-              value="${value}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>`
-        : "";
-
-    let controlsHtml = "";
-
-    switch (this.#fillType) {
-      case "solid":
-        controlsHtml = `
-          <fig-input-text 
-            type="text"
-            class="fig-input-fill-hex"
-            placeholder="000000"
-            value="${figEscapeAttribute(this.#solid.color.slice(1).toUpperCase())}"
-            ${disabled ? "disabled" : ""}>
-          </fig-input-text>
-          ${opacityHtml(Math.round(this.#solid.alpha * 100))}`;
-        break;
-
-      case "gradient": {
-        const gradientLabel =
-          this.#gradient.type.charAt(0).toUpperCase() +
-          this.#gradient.type.slice(1);
-        controlsHtml = `
-          <label class="fig-input-fill-label">${figEscapeAttribute(gradientLabel)}</label>
-          ${opacityHtml(Math.round((this.#gradient.opacity ?? 1) * 100))}`;
-        break;
-      }
-
-      case "image":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Image</label>
-          ${opacityHtml(Math.round((this.#image.opacity ?? 1) * 100))}`;
-        break;
-
-      case "video":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Video</label>
-          ${opacityHtml(Math.round((this.#video.opacity ?? 1) * 100))}`;
-        break;
-
-      case "webcam":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Webcam</label>
-          ${opacityHtml(Math.round((this.#webcam.opacity ?? 1) * 100))}`;
-        break;
-    }
-
     const fpAttrs = this.#buildFillPickerAttrs();
-    this.innerHTML = `
-      <div class="input-combo">
-        <fig-fill-picker ${fpAttrs} value='${figEscapeAttribute(fillPickerValue)}' ${
-          disabled ? "disabled" : ""
-        }>
-          <fig-swatch background="${figEscapeAttribute(this.#fillPickerSwatchBackground())}" alpha="${this.#fillPickerSwatchAlpha()}"${disabled ? " disabled" : ""}></fig-swatch>
-        </fig-fill-picker>
-        ${controlsHtml}
-      </div>`;
+    const swatch = figCreateElement("fig-swatch", {
+      background: this.#fillPickerSwatchBackground(),
+      alpha: this.#fillPickerSwatchAlpha(),
+      disabled,
+    });
+    const picker = figCreateElement(
+      "fig-fill-picker",
+      {
+        value: fillPickerValue,
+        disabled,
+        ...fpAttrs,
+      },
+      swatch,
+    );
+    const combo = figCreateElement(
+      "div",
+      { className: "input-combo" },
+      [picker, this.#createControls(disabled)],
+    );
+    this.replaceChildren(combo);
 
     this.#setupEventListeners();
   }
@@ -9927,6 +9091,9 @@ class FigInputFill extends HTMLElement {
             break;
           case "video":
             if (detail.video) this.#video = detail.video;
+            break;
+          case "webcam":
+            if (detail.image?.url) this.#webcam.snapshot = detail.image.url;
             break;
         }
         // Update controls (don't re-render to keep dialog open)
@@ -10060,7 +9227,6 @@ class FigInputFill extends HTMLElement {
     // Update only the controls (not the fill picker) when type changes
     const disabled =
       this.hasAttribute("disabled") && this.getAttribute("disabled") !== "false";
-    const showAlpha = this.getAttribute("alpha") !== "false";
     const combo = this.querySelector(".input-combo");
     if (!combo) return;
 
@@ -10074,98 +9240,8 @@ class FigInputFill extends HTMLElement {
     oldHex?.remove();
     oldTooltips.forEach((t) => t.remove());
 
-    // Generate new controls HTML
-    let controlsHtml = "";
-    switch (this.#fillType) {
-      case "solid":
-        controlsHtml = `
-          <fig-input-text 
-            type="text"
-            class="fig-input-fill-hex"
-            placeholder="000000"
-            value="${figEscapeAttribute(this.#solid.color.slice(1).toUpperCase())}"
-            ${disabled ? "disabled" : ""}>
-          </fig-input-text>
-          ${showAlpha ? `<fig-tooltip text="Opacity">
-            <fig-input-number 
-              class="fig-input-fill-opacity"
-              placeholder="##" 
-              min="0"
-              max="100"
-              value="${Math.round(this.#solid.alpha * 100)}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>` : ""}`;
-        break;
-      case "gradient": {
-        const gradientLabel =
-          this.#gradient.type.charAt(0).toUpperCase() +
-          this.#gradient.type.slice(1);
-        controlsHtml = `
-          <label class="fig-input-fill-label">${figEscapeAttribute(gradientLabel)}</label>
-          ${showAlpha ? `<fig-tooltip text="Opacity">
-            <fig-input-number
-              class="fig-input-fill-opacity"
-              placeholder="##"
-              min="0"
-              max="100"
-              value="${Math.round((this.#gradient.opacity ?? 1) * 100)}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>` : ""}`;
-        break;
-      }
-      case "image":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Image</label>
-          ${showAlpha ? `<fig-tooltip text="Opacity">
-            <fig-input-number 
-              class="fig-input-fill-opacity"
-              placeholder="##" 
-              min="0"
-              max="100"
-              value="${Math.round((this.#image.opacity ?? 1) * 100)}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>` : ""}`;
-        break;
-      case "video":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Video</label>
-          ${showAlpha ? `<fig-tooltip text="Opacity">
-            <fig-input-number 
-              class="fig-input-fill-opacity"
-              placeholder="##" 
-              min="0"
-              max="100"
-              value="${Math.round((this.#video.opacity ?? 1) * 100)}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>` : ""}`;
-        break;
-      case "webcam":
-        controlsHtml = `
-          <label class="fig-input-fill-label">Webcam</label>
-          ${showAlpha ? `<fig-tooltip text="Opacity">
-            <fig-input-number 
-              class="fig-input-fill-opacity"
-              placeholder="##" 
-              min="0"
-              max="100"
-              value="${Math.round((this.#webcam.opacity ?? 1) * 100)}"
-              units="%"
-              ${disabled ? "disabled" : ""}>
-            </fig-input-number>
-          </fig-tooltip>` : ""}`;
-        break;
-    }
-
     // Append new controls after the fill picker
-    combo.insertAdjacentHTML("beforeend", controlsHtml);
+    combo.append(...this.#createControls(disabled));
 
     // Re-setup event listeners for the new controls
     this.#opacityInput = this.querySelector(".fig-input-fill-opacity");
@@ -10554,7 +9630,7 @@ class FigInputPalette extends HTMLElement {
       this.hasAttribute("disabled") &&
       this.getAttribute("disabled") !== "false";
 
-    this.innerHTML = "";
+    this.replaceChildren();
     this.#inlinePickers = [];
     this.#expandedPickers = [];
 
@@ -10857,6 +9933,7 @@ class FigInputGradient extends HTMLElement {
   #arrowTooltipTimer = null;
   #colorObserver = null;
   #repositionRAF = null;
+  #pickerDefinitionPromise = null;
   #gradient = {
     type: "linear",
     angle: 90,
@@ -10898,6 +9975,30 @@ class FigInputGradient extends HTMLElement {
     );
   }
 
+  #activeStopHandle() {
+    if (!this.#track) return null;
+    const selected = this.#track.querySelector(
+      "fig-handle[selected]:not(.fig-input-gradient-ghost)",
+    );
+    if (selected) return selected;
+    const active = document.activeElement;
+    if (!(active instanceof Element) || !this.#track.contains(active)) {
+      return null;
+    }
+    return active.closest("fig-handle:not(.fig-input-gradient-ghost)");
+  }
+
+  #activateStopHandle(handle) {
+    if (!handle || !this.#track) return;
+    this.#track
+      .querySelectorAll("fig-handle:not(.fig-input-gradient-ghost)")
+      .forEach((other) => {
+        if (other !== handle) other.deselect();
+      });
+    handle.select();
+    handle.focus();
+  }
+
   #syncFocusTarget() {
     const disabled =
       this.hasAttribute("disabled") && this.getAttribute("disabled") !== "false";
@@ -10930,9 +10031,20 @@ class FigInputGradient extends HTMLElement {
   connectedCallback() {
     this.#parseValue();
     this.#render();
+    this.#renderPickerWhenAvailable();
     this.removeEventListener("keydown", this.#onPickerKeyDown);
     this.addEventListener("keydown", this.#onPickerKeyDown);
     if (this.#isEditable) document.addEventListener("keydown", this.#onKeyDown);
+  }
+
+  #renderPickerWhenAvailable() {
+    if (this.#editMode !== "picker" || hasFigFillPicker()) return;
+    this.#pickerDefinitionPromise ??= customElements
+      .whenDefined("fig-fill-picker")
+      .then(() => {
+        if (!this.isConnected || this.#editMode !== "picker") return;
+        this.#render();
+      });
   }
 
   disconnectedCallback() {
@@ -10956,7 +10068,15 @@ class FigInputGradient extends HTMLElement {
 
   #onKeyDown = (e) => {
     const active = document.activeElement;
-    if (!(active instanceof Node) || !this.contains(active)) return;
+    const activeIsInside = active instanceof Node && this.contains(active);
+    const selectedHandle = this.#track?.querySelector(
+      "fig-handle[selected]:not(.fig-input-gradient-ghost)",
+    );
+    const focusLostToBody =
+      !active ||
+      active === document.body ||
+      active === document.documentElement;
+    if (!activeIsInside && !(selectedHandle && focusLostToBody)) return;
     const isTyping =
       active &&
       (active.tagName === "INPUT" ||
@@ -10965,9 +10085,7 @@ class FigInputGradient extends HTMLElement {
     if (!this.#track) return;
 
     if (e.key === "Tab" && !isTyping) {
-      const selected = this.#track.querySelector(
-        "fig-handle[selected]:not(.fig-input-gradient-ghost)",
-      );
+      const selected = this.#activeStopHandle();
       if (!selected) return;
       e.preventDefault();
       const handles = [
@@ -10980,14 +10098,12 @@ class FigInputGradient extends HTMLElement {
         ? (curIdx - 1 + handles.length) % handles.length
         : (curIdx + 1) % handles.length;
       selected.deselect();
-      handles[next].select();
+      this.#activateStopHandle(handles[next]);
       return;
     }
 
     if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && !isTyping) {
-      const selected = this.#track.querySelector(
-        "fig-handle[selected]:not(.fig-input-gradient-ghost)",
-      );
+      const selected = this.#activeStopHandle();
       if (!selected) return;
       const idx = parseInt(selected.dataset.stopIndex, 10);
       if (isNaN(idx) || !this.#gradient.stops[idx]) return;
@@ -11019,19 +10135,21 @@ class FigInputGradient extends HTMLElement {
     if (e.key !== "Delete" && e.key !== "Backspace") return;
     if (isTyping) return;
     if (this.#gradient.stops.length <= 2) return;
-    const selected = this.#track.querySelector(
-      "fig-handle[selected]:not(.fig-input-gradient-ghost)",
-    );
+    const selected = this.#activeStopHandle();
     if (!selected) return;
     const idx = parseInt(selected.dataset.stopIndex, 10);
     if (isNaN(idx) || !this.#gradient.stops[idx]) return;
     e.preventDefault();
-    selected.removeAttribute("selected");
     this.#gradient.stops.splice(idx, 1);
     this.#syncHandles();
     this.#syncSwatch();
     this.#emitInput();
     this.#emitChange();
+    const nextIdx = Math.min(idx, this.#gradient.stops.length - 1);
+    const next = this.#track.querySelectorAll(
+      "fig-handle:not(.fig-input-gradient-ghost)",
+    )[nextIdx];
+    this.#activateStopHandle(next);
   };
 
   #onPickerKeyDown = (e) => {
@@ -11083,18 +10201,9 @@ class FigInputGradient extends HTMLElement {
       .join(", ");
     const interp = gradientInterpolationClause(gradient);
     const interpolation = interp ? ` ${interp}` : "";
-    // Inline stop editor always previews L→R so handles match the track axis,
-    // regardless of linear angle / radial / angular type.
-    if (this.#editMode === "true") {
-      return `linear-gradient(to right${interpolation}, ${stops})`;
-    }
-    if (gradient.type === "radial") {
-      return `radial-gradient(circle at ${gradient.centerX}% ${gradient.centerY}%${interpolation}, ${stops})`;
-    }
-    if (gradient.type === "angular") {
-      return `conic-gradient(from ${gradient.angle}deg${interpolation}, ${stops})`;
-    }
-    return `linear-gradient(${gradient.angle}deg${interpolation}, ${stops})`;
+    // Compact swatch always previews L→R, regardless of linear angle /
+    // radial / angular type (stop handles also use this axis when editing).
+    return `linear-gradient(to right${interpolation}, ${stops})`;
   }
 
   #stopColorCSS(stop) {
@@ -11104,11 +10213,6 @@ class FigInputGradient extends HTMLElement {
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
-  #swatchSizeAttr() {
-    const size = this.getAttribute("size");
-    return size ? ` size="${size}"` : "";
-  }
-
   #syncSwatchSize() {
     if (!this.#swatch) return;
     const size = this.getAttribute("size");
@@ -11116,16 +10220,32 @@ class FigInputGradient extends HTMLElement {
     else this.#swatch.removeAttribute("size");
   }
 
-  #buildStopHandles() {
+  #createStopHandles() {
     const disabled =
       this.hasAttribute("disabled") && this.getAttribute("disabled") !== "false";
-    const tipAttr = this.#stopHandleMode === "tip" ? ' tip="color"' : "";
     return this.#gradient.stops
       .map(
         (stop, i) =>
-          `<fig-tooltip action="manual" text="${Math.round(stop.position)}%"><fig-handle drag drag-axes="x" drag-surface=".fig-input-gradient-track" type="color"${tipAttr} color="${this.#stopColorCSS(stop)}" value="${stop.position}% 50%" hit-area="4" data-stop-index="${i}"${disabled ? " disabled" : ""}></fig-handle></fig-tooltip>`,
-      )
-      .join("");
+          figCreateElement(
+            "fig-tooltip",
+            {
+              action: "manual",
+              text: `${Math.round(stop.position)}%`,
+            },
+            figCreateElement("fig-handle", {
+              drag: true,
+              "drag-axes": "x",
+              "drag-surface": ".fig-input-gradient-track",
+              type: "color",
+              tip: this.#stopHandleMode === "tip" ? "color" : null,
+              color: this.#stopColorCSS(stop),
+              value: `${stop.position}% 50%`,
+              "hit-area": "4",
+              "data-stop-index": i,
+              disabled,
+            }),
+          ),
+      );
   }
 
   #ghostHandle = null;
@@ -11136,27 +10256,45 @@ class FigInputGradient extends HTMLElement {
     this.#colorObserver = null;
     const disabled = figBooleanAttribute(this, "disabled");
     const mode = this.#editMode;
+    const size = this.getAttribute("size");
+    const swatch = figCreateElement("fig-swatch", {
+      background: this.#buildGradientCSS(),
+      size: size || null,
+      disabled,
+    });
 
     if (mode === "picker" && hasFigFillPicker()) {
       const gradientValue = JSON.stringify(this.value);
-      this.innerHTML = `
-        <fig-fill-picker mode="gradient" value='${gradientValue}'${disabled ? " disabled" : ""}>
-          <fig-swatch background="${this.#buildGradientCSS()}"${this.#swatchSizeAttr()}${disabled ? " disabled" : ""}></fig-swatch>
-        </fig-fill-picker>`;
-      this.#swatch = this.querySelector("fig-swatch");
+      const picker = figCreateElement(
+        "fig-fill-picker",
+        {
+          mode: "gradient",
+          value: gradientValue,
+          disabled,
+        },
+        swatch,
+      );
+      this.replaceChildren(picker);
+      this.#swatch = swatch;
       this.#track = null;
       this.#setupPickerEvents();
       this.#syncFocusTarget();
       return;
     }
 
-    this.innerHTML = `
-      <fig-swatch background="${this.#buildGradientCSS()}"${this.#swatchSizeAttr()}${disabled ? " disabled" : ""}></fig-swatch>
-      ${mode === "true" || mode === "picker" ? `<div class="fig-input-gradient-track">${this.#buildStopHandles()}</div>` : ""}`;
-    this.#swatch = this.querySelector("fig-swatch");
-    this.#track = this.querySelector(".fig-input-gradient-track");
+    const editable = mode === "true" || mode === "picker";
+    const track = editable
+      ? figCreateElement(
+          "div",
+          { className: "fig-input-gradient-track" },
+          this.#createStopHandles(),
+        )
+      : null;
+    this.replaceChildren(...(track ? [swatch, track] : [swatch]));
+    this.#swatch = swatch;
+    this.#track = track;
 
-    if (mode === "true" || mode === "picker") {
+    if (editable) {
       this.#setupGhostHandle();
       this.#setupEventListeners();
     }
@@ -11334,7 +10472,7 @@ class FigInputGradient extends HTMLElement {
         "fig-handle:not(.fig-input-gradient-ghost)",
       );
       const newHandle = handles[newIndex];
-      if (newHandle) newHandle.click();
+      if (newHandle) this.#activateStopHandle(newHandle);
     });
   };
 
@@ -11370,7 +10508,7 @@ class FigInputGradient extends HTMLElement {
 
     if (handles.length !== stops.length) {
       const ghost = this.#ghostHandle;
-      this.#track.innerHTML = this.#buildStopHandles();
+      this.#track.replaceChildren(...this.#createStopHandles());
       if (ghost) this.#track.appendChild(ghost);
       this.#syncHandleMode();
       this.#reobserveHandleColors();
@@ -11501,12 +10639,7 @@ class FigInputGradient extends HTMLElement {
       );
       const newHandle = handles[newIndex];
       if (newHandle) {
-        this.#track
-          .querySelectorAll("fig-handle:not(.fig-input-gradient-ghost)")
-          .forEach((h) => {
-            if (h !== newHandle) h.deselect();
-          });
-        newHandle.select();
+        this.#activateStopHandle(newHandle);
         newHandle.dispatchEvent(
           new PointerEvent("pointerdown", {
             bubbles: true,
@@ -11531,6 +10664,10 @@ class FigInputGradient extends HTMLElement {
           this.#gradient.stops[idx].color = e.detail.color;
           if (e.detail.opacity !== undefined) {
             this.#gradient.stops[idx].opacity = e.detail.opacity;
+          } else if (e.detail.alpha !== undefined) {
+            this.#gradient.stops[idx].opacity = Math.round(
+              e.detail.alpha * 100,
+            );
           }
           handle.setAttribute(
             "color",
@@ -11717,6 +10854,7 @@ class FigInputGradient extends HTMLElement {
         break;
       case "edit":
         this.#render();
+        this.#renderPickerWhenAvailable();
         if (this.#isEditable) {
           document.addEventListener("keydown", this.#onKeyDown);
         } else {
@@ -12121,22 +11259,54 @@ class FigComboInput extends HTMLElement {
     const currentValue = this.value;
     const dropdownLabel = this.#dropdownLabel();
 
-    const dropdownHTML = this.#usesCustomDropdown
-      ? ""
-      : `<fig-dropdown type="dropdown" label="${figEscapeAttribute(dropdownLabel)}">${options.map((o) => `<option>${figEscapeAttribute(o.trim())}</option>`).join("")}</fig-dropdown>`;
+    const input = figCreateElement("fig-input-text", {
+      placeholder,
+      value: currentValue,
+    });
+    const icon = figCreateSvgElement(
+      "svg",
+      {
+        width: "16",
+        height: "16",
+        viewBox: "0 0 16 16",
+        fill: "none",
+      },
+      figCreateSvgElement("path", {
+        d: "M5.87868 7.12132L8 9.24264L10.1213 7.12132",
+        stroke: "currentColor",
+        "stroke-opacity": "0.9",
+        "stroke-linecap": "round",
+      }),
+    );
+    const button = figCreateElement(
+      "fig-button",
+      {
+        type: "select",
+        variant: "input",
+        icon: true,
+      },
+      icon,
+    );
+    if (!this.#usesCustomDropdown) {
+      button.appendChild(
+        figCreateElement(
+          "fig-dropdown",
+          {
+            type: "dropdown",
+            label: dropdownLabel,
+          },
+          options.map((option) =>
+            figCreateElement("option", {}, option.trim()),
+          ),
+        ),
+      );
+    }
+    this.replaceChildren(
+      figCreateElement("div", { className: "input-combo" }, [input, button]),
+    );
 
-    this.innerHTML = `<div class="input-combo">
-  <fig-input-text placeholder="${figEscapeAttribute(placeholder)}" value="${figEscapeAttribute(currentValue)}"></fig-input-text>
-  <fig-button type="select" variant="input" icon>
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M5.87868 7.12132L8 9.24264L10.1213 7.12132" stroke="currentColor" stroke-opacity="0.9" stroke-linecap="round"/>
-    </svg>
-    ${dropdownHTML}
-  </fig-button>
-</div>`;
-
-    this.#input = this.querySelector("fig-input-text");
-    this.#button = this.querySelector("fig-button");
+    this.#input = input;
+    this.#button = button;
 
     if (this.#usesCustomDropdown && this.#customDropdown && this.#button) {
       if (!this.#customDropdown.hasAttribute("type")) {
@@ -12401,14 +11571,18 @@ class FigSwatch extends HTMLElement {
 
       if (this.#type === "color") {
         const hex = this.#toHex(bg);
-        this.innerHTML = `<div></div><input type="color" value="${hex}" />`;
-        this.input = this.querySelector("input");
+        const input = figCreateElement("input", {
+          type: "color",
+          value: hex,
+        });
+        this.replaceChildren(document.createElement("div"), input);
+        this.input = input;
         if (!isVar) {
           this.input.addEventListener("input", this.#boundHandleInput);
         }
         this.#syncA11y();
       } else {
-        this.innerHTML = "<div></div>";
+        this.replaceChildren(document.createElement("div"));
         this.input = null;
         this.#syncA11y();
       }
@@ -12520,15 +11694,51 @@ class FigSwatch extends HTMLElement {
 }
 figDefineElement("fig-swatch", FigSwatch);
 
+// Backwards-compatible alias. Custom element constructors cannot be registered
+// under multiple tag names, so the legacy tag uses an otherwise empty subclass.
+class FigChit extends FigSwatch {}
+figDefineElement("fig-chit", FigChit);
+
 /* Media */
+const FIG_IMAGE_FORWARDED_EVENTS = ["load", "error"];
+const FIG_VIDEO_FORWARDED_EVENTS = [
+  "loadstart",
+  "progress",
+  "suspend",
+  "abort",
+  "error",
+  "emptied",
+  "stalled",
+  "loadedmetadata",
+  "loadeddata",
+  "canplay",
+  "canplaythrough",
+  "playing",
+  "waiting",
+  "seeking",
+  "seeked",
+  "durationchange",
+  "timeupdate",
+  "ratechange",
+  "resize",
+  "volumechange",
+];
+const FIG_MEDIA_FORWARDED_EVENTS = [
+  ...new Set([
+    ...FIG_IMAGE_FORWARDED_EVENTS,
+    ...FIG_VIDEO_FORWARDED_EVENTS,
+  ]),
+];
+
 /**
  * @attr {string} src - Media source URL
  * @attr {string} type - "image" (default) or "video" (for fig-media)
  * @attr {string} alt - Alt text for the generated image (default "")
  * @attr {boolean} upload - Show upload overlay (generates fig-input-file)
+ * @attr {boolean} loading-indicator - Set to `false` to disable the generated image loading spinner
  * @attr {string} label - Upload button label (default "Upload")
  * @attr {string} size - small | medium | large | auto (token-sized square)
- * @attr {string} aspect-ratio - CSS aspect-ratio value
+ * @attr {string} aspect-ratio - CSS aspect-ratio value (default `4/3`)
  * @attr {string} fit - CSS object-fit value
  * @attr {boolean} checkerboard - Show checkerboard behind transparent media
  * @attr {string} caption - Caption text rendered below the media preview
@@ -12539,6 +11749,14 @@ figDefineElement("fig-swatch", FigSwatch);
  * @attr {string} poster - Video poster image URL
  * @attr {string} aria-label - Accessible label forwarded to generated video
  * @attr {string} aria-labelledby - Accessible label reference forwarded to generated video
+ * @fires load - Image loaded
+ * @fires error - Image or video failed to load
+ * @fires loadstart - Video loading started
+ * @fires loadedmetadata - Video metadata loaded
+ * @fires loadeddata - Video frame data loaded
+ * @fires canplay - Video can begin playback
+ * @fires canplaythrough - Video can likely play through
+ * @fires waiting - Video playback is waiting for data
  *
  * When `controls` are shown and no video `src` is loaded, fig-media sets
  * `disabled` on the associated `fig-media-controls` until media is available.
@@ -12560,6 +11778,11 @@ class FigMedia extends HTMLElement {
   #boundHandleMediaPlay = this.#handleMediaPlay.bind(this);
   #boundHandleMediaPause = this.#handleMediaPause.bind(this);
   #boundHandleMediaEnded = this.#handleMediaEnded.bind(this);
+  #boundForwardMediaEvent = this.#forwardMediaEvent.bind(this);
+  #loadingSpinner = null;
+  #loadingTimer = null;
+  #loadingSource = null;
+  #ariaBusyBeforeLoading = undefined;
   #controlsEl = null;
   #controlsWiredFor = null;
   #controlsWiredControls = null;
@@ -12574,6 +11797,7 @@ class FigMedia extends HTMLElement {
       "type",
       "alt",
       "upload",
+      "loading-indicator",
       "label",
       "aspect-ratio",
       "fit",
@@ -12665,6 +11889,7 @@ class FigMedia extends HTMLElement {
     this.#ensureMediaElement();
     this.#addMediaElementListeners();
     this.#syncGeneratedMediaElement();
+    this.#syncImageLoadingState();
     this.#syncMediaAccessibility();
     this.#syncCaption();
 
@@ -12679,6 +11904,7 @@ class FigMedia extends HTMLElement {
 
   disconnectedCallback() {
     this.#fileInput?.removeEventListener("change", this.#boundHandleFileInput);
+    this.#finishImageLoading();
     this.#removeMediaElementListeners();
     this.#removeControls();
     if (this.#blobUrl) {
@@ -12690,6 +11916,9 @@ class FigMedia extends HTMLElement {
 
   #removeMediaElementListeners() {
     if (!this.#mediaEl) return;
+    FIG_MEDIA_FORWARDED_EVENTS.forEach((type) => {
+      this.#mediaEl.removeEventListener(type, this.#boundForwardMediaEvent);
+    });
     if (this.#mediaEl.tagName === "VIDEO") {
       this.#mediaEl.removeEventListener("play", this.#boundHandleMediaPlay);
       this.#mediaEl.removeEventListener("pause", this.#boundHandleMediaPause);
@@ -12699,10 +11928,85 @@ class FigMedia extends HTMLElement {
 
   #addMediaElementListeners() {
     this.#removeMediaElementListeners();
-    if (this.#mediaEl?.tagName !== "VIDEO") return;
+    if (!this.#mediaEl) return;
+    const forwardedEvents =
+      this.#mediaEl.tagName === "VIDEO"
+        ? FIG_VIDEO_FORWARDED_EVENTS
+        : FIG_IMAGE_FORWARDED_EVENTS;
+    forwardedEvents.forEach((type) => {
+      this.#mediaEl.addEventListener(type, this.#boundForwardMediaEvent);
+    });
+    if (this.#mediaEl.tagName !== "VIDEO") return;
     this.#mediaEl.addEventListener("play", this.#boundHandleMediaPlay);
     this.#mediaEl.addEventListener("pause", this.#boundHandleMediaPause);
     this.#mediaEl.addEventListener("ended", this.#boundHandleMediaEnded);
+  }
+
+  #usesDefaultImageLoadingIndicator() {
+    return (
+      this.mediaKind === "image" &&
+      this.getAttribute("loading-indicator") !== "false" &&
+      this.#previewEl?.hasAttribute("data-generated") &&
+      this.#mediaEl?.hasAttribute("data-generated")
+    );
+  }
+
+  #syncImageLoadingState() {
+    const src = this.#currentMediaSrc();
+    if (!src || !this.#usesDefaultImageLoadingIndicator()) {
+      this.#finishImageLoading();
+      return;
+    }
+    if (
+      this.#mediaEl?.tagName === "IMG" &&
+      this.#mediaEl.complete &&
+      this.#mediaEl.currentSrc
+    ) {
+      this.#finishImageLoading();
+      return;
+    }
+    if (this.#loadingSource === src) return;
+
+    this.#finishImageLoading();
+    this.#loadingSource = src;
+    this.#ariaBusyBeforeLoading = this.getAttribute("aria-busy");
+    this.setAttribute("aria-busy", "true");
+    this.#loadingTimer = setTimeout(() => {
+      this.#loadingTimer = null;
+      if (
+        this.#loadingSource !== src ||
+        !this.isConnected ||
+        !this.#usesDefaultImageLoadingIndicator()
+      ) {
+        return;
+      }
+      const spinner = document.createElement("fig-spinner");
+      spinner.setAttribute("data-generated", "");
+      spinner.setAttribute("data-loading-indicator", "");
+      spinner.setAttribute("slot", "overlay");
+      spinner.setAttribute("size", "small");
+      spinner.setAttribute("aria-hidden", "true");
+      this.append(spinner);
+      this.#loadingSpinner = spinner;
+    }, 150);
+  }
+
+  #finishImageLoading() {
+    if (this.#loadingTimer !== null) {
+      clearTimeout(this.#loadingTimer);
+      this.#loadingTimer = null;
+    }
+    this.#loadingSpinner?.remove();
+    this.#loadingSpinner = null;
+    this.#loadingSource = null;
+    if (this.#ariaBusyBeforeLoading !== undefined) {
+      if (this.#ariaBusyBeforeLoading === null) {
+        this.removeAttribute("aria-busy");
+      } else {
+        this.setAttribute("aria-busy", this.#ariaBusyBeforeLoading);
+      }
+      this.#ariaBusyBeforeLoading = undefined;
+    }
   }
 
   #ensurePreviewElement() {
@@ -12737,6 +12041,7 @@ class FigMedia extends HTMLElement {
       if (this.#previewEl && userEl.parentElement !== this.#previewEl) {
         this.#previewEl.append(userEl);
       }
+      this.#addMediaElementListeners();
       this.#syncMediaAccessibility();
       return;
     }
@@ -12760,7 +12065,6 @@ class FigMedia extends HTMLElement {
       video.preload = "auto";
       this.#previewEl.append(video);
       this.#mediaEl = video;
-      this.#addMediaElementListeners();
       const seekToFirstFrame = () => {
         if (this.#mediaEl?.autoplay) return;
         try {
@@ -12778,6 +12082,7 @@ class FigMedia extends HTMLElement {
       this.#previewEl.append(img);
       this.#mediaEl = img;
     }
+    this.#addMediaElementListeners();
   }
 
   #syncMediaAccessibility() {
@@ -12865,6 +12170,7 @@ class FigMedia extends HTMLElement {
     }
     if (this.#mediaEl.tagName === "IMG") {
       this.#syncMediaAccessibility();
+      this.#syncImageLoadingState();
       return;
     }
     const poster = this.getAttribute("poster");
@@ -12882,6 +12188,7 @@ class FigMedia extends HTMLElement {
     this.#syncMediaAccessibility();
     this.#syncControlsVisibility();
     this.#syncControlsDisabled();
+    this.#syncImageLoadingState();
   }
 
   get mediaEl() {
@@ -13174,6 +12481,37 @@ class FigMedia extends HTMLElement {
     );
   }
 
+  #forwardMediaEvent(event) {
+    const media = this.#mediaEl;
+    if (!media || event.currentTarget !== media) return;
+    if (
+      media.tagName === "IMG" &&
+      (event.type === "load" || event.type === "error")
+    ) {
+      this.#finishImageLoading();
+    }
+    const detail = {
+      src: this.#currentMediaSrc(),
+      media,
+      originalEvent: event,
+    };
+    if (media.tagName === "VIDEO") {
+      detail.currentTime = media.currentTime;
+      detail.duration = media.duration;
+      detail.readyState = media.readyState;
+      detail.networkState = media.networkState;
+      detail.error = media.error;
+    }
+    this.dispatchEvent(
+      new CustomEvent(event.type, {
+        bubbles: true,
+        cancelable: false,
+        composed: true,
+        detail,
+      }),
+    );
+  }
+
   #handleMediaPlay() {
     this.#emitPlaybackEvent("play");
   }
@@ -13243,6 +12581,10 @@ class FigMedia extends HTMLElement {
       }
     }
 
+    if (name === "loading-indicator") {
+      this.#syncImageLoadingState();
+    }
+
     if (name === "aspect-ratio") {
       if (newValue) {
         this.style.setProperty("--fig-media-aspect-ratio", newValue);
@@ -13291,22 +12633,21 @@ class FigVideo extends FigMedia {
 figDefineElement("fig-video", FigVideo);
 
 /**
- * <fig-card> — Media card with optional link, selection chrome, and truncated label.
+ * <fig-card> — Media card with selection chrome and truncated labels.
  *
- * Composes a generated `fig-image` (or authored fig-image/fig-media/fig-preview).
+ * Composes a generated `fig-image` when `src` is set. Attribute-driven labels
+ * render in a generated `fig-footer`; authored footers remain untouched.
  * Selection is attribute-only (`selected`); apps own toggle/group logic.
- * When `href` is set (and not disabled), content wraps in a real `<a>`.
  *
  * @attr {string} src - Image URL forwarded to generated fig-image
  * @attr {string} alt - Alt text forwarded to generated fig-image
  * @attr {string} label - Card title text (preferred over `text`)
  * @attr {string} text - Alias for `label`
  * @attr {string} sublabel - Secondary one-line text under the label
- * @attr {string} href - Makes the card a link
- * @attr {string} target - Forwarded to the `<a>`
  * @attr {boolean} selected - Selected chrome (CSS only)
- * @attr {boolean} disabled - Dim + non-interactive; no `<a>` when disabled
+ * @attr {boolean} disabled - Dim + non-interactive
  * @attr {boolean} full - Stretch to available width (CSS; default width is already 100%)
+ * @attr {string} size - Set to `large` for spacer-2 card padding and spacer-1 label spacing
  * @attr {string} aspect-ratio - Forwarded to fig-image (default `1/1`)
  * @attr {string} fit - Forwarded to fig-image (default `contain`)
  * @attr {string} label-line-clamp - `1` (default) or `2`
@@ -13319,28 +12660,47 @@ class FigCard extends HTMLElement {
       "label",
       "text",
       "sublabel",
-      "href",
-      "target",
       "selected",
       "disabled",
       "full",
+      "size",
       "aspect-ratio",
       "fit",
       "label-line-clamp",
     ];
   }
 
-  #linkEl = null;
-  #mediaWrap = null;
-  #textWrap = null;
+  #footerEl = null;
   #imageEl = null;
   #labelEl = null;
   #sublabelEl = null;
   #usesAuthoredMedia = false;
-
-  connectedCallback() {
+  #mediaObserver = new MutationObserver((mutations) => {
+    const authoredMediaChanged = mutations.some((mutation) =>
+      [...mutation.addedNodes, ...mutation.removedNodes].some(
+        (node) =>
+          node instanceof Element &&
+          (node.matches(
+            "fig-image:not([data-generated]), fig-media:not([data-generated]), fig-preview:not([data-generated]), fig-footer:not([data-generated])",
+          ) ||
+            node.querySelector(
+              "fig-image:not([data-generated]), fig-media:not([data-generated]), fig-preview:not([data-generated]), fig-footer:not([data-generated])",
+            )),
+      ),
+    );
+    if (!authoredMediaChanged || !this.isConnected) return;
     this.#ensureStructure();
     this.#sync();
+  });
+
+  connectedCallback() {
+    this.#mediaObserver.observe(this, { childList: true, subtree: true });
+    this.#ensureStructure();
+    this.#sync();
+  }
+
+  disconnectedCallback() {
+    this.#mediaObserver.disconnect();
   }
 
   attributeChangedCallback() {
@@ -13357,66 +12717,59 @@ class FigCard extends HTMLElement {
     return this.getAttribute("sublabel") ?? "";
   }
 
-  #wantsLink() {
-    const href = this.getAttribute("href");
-    return Boolean(href) && !figBooleanAttribute(this, "disabled");
-  }
-
   #lineClamp() {
     const raw = this.getAttribute("label-line-clamp");
     return raw === "2" ? "2" : "1";
   }
 
+  #usesGeneratedMedia() {
+    return Boolean(this.getAttribute("src"));
+  }
+
   #findAuthoredMedia() {
     return this.querySelector(
-      ":scope > fig-image:not([data-generated]), :scope > fig-media:not([data-generated]), :scope > fig-preview:not([data-generated]), :scope > .fig-card-link > .fig-card-media > fig-image:not([data-generated]), :scope > .fig-card-link > .fig-card-media > fig-media:not([data-generated]), :scope > .fig-card-link > .fig-card-media > fig-preview:not([data-generated])",
+      ":scope > fig-image:not([data-generated]), :scope > fig-media:not([data-generated]), :scope > fig-preview:not([data-generated])",
     );
   }
 
+  #unwrapLegacyStructure() {
+    this.querySelectorAll(":scope > .fig-card-link").forEach((wrapper) => {
+      wrapper.querySelectorAll(":scope > .fig-card-media").forEach((mediaWrap) => {
+        while (mediaWrap.firstChild) {
+          wrapper.insertBefore(mediaWrap.firstChild, mediaWrap);
+        }
+        mediaWrap.remove();
+      });
+      while (wrapper.firstChild) {
+        this.insertBefore(wrapper.firstChild, wrapper);
+      }
+      wrapper.remove();
+    });
+  }
+
   #ensureStructure() {
+    this.#unwrapLegacyStructure();
+    if (!this.#usesGeneratedMedia()) {
+      this.#ensureManualStructure();
+      return;
+    }
+
     const authored = this.#findAuthoredMedia();
     this.#usesAuthoredMedia = Boolean(authored);
 
-    const wantAnchor = this.#wantsLink();
-    const tag = wantAnchor ? "a" : "div";
-
-    if (!this.#linkEl || this.#linkEl.tagName.toLowerCase() !== tag) {
-      const next = document.createElement(tag);
-      next.className = "fig-card-link";
-      if (this.#linkEl) {
-        while (this.#linkEl.firstChild) {
-          next.appendChild(this.#linkEl.firstChild);
-        }
-        this.#linkEl.replaceWith(next);
-      } else {
-        this.appendChild(next);
-      }
-      this.#linkEl = next;
-    }
-
-    if (!this.#mediaWrap || !this.#mediaWrap.isConnected) {
-      this.#mediaWrap = this.#linkEl.querySelector(":scope > .fig-card-media");
-      if (!this.#mediaWrap) {
-        this.#mediaWrap = document.createElement("div");
-        this.#mediaWrap.className = "fig-card-media";
-        this.#linkEl.prepend(this.#mediaWrap);
-      }
-    }
-
-    if (authored && authored.parentElement !== this.#mediaWrap) {
-      this.#mediaWrap
-        .querySelectorAll("[data-generated]")
+    if (authored) {
+      this
+        .querySelectorAll(":scope > [data-generated]:not(fig-footer)")
         .forEach((el) => el.remove());
-      this.#mediaWrap.appendChild(authored);
       this.#imageEl = null;
     }
 
     if (!this.#usesAuthoredMedia) {
       this.#imageEl =
-        this.#mediaWrap.querySelector(":scope > fig-image[data-generated]") ||
+        this.querySelector(":scope > fig-image[data-generated]") ||
         null;
       if (!this.#imageEl) {
-        this.#mediaWrap
+        this
           .querySelectorAll(
             ":scope > fig-image, :scope > fig-media, :scope > fig-preview",
           )
@@ -13427,101 +12780,109 @@ class FigCard extends HTMLElement {
         this.#imageEl.setAttribute("data-generated", "");
         this.#imageEl.setAttribute("full", "");
         this.#imageEl.setAttribute("size", "auto");
-        this.#mediaWrap.appendChild(this.#imageEl);
+        this.prepend(this.#imageEl);
       }
     }
 
-    if (!this.#textWrap || !this.#textWrap.isConnected) {
-      this.#textWrap = this.#linkEl.querySelector(":scope > .fig-card-text");
-      if (!this.#textWrap) {
-        this.#textWrap = document.createElement("div");
-        this.#textWrap.className = "fig-card-text";
-        this.#textWrap.setAttribute("data-generated", "");
-        this.#linkEl.appendChild(this.#textWrap);
+    const hasGeneratedLabels = Boolean(
+      this.#labelText() || this.#sublabelText(),
+    );
+    if (!hasGeneratedLabels) {
+      this.querySelector(":scope > fig-footer[data-generated]")?.remove();
+      this.#footerEl = null;
+      this.#labelEl = null;
+      this.#sublabelEl = null;
+      return;
+    }
+
+    if (!this.#footerEl || !this.#footerEl.isConnected) {
+      this.#footerEl = this.querySelector(
+        ":scope > fig-footer[data-generated]",
+      );
+      if (!this.#footerEl) {
+        this.#footerEl = document.createElement("fig-footer");
+        this.#footerEl.setAttribute("data-generated", "");
+        this.appendChild(this.#footerEl);
       }
     }
 
     if (!this.#labelEl || !this.#labelEl.isConnected) {
-      this.#labelEl = this.#textWrap.querySelector(
+      this.#labelEl = this.#footerEl.querySelector(
         ":scope > .fig-card-label[data-generated]",
       );
       if (!this.#labelEl) {
-        this.#labelEl =
-          this.#linkEl.querySelector(":scope > .fig-card-label[data-generated]") ||
-          null;
-        if (!this.#labelEl) {
-          this.#labelEl = document.createElement("label");
-          this.#labelEl.className = "fig-card-label";
-          this.#labelEl.setAttribute("data-generated", "");
-        }
-        this.#textWrap.appendChild(this.#labelEl);
+        this.#labelEl = document.createElement("label");
+        this.#labelEl.className = "fig-card-label";
+        this.#labelEl.setAttribute("data-generated", "");
+        this.#footerEl.appendChild(this.#labelEl);
       }
     }
 
     if (!this.#sublabelEl || !this.#sublabelEl.isConnected) {
-      this.#sublabelEl = this.#textWrap.querySelector(
+      this.#sublabelEl = this.#footerEl.querySelector(
         ":scope > .fig-card-sublabel[data-generated]",
       );
       if (!this.#sublabelEl) {
-        this.#sublabelEl =
-          this.#linkEl.querySelector(
-            ":scope > .fig-card-sublabel[data-generated]",
-          ) || null;
-        if (!this.#sublabelEl) {
-          this.#sublabelEl = document.createElement("span");
-          this.#sublabelEl.className = "fig-card-sublabel";
-          this.#sublabelEl.setAttribute("data-generated", "");
-        }
+        this.#sublabelEl = document.createElement("label");
+        this.#sublabelEl.className = "fig-card-sublabel";
+        this.#sublabelEl.setAttribute("data-generated", "");
         this.#labelEl.after(this.#sublabelEl);
       }
     }
   }
 
+  #ensureManualStructure() {
+    this.#unwrapLegacyStructure();
+    this.querySelectorAll(":scope > [data-generated]").forEach((element) =>
+      element.remove(),
+    );
+
+    this.#imageEl = null;
+    this.#usesAuthoredMedia = true;
+
+    this.#footerEl = null;
+    this.#labelEl = null;
+    this.#sublabelEl = null;
+
+    if (!this.#labelText() && !this.#sublabelText()) return;
+
+    this.#footerEl = document.createElement("fig-footer");
+    this.#footerEl.setAttribute("data-generated", "");
+    this.#labelEl = document.createElement("label");
+    this.#labelEl.className = "fig-card-label";
+    this.#labelEl.setAttribute("data-generated", "");
+    this.#footerEl.appendChild(this.#labelEl);
+
+    const sublabel = this.#sublabelText();
+    this.#sublabelEl = null;
+    if (sublabel) {
+      this.#sublabelEl = document.createElement("label");
+      this.#sublabelEl.className = "fig-card-sublabel";
+      this.#sublabelEl.setAttribute("data-generated", "");
+      this.#footerEl.appendChild(this.#sublabelEl);
+    }
+    this.appendChild(this.#footerEl);
+  }
+
   #sync() {
-    if (!this.#linkEl) return;
+    if (!this.#usesGeneratedMedia()) {
+      this.#syncManual();
+      return;
+    }
 
     const disabled = figBooleanAttribute(this, "disabled");
-    const selected = figBooleanAttribute(this, "selected");
     const label = this.#labelText();
     const sublabel = this.#sublabelText();
     const clamp = this.#lineClamp();
 
     this.style.setProperty("--fig-card-label-line-clamp", clamp);
 
-    if (this.#wantsLink()) {
-      const href = this.getAttribute("href") || "";
-      const target = this.getAttribute("target");
-      this.#linkEl.setAttribute("href", href);
-      if (target) {
-        this.#linkEl.setAttribute("target", target);
-        if (target === "_blank") {
-          this.#linkEl.setAttribute("rel", "noopener noreferrer");
-        } else {
-          this.#linkEl.removeAttribute("rel");
-        }
-      } else {
-        this.#linkEl.removeAttribute("target");
-        this.#linkEl.removeAttribute("rel");
-      }
-      if (selected) {
-        this.#linkEl.setAttribute("aria-current", "true");
-      } else {
-        this.#linkEl.removeAttribute("aria-current");
-      }
-      this.removeAttribute("role");
-      this.removeAttribute("aria-label");
+    this.setAttribute("role", "group");
+    const ariaLabel = [label, sublabel].filter(Boolean).join(", ");
+    if (ariaLabel) {
+      this.setAttribute("aria-label", ariaLabel);
     } else {
-      this.#linkEl.removeAttribute("href");
-      this.#linkEl.removeAttribute("target");
-      this.#linkEl.removeAttribute("rel");
-      this.#linkEl.removeAttribute("aria-current");
-      this.setAttribute("role", "group");
-      const ariaLabel = [label, sublabel].filter(Boolean).join(", ");
-      if (ariaLabel) {
-        this.setAttribute("aria-label", ariaLabel);
-      } else {
-        this.removeAttribute("aria-label");
-      }
+      this.removeAttribute("aria-label");
     }
 
     if (disabled) {
@@ -13556,9 +12917,32 @@ class FigCard extends HTMLElement {
       this.#sublabelEl.hidden = !sublabel;
     }
 
-    if (this.#textWrap) {
-      this.#textWrap.hidden = !label && !sublabel;
+    if (this.#footerEl) {
+      this.#footerEl.hidden = !label && !sublabel;
     }
+  }
+
+  #syncManual() {
+    const disabled = figBooleanAttribute(this, "disabled");
+    const label = this.#labelText();
+    const sublabel = this.#sublabelText();
+
+    this.style.setProperty(
+      "--fig-card-label-line-clamp",
+      this.#lineClamp(),
+    );
+    this.setAttribute("role", "group");
+    const ariaLabel = [label, sublabel].filter(Boolean).join(", ");
+    if (ariaLabel) this.setAttribute("aria-label", ariaLabel);
+    else this.removeAttribute("aria-label");
+    if (disabled) this.setAttribute("aria-disabled", "true");
+    else this.removeAttribute("aria-disabled");
+
+    if (this.#labelEl) {
+      this.#labelEl.textContent = label;
+      this.#labelEl.hidden = !label;
+    }
+    if (this.#sublabelEl) this.#sublabelEl.textContent = sublabel;
   }
 }
 figDefineElement("fig-card", FigCard);
@@ -13977,7 +13361,7 @@ class FigInputFile extends HTMLElement {
       !!this.getAttribute("url") ||
       !!this.getAttribute("filename");
 
-    this.innerHTML = "";
+    this.replaceChildren();
 
     if (hasFile) {
       const tooltipText = accepts
@@ -14360,10 +13744,10 @@ class FigEasingCurve extends HTMLElement {
       const y = pad + (1 - (pts[i].value - minVal) / range) * s;
       d += (i === 0 ? "M" : "L") + x.toFixed(1) + "," + y.toFixed(1);
     }
-    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none"><path d="${d}" stroke="currentColor" stroke-width="1" stroke-linecap="round" fill="none"/></svg>`;
+    return FigEasingCurve.#createSvgIcon(d, size);
   }
 
-  static curveIcon(cp1x, cp1y, cp2x, cp2y, size = 24) {
+  static #curveIconPath(cp1x, cp1y, cp2x, cp2y, size = 24) {
     const draw = 12;
     const pad = (size - draw) / 2;
     const samples = 48;
@@ -14409,6 +13793,43 @@ class FigEasingCurve extends HTMLElement {
       const py = toY(points[i].y);
       d += `${i === 0 ? "M" : "L"}${px.toFixed(1)},${py.toFixed(1)}`;
     }
+    return d;
+  }
+
+  static #createSvgIcon(d, size = 24) {
+    return figCreateSvgElement(
+      "svg",
+      {
+        width: size,
+        height: size,
+        viewBox: `0 0 ${size} ${size}`,
+        fill: "none",
+      },
+      figCreateSvgElement("path", {
+        d,
+        stroke: "currentColor",
+        "stroke-width": "1",
+        "stroke-linecap": "round",
+        fill: "none",
+      }),
+    );
+  }
+
+  static #createCurveIcon(cp1x, cp1y, cp2x, cp2y, size = 24) {
+    return FigEasingCurve.#createSvgIcon(
+      FigEasingCurve.#curveIconPath(cp1x, cp1y, cp2x, cp2y, size),
+      size,
+    );
+  }
+
+  static curveIcon(cp1x, cp1y, cp2x, cp2y, size = 24) {
+    const d = FigEasingCurve.#curveIconPath(
+      cp1x,
+      cp1y,
+      cp2x,
+      cp2y,
+      size,
+    );
     return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" fill="none"><path d="${d}" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>`;
   }
 
@@ -14422,7 +13843,7 @@ class FigEasingCurve extends HTMLElement {
     this.classList.toggle("spring-mode", this.#mode === "spring");
     this.classList.toggle("bezier-mode", this.#mode !== "spring");
     this.#syncMetricsFromCSS();
-    this.innerHTML = this.#getInnerHTML();
+    this.replaceChildren(...this.#createContent());
     this.#cacheRefs();
     if (this.#svg) {
       this.#syncHandleSizes();
@@ -14433,22 +13854,55 @@ class FigEasingCurve extends HTMLElement {
     this.#setupEvents();
   }
 
-  static #escapeAttribute(value) {
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/"/g, "&quot;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;");
+  #canUseFigSelect() {
+    return ["fig-select", "fig-select-options", "fig-select-option"].every(
+      (tag) => {
+        const Constructor = customElements.get(tag);
+        return (
+          typeof Constructor === "function" &&
+          Constructor.prototype instanceof HTMLElement
+        );
+      },
+    );
   }
 
-  #getSelectHTML() {
-    let optionsHTML = "";
+  #createDropdown() {
+    const dropdown = figCreateElement("fig-dropdown", {
+      className: "fig-easing-curve-select",
+      label: "Easing preset",
+      value: this.#presetName,
+      full: true,
+    });
+    let currentGroup = undefined;
+    let parent = dropdown;
+    for (const preset of FigEasingCurve.PRESETS) {
+      if (!this.#isEditEnabled() && !preset.value && !preset.spring) continue;
+      if (preset.group !== currentGroup) {
+        currentGroup = preset.group;
+        parent = currentGroup
+          ? figCreateElement("optgroup", { label: currentGroup })
+          : dropdown;
+        if (parent !== dropdown) dropdown.appendChild(parent);
+      }
+      parent.appendChild(
+        figCreateElement("option", { value: preset.name }, preset.name),
+      );
+    }
+    return dropdown;
+  }
+
+  #createSelect() {
+    if (!this.#canUseFigSelect()) return this.#createDropdown();
+
+    const options = document.createElement("fig-select-options");
     let currentGroup = undefined;
     for (const p of FigEasingCurve.PRESETS) {
       if (!this.#isEditEnabled() && !p.value && !p.spring) continue;
       if (p.group !== currentGroup) {
         if (p.group) {
-          optionsHTML += `<fig-menu-separator label="${FigEasingCurve.#escapeAttribute(p.group)}"></fig-menu-separator>`;
+          options.appendChild(
+            figCreateElement("fig-separator", { label: p.group }),
+          );
         }
         currentGroup = p.group;
       }
@@ -14463,42 +13917,152 @@ class FigEasingCurve extends HTMLElement {
           this.#cp2.x,
           this.#cp2.y,
         ];
-        icon = FigEasingCurve.curveIcon(...v);
+        icon = FigEasingCurve.#createCurveIcon(...v);
       }
-      const name = FigEasingCurve.#escapeAttribute(p.name);
-      optionsHTML += `<fig-select-option value="${name}" label="${name}"><span slot="prepend">${icon}</span><span>${name}</span></fig-select-option>`;
+      options.appendChild(
+        figCreateElement(
+          "fig-select-option",
+          {
+            value: p.name,
+            label: p.name,
+          },
+          [
+            figCreateElement("span", { slot: "prepend" }, icon),
+            figCreateElement("span", {}, p.name),
+          ],
+        ),
+      );
     }
-    const value = FigEasingCurve.#escapeAttribute(this.#presetName);
-    return `<fig-select class="fig-easing-curve-select" label="Easing preset" value="${value}" full><fig-select-options>${optionsHTML}</fig-select-options></fig-select>`;
+    return figCreateElement(
+      "fig-select",
+      {
+        className: "fig-easing-curve-select",
+        label: "Easing preset",
+        value: this.#presetName,
+        full: true,
+      },
+      options,
+    );
   }
 
-  #getInnerHTML() {
+  #createHandle(className, dataHandle, label) {
+    return figCreateSvgElement(
+      "foreignObject",
+      {
+        className,
+        "data-handle": dataHandle,
+        width: "20",
+        height: "20",
+      },
+      figCreateElement("fig-handle", {
+        size: "small",
+        "aria-label": label,
+      }),
+    );
+  }
+
+  #createContent() {
     const size = 200;
-    const select = this.#getSelectHTML();
-    if (!this.#isEditEnabled()) return select;
-    const valueInput = `<fig-input-text class="fig-easing-curve-value-input" value="${FigEasingCurve.#escapeAttribute(this.value)}" full></fig-input-text>`;
+    const select = this.#createSelect();
+    if (!this.#isEditEnabled()) return [select];
+    const valueInput = figCreateElement("fig-input-text", {
+      className: "fig-easing-curve-value-input",
+      value: this.value,
+      full: true,
+    });
+    const svgChildren = [
+      figCreateSvgElement("rect", {
+        className: "fig-easing-curve-bounds",
+        x: "0",
+        y: "0",
+        width: size,
+        height: size,
+      }),
+    ];
 
     if (this.#mode === "spring") {
       const targetY = 40;
-      return `${select}<div class="fig-easing-curve-svg-container"><svg viewBox="0 0 ${size} ${size}" class="fig-easing-curve-svg">
-        <rect class="fig-easing-curve-bounds" x="0" y="0" width="${size}" height="${size}"/>
-        <line class="fig-easing-curve-target" x1="0" y1="${targetY}" x2="${size}" y2="${targetY}"/>
-        <path class="fig-easing-curve-path"/>
-        <foreignObject class="fig-easing-curve-handle" data-handle="bounce" width="20" height="20"><fig-handle size="small" aria-label="Spring bounce handle"></fig-handle></foreignObject>
-        <foreignObject class="fig-easing-curve-handle fig-easing-curve-duration-bar" data-handle="duration" width="20" height="20"><fig-handle size="small" aria-label="Spring duration handle"></fig-handle></foreignObject>
-      </svg></div>${valueInput}`;
+      svgChildren.push(
+        figCreateSvgElement("line", {
+          className: "fig-easing-curve-target",
+          x1: "0",
+          y1: targetY,
+          x2: size,
+          y2: targetY,
+        }),
+        figCreateSvgElement("path", {
+          className: "fig-easing-curve-path",
+        }),
+        this.#createHandle(
+          "fig-easing-curve-handle",
+          "bounce",
+          "Spring bounce handle",
+        ),
+        this.#createHandle(
+          "fig-easing-curve-handle fig-easing-curve-duration-bar",
+          "duration",
+          "Spring duration handle",
+        ),
+      );
+    } else {
+      svgChildren.push(
+        figCreateSvgElement("line", {
+          className: "fig-easing-curve-boundary",
+          "data-boundary": "top",
+          x1: "0",
+          y1: "0",
+          x2: size,
+          y2: "0",
+        }),
+        figCreateSvgElement("line", {
+          className: "fig-easing-curve-boundary",
+          "data-boundary": "bottom",
+          x1: "0",
+          y1: size,
+          x2: size,
+          y2: size,
+        }),
+        figCreateSvgElement("path", {
+          className: "fig-easing-curve-path",
+        }),
+        figCreateSvgElement("line", {
+          className: "fig-easing-curve-arm",
+          "data-arm": "1",
+        }),
+        figCreateSvgElement("line", {
+          className: "fig-easing-curve-arm",
+          "data-arm": "2",
+        }),
+        this.#createHandle(
+          "fig-easing-curve-handle",
+          "1",
+          "First easing control point",
+        ),
+        this.#createHandle(
+          "fig-easing-curve-handle",
+          "2",
+          "Second easing control point",
+        ),
+      );
     }
 
-    return `${select}<div class="fig-easing-curve-svg-container"><svg viewBox="0 0 ${size} ${size}" class="fig-easing-curve-svg">
-      <rect class="fig-easing-curve-bounds" x="0" y="0" width="${size}" height="${size}"/>
-      <line class="fig-easing-curve-boundary" data-boundary="top" x1="0" y1="0" x2="${size}" y2="0"/>
-      <line class="fig-easing-curve-boundary" data-boundary="bottom" x1="0" y1="${size}" x2="${size}" y2="${size}"/>
-      <path class="fig-easing-curve-path"/>
-      <line class="fig-easing-curve-arm" data-arm="1"/>
-      <line class="fig-easing-curve-arm" data-arm="2"/>
-      <foreignObject class="fig-easing-curve-handle" data-handle="1" width="20" height="20"><fig-handle size="small" aria-label="First easing control point"></fig-handle></foreignObject>
-      <foreignObject class="fig-easing-curve-handle" data-handle="2" width="20" height="20"><fig-handle size="small" aria-label="Second easing control point"></fig-handle></foreignObject>
-    </svg></div>${valueInput}`;
+    const svg = figCreateSvgElement(
+      "svg",
+      {
+        viewBox: `0 0 ${size} ${size}`,
+        className: "fig-easing-curve-svg",
+      },
+      svgChildren,
+    );
+    return [
+      select,
+      figCreateElement(
+        "div",
+        { className: "fig-easing-curve-svg-container" },
+        svg,
+      ),
+      valueInput,
+    ];
   }
 
   #readCssNumber(name, fallback) {
@@ -14833,7 +14397,7 @@ class FigEasingCurve extends HTMLElement {
     for (const option of this.#select.querySelectorAll("fig-select-option")) {
       if (option.value === optionValue) {
         const prepend = option.querySelector(':scope > [slot="prepend"]');
-        if (prepend) prepend.innerHTML = icon;
+        if (prepend) prepend.replaceChildren(icon.cloneNode(true));
       }
     }
   }
@@ -14841,7 +14405,7 @@ class FigEasingCurve extends HTMLElement {
   #refreshCustomPresetIcons() {
     if (!this.#select) return;
     if (!this.#isEditEnabled()) return;
-    const bezierIcon = FigEasingCurve.curveIcon(
+    const bezierIcon = FigEasingCurve.#createCurveIcon(
       this.#cp1.x,
       this.#cp1.y,
       this.#cp2.x,
@@ -15431,34 +14995,44 @@ class Fig3DRotate extends HTMLElement {
       rotateY: this.#ry,
       rotateZ: this.#rz,
     };
-    const fieldsHTML = this.#fields
-      .map(
-        (axis) =>
-          `<fig-input-number
-            name="${axis}"
-            step="1"
-            precision="1"
-            value="${axisValues[axis]}"
-            units="°">
-            <span slot="prepend">${axisLabels[axis]}</span>
-          </fig-input-number>`,
-      )
-      .join("");
+    const cube = figCreateElement(
+      "div",
+      { className: "fig-3d-rotate-cube" },
+      ["front", "back", "right", "left", "top", "bottom"].map((face) =>
+        figCreateElement("div", {
+          className: `fig-3d-rotate-face ${face}`,
+        }),
+      ),
+    );
+    const container = figCreateElement(
+      "div",
+      {
+        className: "fig-3d-rotate-container",
+        tabindex: "0",
+      },
+      figCreateElement(
+        "div",
+        { className: "fig-3d-rotate-scene" },
+        cube,
+      ),
+    );
+    const fields = this.#fields.map((axis) =>
+      figCreateElement(
+        "fig-input-number",
+        {
+          name: axis,
+          step: "1",
+          precision: "1",
+          value: axisValues[axis],
+          units: "°",
+        },
+        figCreateElement("span", { slot: "prepend" }, axisLabels[axis]),
+      ),
+    );
 
-    this.innerHTML = `<div class="fig-3d-rotate-container" tabindex="0">
-      <div class="fig-3d-rotate-scene">
-        <div class="fig-3d-rotate-cube">
-          <div class="fig-3d-rotate-face front"></div>
-          <div class="fig-3d-rotate-face back"></div>
-          <div class="fig-3d-rotate-face right"></div>
-          <div class="fig-3d-rotate-face left"></div>
-          <div class="fig-3d-rotate-face top"></div>
-          <div class="fig-3d-rotate-face bottom"></div>
-        </div>
-      </div>
-    </div>${fieldsHTML}`;
-    this.#container = this.querySelector(".fig-3d-rotate-container");
-    this.#cube = this.querySelector(".fig-3d-rotate-cube");
+    this.replaceChildren(container, ...fields);
+    this.#container = container;
+    this.#cube = cube;
     this.#wireFieldInputs();
     this.#updateCube();
     this.#setupEvents();
@@ -15761,31 +15335,65 @@ class FigOriginGrid extends HTMLElement {
     const cells = Array.from({ length: 9 }, (_, index) => {
       const col = index % 3;
       const row = Math.floor(index / 3);
-      return `<span class="origin-grid-cell" data-col="${col}" data-row="${row}">
-        <span class="origin-grid-dot"></span>
-      </span>`;
-    }).join("");
+      return figCreateElement(
+        "span",
+        {
+          className: "origin-grid-cell",
+          "data-col": col,
+          "data-row": row,
+        },
+        figCreateElement("span", { className: "origin-grid-dot" }),
+      );
+    });
 
     const xValue = this.#x.toFixed(this.#precision);
     const yValue = this.#y.toFixed(this.#precision);
-    const fieldsMarkup = this.#fieldsEnabled
-      ? `<div class="origin-values">
-      <fig-input-number name="x" value="${xValue}" step="1" units="%"><span slot="prepend">X</span></fig-input-number>
-      <fig-input-number name="y" value="${yValue}" step="1" units="%"><span slot="prepend">Y</span></fig-input-number>
-    </div>`
-      : "";
+    const handle = document.createElement("fig-handle");
+    const grid = figCreateElement(
+      "div",
+      {
+        className: "origin-grid",
+        "aria-label": "Transform origin grid",
+      },
+      [
+        figCreateElement(
+          "div",
+          { className: "origin-grid-cells" },
+          cells,
+        ),
+        handle,
+      ],
+    );
+    const surface = figCreateElement(
+      "div",
+      { className: "fig-origin-grid-surface" },
+      grid,
+    );
+    const rendered = [surface];
+    if (this.#fieldsEnabled) {
+      const createValueInput = (name, value) =>
+        figCreateElement(
+          "fig-input-number",
+          {
+            name,
+            value,
+            step: "1",
+            units: "%",
+          },
+          figCreateElement("span", { slot: "prepend" }, name.toUpperCase()),
+        );
+      rendered.push(
+        figCreateElement("div", { className: "origin-values" }, [
+          createValueInput("x", xValue),
+          createValueInput("y", yValue),
+        ]),
+      );
+    }
 
-    this.innerHTML = `<div class="fig-origin-grid-surface">
-      <div class="origin-grid" aria-label="Transform origin grid">
-        <div class="origin-grid-cells">${cells}</div>
-        <fig-handle></fig-handle>
-      </div>
-    </div>
-    ${fieldsMarkup}`;
-
-    this.#grid = this.querySelector(".origin-grid");
-    this.#cells = Array.from(this.querySelectorAll(".origin-grid-cell"));
-    this.#handle = this.querySelector("fig-handle");
+    this.replaceChildren(...rendered);
+    this.#grid = grid;
+    this.#cells = cells;
+    this.#handle = handle;
     this.#xInput = this.querySelector('fig-input-number[name="x"]');
     this.#yInput = this.querySelector('fig-input-number[name="y"]');
     this.#syncHandlePosition();
@@ -16242,7 +15850,100 @@ class FigInputJoystick extends HTMLElement {
   }
 
   #render() {
-    this.innerHTML = this.#getInnerHTML();
+    const axisLabels = this.#getAxisLabels();
+    const planeContainer = figCreateElement("div", {
+      className: "fig-input-joystick-plane-container",
+    });
+    const createAxisLabel = (position, text, noRotate = false) =>
+      text
+        ? figCreateElement(
+            "label",
+            {
+              className: [
+                "fig-joystick-axis-label",
+                position,
+                noRotate ? "no-rotate" : "",
+              ]
+                .filter(Boolean)
+                .join(" "),
+              "aria-hidden": "true",
+            },
+            text,
+          )
+        : null;
+    planeContainer.append(
+      ...[
+        createAxisLabel(
+          "left",
+          axisLabels.left,
+          axisLabels.leftNoRotate,
+        ),
+        createAxisLabel("right", axisLabels.right),
+        createAxisLabel("top", axisLabels.top),
+        createAxisLabel("bottom", axisLabels.bottom),
+      ].filter(Boolean),
+    );
+
+    const plane = figCreateElement(
+      "div",
+      { className: "fig-input-joystick-plane" },
+      [
+        figCreateElement("div", {
+          className: "fig-input-joystick-guides",
+        }),
+        figCreateElement("fig-handle", {
+          drag: true,
+          "drag-surface": ".fig-input-joystick-plane",
+          "drag-axes": "x,y",
+          "drag-snapping": "modifier",
+        }),
+      ],
+    );
+    const reset = figCreateElement(
+      "fig-tooltip",
+      { text: "Reset" },
+      figCreateElement(
+        "fig-button",
+        {
+          variant: "ghost",
+          icon: "true",
+          className: "fig-joystick-reset",
+          "aria-label": "Reset to default",
+        },
+        createFigIcon("reset", { size: "small" }),
+      ),
+    );
+    planeContainer.append(plane, reset);
+
+    const children = [planeContainer];
+    if (this.#fieldsEnabled) {
+      const createValueInput = (name, value) =>
+        figCreateElement(
+          "fig-input-number",
+          {
+            name,
+            step: "1",
+            value,
+            min: "0",
+            max: "100",
+            units: "%",
+          },
+          figCreateElement("span", { slot: "prepend" }, name.toUpperCase()),
+        );
+      children.push(
+        figCreateElement("div", { className: "joystick-values" }, [
+          createValueInput(
+            "x",
+            (this.position.x * 100).toFixed(this.precision),
+          ),
+          createValueInput(
+            "y",
+            (this.position.y * 100).toFixed(this.precision),
+          ),
+        ]),
+      );
+    }
+    this.replaceChildren(...children);
   }
 
   #getAxisLabels() {
@@ -16269,63 +15970,6 @@ class FigInputJoystick extends HTMLElement {
       return { left, right, top, bottom, leftNoRotate: false };
     }
     return { left: "", right: "", top: "", bottom: "", leftNoRotate: false };
-  }
-
-  #getInnerHTML() {
-    const axisLabels = this.#getAxisLabels();
-    const labelsMarkup = [
-      axisLabels.left
-        ? `<label class="fig-joystick-axis-label left${axisLabels.leftNoRotate ? " no-rotate" : ""}" aria-hidden="true">${axisLabels.left}</label>`
-        : "",
-      axisLabels.right
-        ? `<label class="fig-joystick-axis-label right" aria-hidden="true">${axisLabels.right}</label>`
-        : "",
-      axisLabels.top
-        ? `<label class="fig-joystick-axis-label top" aria-hidden="true">${axisLabels.top}</label>`
-        : "",
-      axisLabels.bottom
-        ? `<label class="fig-joystick-axis-label bottom" aria-hidden="true">${axisLabels.bottom}</label>`
-        : "",
-    ].join("");
-
-    return `        
-          <div class="fig-input-joystick-plane-container">
-            ${labelsMarkup}
-            <div class="fig-input-joystick-plane">
-              <div class="fig-input-joystick-guides"></div>
-              <fig-handle drag drag-surface=".fig-input-joystick-plane" drag-axes="x,y" drag-snapping="modifier"></fig-handle>
-            </div>
-            <fig-tooltip text="Reset">
-              <fig-button variant="ghost" icon="true" class="fig-joystick-reset" aria-label="Reset to default">
-                <fig-icon name="reset" size="small"></fig-icon>
-              </fig-button>
-            </fig-tooltip>
-          </div>
-          ${
-            this.#fieldsEnabled
-              ? `<div class="joystick-values">
-                  <fig-input-number
-                    name="x"
-                    step="1"
-                    value="${(this.position.x * 100).toFixed(this.precision)}"
-                    min="0"
-                    max="100"
-                    units="%">
-                    <span slot="prepend">X</span>
-                  </fig-input-number>
-                  <fig-input-number
-                    name="y"
-                    step="1"
-                    min="0"
-                    max="100"
-                    value="${(this.position.y * 100).toFixed(this.precision)}"
-                    units="%">
-                    <span slot="prepend">Y</span>
-                  </fig-input-number>
-                </div>`
-              : ""
-          }
-        `;
   }
 
   #setupListeners() {
@@ -16819,19 +16463,22 @@ figDefineElement("fig-spinner", FigSpinner);
  * A styled visual preview layer for arbitrary content such as images, canvas,
  * video, SVG, or custom rendered surfaces.
  * @attr {string} fit - CSS object-fit value for direct media children
+ * @attr {string} aspect-ratio - CSS aspect-ratio value
  */
 class FigPreview extends HTMLElement {
   static get observedAttributes() {
-    return ["fit"];
+    return ["fit", "aspect-ratio"];
   }
 
   connectedCallback() {
     this.#syncFit();
+    this.#syncAspectRatio();
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
     if (name === "fit") this.#syncFit();
+    if (name === "aspect-ratio") this.#syncAspectRatio();
   }
 
   #syncFit() {
@@ -16842,320 +16489,21 @@ class FigPreview extends HTMLElement {
       this.style.removeProperty("--fig-preview-fit");
     }
   }
+
+  #syncAspectRatio() {
+    const aspectRatio = this.getAttribute("aspect-ratio");
+    if (aspectRatio) {
+      this.style.setProperty("--fig-preview-aspect-ratio", aspectRatio);
+    } else {
+      this.style.removeProperty("--fig-preview-aspect-ratio");
+    }
+  }
 }
 figDefineElement("fig-preview", FigPreview);
 
-/**
- * Compact swatch previewing gradient color-space interpolation.
- * Polar: CSS conic-gradient masked (SVG data-URL, round linecaps) to an arc.
- * Non-polar: CSS linear-gradient masked to a horizontal round-capped stroke.
- * Accepts the same `value` shape as fig-input-gradient / fig-fill-picker.
- *
- * @element fig-interpolation-swatch
- * @attr {string} value - JSON `{ type: "gradient", gradient: { … } }` (or a bare gradient object)
- * @attr {string} size - `small` (default, 24px) or `large` (32px)
- */
-class FigInterpolationSwatch extends HTMLElement {
-  static #HUE_SPACES = new Set(["oklch", "hsl"]);
-  static #CX = 10;
-  static #CY = 10;
-  static #R = 8;
-  static #STROKE = 3;
-  // Polar endpoints ≈ 10 o'clock → 2 o'clock (SVG deg: 0 = east, CW).
-  // CSS conic `from` is 0 = north; convert with +90.
-  static #START_DEG = 210;
-  static #DEFAULT_GRADIENT = {
-    type: "linear",
-    angle: 135,
-    interpolationSpace: "srgb",
-    hueInterpolation: "shorter",
-    stops: [
-      { color: "#FF0000", position: 0, opacity: 100 },
-      { color: "#4F9EFF", position: 100, opacity: 100 },
-    ],
-  };
-
-  #rendered = false;
-  #svgEl = null;
-  #fillEl = null;
-  #gradient = { ...FigInterpolationSwatch.#DEFAULT_GRADIENT };
-
-  static get observedAttributes() {
-    return ["value"];
-  }
-
-  get value() {
-    return {
-      type: "gradient",
-      gradient: { ...this.#gradient },
-    };
-  }
-
-  set value(val) {
-    if (val == null || val === "") {
-      this.removeAttribute("value");
-      return;
-    }
-    if (typeof val === "string") {
-      this.setAttribute("value", val);
-      return;
-    }
-    this.setAttribute("value", JSON.stringify(val));
-  }
-
-  connectedCallback() {
-    this.#ensureA11y();
-    this.#parseValue();
-    this.#render();
-    this.#updatePreview();
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (oldValue === newValue) return;
-    if (name !== "value") return;
-    this.#parseValue();
-    if (this.#rendered) this.#updatePreview();
-  }
-
-  #ensureA11y() {
-    const named =
-      this.hasAttribute("aria-label") || this.hasAttribute("aria-labelledby");
-    if (!named && !this.hasAttribute("aria-hidden")) {
-      this.setAttribute("aria-hidden", "true");
-    }
-  }
-
-  #parseValue() {
-    const valueAttr = this.getAttribute("value");
-    if (!valueAttr) {
-      this.#gradient = {
-        ...FigInterpolationSwatch.#DEFAULT_GRADIENT,
-        stops: FigInterpolationSwatch.#DEFAULT_GRADIENT.stops.map((s) => ({
-          ...s,
-        })),
-      };
-      return;
-    }
-    try {
-      const parsed = JSON.parse(valueAttr);
-      const gradient = parsed?.type === "gradient" && parsed.gradient
-        ? parsed.gradient
-        : parsed?.gradient
-          ? parsed.gradient
-          : parsed;
-      if (!gradient || typeof gradient !== "object") return;
-      this.#gradient = this.#normalizeGradient({
-        ...FigInterpolationSwatch.#DEFAULT_GRADIENT,
-        ...gradient,
-      });
-    } catch {
-      // Keep current/default gradient on invalid JSON.
-    }
-  }
-
-  #normalizeGradient(gradient) {
-    const next = { ...(gradient ?? {}) };
-    const interpolationSpace = String(
-      next.interpolationSpace ?? "srgb",
-    ).toLowerCase();
-    const hueInterpolation = String(
-      next.hueInterpolation ?? "shorter",
-    ).toLowerCase();
-    const stops = Array.isArray(next.stops)
-      ? next.stops.map((stop) => ({
-          color: String(stop?.color || "#D9D9D9").replace(
-            /^(#(?:[0-9a-f]{6})).*/i,
-            "$1",
-          ),
-          position: stop?.position ?? 0,
-          opacity: stop?.opacity ?? 100,
-        }))
-      : FigInterpolationSwatch.#DEFAULT_GRADIENT.stops.map((s) => ({ ...s }));
-    if (stops.length < 2) {
-      return {
-        ...FigInterpolationSwatch.#DEFAULT_GRADIENT,
-        stops: FigInterpolationSwatch.#DEFAULT_GRADIENT.stops.map((s) => ({
-          ...s,
-        })),
-      };
-    }
-    return {
-      type: ["linear", "radial", "angular"].includes(next.type)
-        ? next.type
-        : "linear",
-      angle: Number.isFinite(Number(next.angle)) ? Number(next.angle) : 135,
-      interpolationSpace,
-      hueInterpolation,
-      stops,
-    };
-  }
-
-  #isPolar() {
-    return FigInterpolationSwatch.#HUE_SPACES.has(
-      this.#gradient.interpolationSpace || "srgb",
-    );
-  }
-
-  #hueForColor(color) {
-    const { r, g, b } = figHexToRGB(color);
-    if (this.#gradient.interpolationSpace === "hsl") {
-      return figRgbToHsl(r, g, b).h;
-    }
-    const lab = figRGBToOklab(r, g, b);
-    const hue = figOklabToOklch(lab.l, lab.a, lab.b).h;
-    return ((hue % 360) + 360) % 360;
-  }
-
-  #polarArcGeometry() {
-    const stops = this.#sortedStops();
-    const startHue = this.#hueForColor(stops[0]?.color || "#FF0000");
-    const endHue = this.#hueForColor(
-      stops[stops.length - 1]?.color || "#4F9EFF",
-    );
-    const startDeg = FigInterpolationSwatch.#START_DEG - startHue;
-    const endDeg = FigInterpolationSwatch.#START_DEG - endHue;
-    const clockwiseSweep = ((endDeg - startDeg) % 360 + 360) % 360;
-    const counterclockwiseSweep =
-      clockwiseSweep === 0 ? 0 : clockwiseSweep - 360;
-    const method = this.#gradient.hueInterpolation || "shorter";
-
-    let sweepDeg;
-    if (method === "increasing") {
-      sweepDeg = counterclockwiseSweep;
-    } else if (method === "decreasing") {
-      sweepDeg = clockwiseSweep;
-    } else if (method === "longer") {
-      sweepDeg =
-        clockwiseSweep < 180 ? counterclockwiseSweep : clockwiseSweep;
-    } else {
-      sweepDeg =
-        clockwiseSweep <= 180 ? clockwiseSweep : counterclockwiseSweep;
-    }
-
-    // A round cap extends beyond the path endpoint. Inset the centerline so
-    // the visible cap edges, rather than their centers, land on the hues.
-    const direction = Math.sign(sweepDeg);
-    const capAngle =
-      (Math.asin(FigInterpolationSwatch.#STROKE / 2 / FigInterpolationSwatch.#R) *
-        180) /
-      Math.PI;
-    const inset = Math.min(
-      capAngle,
-      Math.max(0, (Math.abs(sweepDeg) - 0.01) / 2),
-    );
-    return {
-      startDeg: startDeg + direction * inset,
-      sweepDeg: sweepDeg - direction * inset * 2,
-    };
-  }
-
-  #pointOnCircle(deg) {
-    const rad = (deg * Math.PI) / 180;
-    return {
-      x: FigInterpolationSwatch.#CX + FigInterpolationSwatch.#R * Math.cos(rad),
-      y: FigInterpolationSwatch.#CY + FigInterpolationSwatch.#R * Math.sin(rad),
-    };
-  }
-
-  #arcMaskPath(startDeg, sweepDeg) {
-    const endDeg = startDeg + sweepDeg;
-    const start = this.#pointOnCircle(startDeg);
-    const end = this.#pointOnCircle(endDeg);
-    const largeArc = Math.abs(sweepDeg) > 180 ? 1 : 0;
-    const sweepFlag = sweepDeg >= 0 ? 1 : 0;
-    return `M ${start.x} ${start.y} A ${FigInterpolationSwatch.#R} ${FigInterpolationSwatch.#R} 0 ${largeArc} ${sweepFlag} ${end.x} ${end.y}`;
-  }
-
-  #lineMaskPath() {
-    const start = this.#pointOnCircle(180);
-    const end = this.#pointOnCircle(0);
-    return `M ${start.x} ${start.y} L ${end.x} ${end.y}`;
-  }
-
-  #maskImageForPath(d) {
-    const stroke = FigInterpolationSwatch.#STROKE;
-    const svg =
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">` +
-      `<path d="${d}" fill="none" stroke="white" stroke-width="${stroke}" ` +
-      `stroke-linecap="round" stroke-linejoin="round"/>` +
-      `</svg>`;
-    return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-  }
-
-  #sortedStops() {
-    return [...this.#gradient.stops].sort(
-      (a, b) => (a.position ?? 0) - (b.position ?? 0),
-    );
-  }
-
-  #cssInterpolationClause() {
-    const space = this.#gradient.interpolationSpace || "srgb";
-    if (space === "srgb") return "";
-    if (FigInterpolationSwatch.#HUE_SPACES.has(space)) {
-      return ` in ${space} ${this.#gradient.hueInterpolation || "shorter"} hue`;
-    }
-    return ` in ${space}`;
-  }
-
-  #previewBackground() {
-    const stops = this.#sortedStops();
-    const clause = this.#cssInterpolationClause();
-    if (this.#isPolar()) {
-      // Fixed hue wheel. The mask maps gradient endpoint hues onto this wheel.
-      const cssFrom = (FigInterpolationSwatch.#START_DEG + 90) % 360;
-      const space = this.#gradient.interpolationSpace;
-      const wheelColor = (hue) =>
-        space === "oklch"
-          ? `oklch(65% 0.25 ${hue})`
-          : `hsl(${hue} 100% 50%)`;
-      const wheelStops = [0, 300, 240, 180, 120, 60, 0]
-        .map(wheelColor)
-        .join(", ");
-      return `conic-gradient(from ${cssFrom}deg in ${space} decreasing hue, ${wheelStops})`;
-    }
-    const stopList = stops
-      .map((s) => `${s.color} ${s.position ?? 0}%`)
-      .join(", ");
-    return `linear-gradient(90deg${clause}, ${stopList})`;
-  }
-
-  #render() {
-    if (this.#rendered) return;
-    const stroke = FigInterpolationSwatch.#STROKE;
-    this.innerHTML = `
-      <svg class="fig-interpolation-swatch-svg" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <circle class="fig-interpolation-swatch-rim" cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="${stroke}"/>
-      </svg>
-      <div class="fig-interpolation-swatch-fill" aria-hidden="true"></div>
-    `;
-    this.#svgEl = this.querySelector(".fig-interpolation-swatch-svg");
-    this.#fillEl = this.querySelector(".fig-interpolation-swatch-fill");
-    this.#rendered = true;
-  }
-
-  #updatePreview() {
-    if (!this.#fillEl) return;
-
-    const polar = this.#isPolar();
-    if (this.#svgEl) this.#svgEl.style.display = polar ? "" : "none";
-
-    const d = polar
-      ? (() => {
-          const { startDeg, sweepDeg } = this.#polarArcGeometry();
-          return this.#arcMaskPath(startDeg, sweepDeg);
-        })()
-      : this.#lineMaskPath();
-    const mask = this.#maskImageForPath(d);
-    this.#fillEl.style.setProperty("-webkit-mask-image", mask);
-    this.#fillEl.style.maskImage = mask;
-    this.#fillEl.style.background = this.#previewBackground();
-  }
-}
-figDefineElement("fig-interpolation-swatch", FigInterpolationSwatch);
-
 /** @type {Record<string, string | { medium: string, small: string }>} */
 const FIG_ICON_TOKENS = {
-  chevron: "--icon-16-chevron",
+  chevron: { medium: "--icon-24-chevron", small: "--icon-16-chevron" },
   checkmark: "--icon-16-checkmark",
   reset: { medium: "--icon-24-reset", small: "--icon-16-reset" },
   "arrow-left": {
@@ -17165,6 +16513,7 @@ const FIG_ICON_TOKENS = {
   steppers: "--icon-24-steppers",
   eyedropper: "--icon-24-eyedropper",
   add: "--icon-24-add",
+  send: { medium: "--icon-24-send", small: "--icon-16-send" },
   adjust: { medium: "--icon-24-adjust", small: "--icon-16-adjust" },
   minus: "--icon-24-minus",
   back: "--icon-24-back",
@@ -17184,6 +16533,9 @@ const FIG_ICON_TOKENS = {
   more: { medium: "--icon-24-more", small: "--icon-16-more" },
   visible: { medium: "--icon-24-visible", small: "--icon-16-visible" },
   hidden: { medium: "--icon-24-hidden", small: "--icon-16-hidden" },
+  globe: { medium: "--icon-24-globe", small: "--icon-16-globe" },
+  warning: { medium: "--icon-24-warning", small: "--icon-16-warning" },
+  copy: { medium: "--icon-24-copy", small: "--icon-16-copy" },
 };
 
 function figIconCssVar(name, size = "medium") {
@@ -17197,11 +16549,41 @@ function figIconCssVar(name, size = "medium") {
   return tokenName ? `var(${tokenName})` : "";
 }
 
+const FIG_ICON_COLOR_TOKENS = {
+  primary: "--figma-color-icon",
+  secondary: "--figma-color-icon-secondary",
+  tertiary: "--figma-color-icon-tertiary",
+  disabled: "--figma-color-icon-disabled",
+  brand: "--figma-color-icon-brand",
+  component: "--figma-color-icon-component",
+  danger: "--figma-color-icon-danger",
+  success: "--figma-color-icon-success",
+  warning: "--figma-color-icon-warning",
+  selected: "--figma-color-icon-selected",
+  hover: "--figma-color-icon-hover",
+  pressed: "--figma-color-icon-pressed",
+  onbrand: "--figma-color-icon-onbrand",
+  oncomponent: "--figma-color-icon-oncomponent",
+  ondanger: "--figma-color-icon-ondanger",
+  ondisabled: "--figma-color-icon-ondisabled",
+  oninverse: "--figma-color-icon-oninverse",
+  onselected: "--figma-color-icon-onselected",
+  onsuccess: "--figma-color-icon-onsuccess",
+  onwarning: "--figma-color-icon-onwarning",
+};
+
+function figIconColorValue(color) {
+  if (!color) return "";
+  if (color.startsWith("var(")) return color;
+  const token = FIG_ICON_COLOR_TOKENS[color.toLowerCase()];
+  return token ? `var(${token})` : color;
+}
+
 /**
  * Masked icon using design-token SVGs from :root.
  * @attr {string} name - Icon name (chevron, add, close, …)
  * @attr {'small'|'medium'} size - Display size; medium (default) uses --spacer-4, small uses --spacer-3
- * @attr {string} color - Icon fill color (applied as background-color for the mask)
+ * @attr {string} color - Icon color alias (primary, secondary, tertiary, disabled, brand, component, danger, success, warning, selected, hover, pressed, onbrand, …), CSS variable, or CSS color.
  */
 class FigIcon extends HTMLElement {
   static get observedAttributes() {
@@ -17229,9 +16611,14 @@ class FigIcon extends HTMLElement {
       this.style.removeProperty("--size");
     }
 
-    const color = this.getAttribute("color");
-    if (color) this.style.backgroundColor = color;
-    else this.style.removeProperty("background-color");
+    const color = figIconColorValue(this.getAttribute("color"));
+    if (color) {
+      this.style.backgroundColor = color;
+      this.style.setProperty("--icon-color", color);
+    } else {
+      this.style.removeProperty("background-color");
+      this.style.removeProperty("--icon-color");
+    }
 
     if (!this.hasAttribute("aria-hidden")) {
       this.setAttribute("aria-hidden", "true");
@@ -17340,11 +16727,22 @@ class FigColorTip extends HTMLElement {
   }
 
   #render() {
+    this.#teardownListeners();
     const mode = this.#controlMode;
     if (mode === "add" || mode === "remove") {
       const iconName = mode === "add" ? "add" : "minus";
       const label = this.getAttribute("aria-label") || (mode === "add" ? "Add color stop" : "Remove color stop");
-      this.innerHTML = `<fig-button icon variant="ghost" aria-label="${figEscapeAttribute(label)}"><fig-icon name="${iconName}"></fig-icon></fig-button>`;
+      this.replaceChildren(
+        figCreateElement(
+          "fig-button",
+          {
+            icon: true,
+            variant: "ghost",
+            "aria-label": label,
+          },
+          createFigIcon(iconName),
+        ),
+      );
       this.#fillPicker = null;
       this.#swatch = null;
       this.addEventListener("click", this.#handleControlClick);
@@ -17356,7 +16754,6 @@ class FigColorTip extends HTMLElement {
     const rawValue = (this.getAttribute("value") || "").trim();
     const color = this.#normalizeColor(rawValue);
     const alpha = this.#extractAlpha(rawValue);
-    const alphaAttr = this.#alphaEnabled ? "" : 'alpha="false"';
     const pickerValue =
       alpha < 1
         ? JSON.stringify({
@@ -17365,16 +16762,28 @@ class FigColorTip extends HTMLElement {
             opacity: Math.round(alpha * 100),
           })
         : JSON.stringify({ type: "solid", color });
-    const swatchAlphaAttr = alpha < 1 ? ` alpha="${alpha}"` : "";
-    this.innerHTML = hasFigFillPicker()
-      ? `<fig-fill-picker mode="solid" ${alphaAttr} value='${pickerValue}'>
-          <fig-swatch background="${color}"${swatchAlphaAttr}></fig-swatch>
-        </fig-fill-picker>`
-      : `<fig-swatch background="${color}"${swatchAlphaAttr}></fig-swatch>`;
+    const swatch = figCreateElement("fig-swatch", {
+      background: color,
+      alpha: alpha < 1 ? alpha : null,
+    });
+    let picker = null;
+    if (hasFigFillPicker()) {
+      picker = figCreateElement(
+        "fig-fill-picker",
+        {
+          mode: "solid",
+          alpha: this.#alphaEnabled ? null : "false",
+          value: pickerValue,
+        },
+        swatch,
+      );
+      this.replaceChildren(picker);
+    } else {
+      this.replaceChildren(swatch);
+    }
 
-    this.#fillPicker = this.querySelector("fig-fill-picker");
-    this.#swatch = this.querySelector("fig-swatch");
-    this.#teardownListeners();
+    this.#fillPicker = picker;
+    this.#swatch = swatch;
     this.#fillPicker?.addEventListener("input", this.#boundHandleInput);
     this.#fillPicker?.addEventListener("change", this.#boundHandleChange);
     if (!this.#fillPicker) {
@@ -17562,6 +16971,14 @@ class FigColorTip extends HTMLElement {
         eventDetail.opacity = Math.round(detail.alpha * 100);
       }
     }
+    Object.assign(
+      eventDetail,
+      figColorEventAliases(
+        eventDetail.color,
+        this.#alphaEnabled ? detail?.alpha : 1,
+        eventDetail.opacity,
+      ),
+    );
 
     this.dispatchEvent(
       new CustomEvent(type, {
@@ -18577,15 +17994,14 @@ class FigHandle extends HTMLElement {
       this.#didDrag = false;
       return;
     }
+    this.select();
     if (
       this.getAttribute("type") === "color" &&
       this.#canOpenColorPicker &&
       !this.#tipMode
     ) {
       this.#openDirectColorPicker();
-      return;
     }
-    this.select();
   };
 
   #handleDeselect = (e) => {
@@ -18767,6 +18183,8 @@ class FigHandle extends HTMLElement {
   #onPointerDown(e) {
     if (!this.#dragEnabled || figBooleanAttribute(this, "disabled")) return;
     e.preventDefault();
+    this.focus();
+    this.select();
     const container = this.#getContainer();
     if (!container) return;
 
@@ -19108,7 +18526,11 @@ class FigHandle extends HTMLElement {
         : detail.alpha !== undefined
           ? Math.round(detail.alpha * 100)
           : undefined;
-    return { color: detail.color, opacity };
+    return {
+      color: detail.color,
+      opacity,
+      ...figColorEventAliases(detail.color, detail.alpha, opacity),
+    };
   }
 
   #handleDirectColorPickerInput = (e) => {
@@ -19139,7 +18561,11 @@ class FigHandle extends HTMLElement {
 
   #detailFromNativeColor(value) {
     const { opacity } = this.#normalizeColorForPicker();
-    return opacity < 100 ? { color: value, opacity } : { color: value };
+    const detail = opacity < 100 ? { color: value, opacity } : { color: value };
+    return {
+      ...detail,
+      ...figColorEventAliases(value, undefined, opacity),
+    };
   }
 
   #handleNativeColorInput = (e) => {
@@ -19158,30 +18584,41 @@ class FigHandle extends HTMLElement {
     e.stopPropagation();
     const detail = this.#detailFromNativeColor(e.target.value);
     this.setAttribute("color", this.#colorWithOpacity(detail.color, detail.opacity));
-    this.removeAttribute("selected");
     this.dispatchEvent(
       new CustomEvent("change", {
         bubbles: true,
         detail,
       }),
     );
+    if (this.isConnected) this.focus();
   };
 
   #handleDirectColorPickerClose = () => {
-    this.removeAttribute("selected");
+    if (!this.isConnected) return;
+    this.setAttribute("selected", "");
+    this.focus();
   };
 
   #handleColorTipInput = (e) => {
     e.stopPropagation();
     if (e.detail?.color) {
+      const detail = {
+        color: e.detail.color,
+        opacity: e.detail.opacity,
+        ...figColorEventAliases(
+          e.detail.color,
+          e.detail.alpha,
+          e.detail.opacity,
+        ),
+      };
       this.setAttribute(
         "color",
-        this.#colorWithOpacity(e.detail.color, e.detail.opacity),
+        this.#colorWithOpacity(detail.color, detail.opacity),
       );
       this.dispatchEvent(
         new CustomEvent("input", {
           bubbles: true,
-          detail: { color: e.detail.color, opacity: e.detail.opacity },
+          detail,
         }),
       );
     }
@@ -19190,14 +18627,23 @@ class FigHandle extends HTMLElement {
   #handleColorTipChange = (e) => {
     e.stopPropagation();
     if (e.detail?.color) {
+      const detail = {
+        color: e.detail.color,
+        opacity: e.detail.opacity,
+        ...figColorEventAliases(
+          e.detail.color,
+          e.detail.alpha,
+          e.detail.opacity,
+        ),
+      };
       this.setAttribute(
         "color",
-        this.#colorWithOpacity(e.detail.color, e.detail.opacity),
+        this.#colorWithOpacity(detail.color, detail.opacity),
       );
       this.dispatchEvent(
         new CustomEvent("change", {
           bubbles: true,
-          detail: { color: e.detail.color, opacity: e.detail.opacity },
+          detail,
         }),
       );
     }
@@ -19276,12 +18722,14 @@ class FigMenuItem extends HTMLElement {
 figDefineElement("fig-menu-item", FigMenuItem);
 
 /**
- * Visual divider between menu item groups.
+ * Visual divider between content groups.
  * @attr {string} label - Optional group label shown in secondary text under the line.
+ * @attr {string} direction - Orientation: "vertical" for a tall rule; default is horizontal.
+ * @attr {boolean} borderless - Hides the separator line when present or "true".
  */
-class FigMenuSeparator extends HTMLElement {
+class FigSeparator extends HTMLElement {
   static get observedAttributes() {
-    return ["label"];
+    return ["label", "direction"];
   }
 
   get label() {
@@ -19306,12 +18754,31 @@ class FigMenuSeparator extends HTMLElement {
     if (!this.hasAttribute("role")) {
       this.setAttribute("role", "separator");
     }
+    const direction = this.getAttribute("direction");
+    if (direction === "vertical") {
+      this.setAttribute("aria-orientation", "vertical");
+    } else if (!this.hasAttribute("aria-orientation")) {
+      this.setAttribute("aria-orientation", "horizontal");
+    }
     const label = this.label.trim();
     if (label) this.setAttribute("aria-label", label);
     else this.removeAttribute("aria-label");
   }
 }
+figDefineElement("fig-separator", FigSeparator);
+
+// Backwards-compatible alias. Custom element constructors cannot be registered
+// under multiple tag names, so the legacy tag uses an otherwise empty subclass.
+class FigMenuSeparator extends FigSeparator {}
 figDefineElement("fig-menu-separator", FigMenuSeparator);
+
+const FIG_MENU_CHILD_SELECTOR =
+  ":scope > fig-menu-item, :scope > fig-separator, :scope > fig-menu-separator";
+const FIG_MENU_CHILD_TAGS = new Set([
+  "FIG-MENU-ITEM",
+  "FIG-SEPARATOR",
+  "FIG-MENU-SEPARATOR",
+]);
 
 class FigMenu extends HTMLElement {
   #popup = null;
@@ -19389,9 +18856,7 @@ class FigMenu extends HTMLElement {
     if (this.#popup) {
       this.#popup.removeEventListener("close", this.#boundPopupClose);
       const items = Array.from(
-        this.#panel?.querySelectorAll(
-          ":scope > fig-menu-item, :scope > fig-menu-separator",
-        ) ?? [],
+        this.#panel?.querySelectorAll(FIG_MENU_CHILD_SELECTOR) ?? [],
       );
       for (const item of items) this.insertBefore(item, this.#popup);
       this.#popup.remove();
@@ -19433,7 +18898,9 @@ class FigMenu extends HTMLElement {
   #detectTrigger() {
     this.#trigger =
       this.querySelector("[fig-menu-trigger]") ||
-      this.querySelector(":scope > :not(fig-menu-item):not(fig-menu-separator)");
+      this.querySelector(
+        ":scope > :not(fig-menu-item):not(fig-separator):not(fig-menu-separator)",
+      );
   }
 
   #usesContextMenuTrigger() {
@@ -19472,9 +18939,7 @@ class FigMenu extends HTMLElement {
 
   #moveItemsToPopup() {
     if (!this.#panel) return;
-    const items = Array.from(this.querySelectorAll(
-      ":scope > fig-menu-item, :scope > fig-menu-separator"
-    ));
+    const items = Array.from(this.querySelectorAll(FIG_MENU_CHILD_SELECTOR));
     for (const item of items) {
       this.#panel.appendChild(item);
     }
@@ -19513,7 +18978,7 @@ class FigMenu extends HTMLElement {
         for (const node of mutation.addedNodes) {
           if (node.nodeType !== 1 || node === this.#popup) continue;
           if (
-            (node.tagName === "FIG-MENU-ITEM" || node.tagName === "FIG-MENU-SEPARATOR") &&
+            FIG_MENU_CHILD_TAGS.has(node.tagName) &&
             node.parentElement === this
           ) {
             this.#panel?.appendChild(node);

@@ -133,7 +133,7 @@
   --figma-color-icon-onwarning-secondary: #00000080;
   --figma-color-icon-onwarning-tertiary: #0000004d;
   --figma-color-icon-pressed: light-dark(#007be5, #0a6dc2);
-  --figma-color-icon-secondary: light-dark(#00000099, #ffffffcc);
+  --figma-color-icon-secondary: light-dark(#00000080, #ffffffb3);
   --figma-color-icon-secondary-hover: light-dark(#000000e5, #ffffff);
   --figma-color-icon-selected: light-dark(#007be5, #7cc4f8);
   --figma-color-icon-selected-secondary: light-dark(#007be5, #7cc4f8);
@@ -354,6 +354,7 @@
 
   /* Icons - colorless shapes for use with mask-image */
   --icon-16-chevron: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.87868 7.12132L8 9.24264L10.1213 7.12132' stroke='grey' stroke-linecap='round'/%3E%3C/svg%3E%0A");
+  --icon-24-chevron: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.64645 10.1464C7.84171 9.95118 8.15829 9.95118 8.35355 10.1464L12 13.7929L15.6464 10.1464C15.8417 9.95118 16.1583 9.95118 16.3536 10.1464C16.5488 10.3417 16.5488 10.6583 16.3536 10.8536L12.3536 14.8536C12.1583 15.0488 11.8417 15.0488 11.6464 14.8536L7.64645 10.8536C7.45118 10.6583 7.45118 10.3417 7.64645 10.1464Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-16-checkmark: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.5839 3.72266C11.7371 3.49298 12.0476 3.43085 12.2773 3.58399C12.5069 3.73716 12.569 4.04762 12.416 4.27735L7.41596 11.7773C7.33289 11.9019 7.19778 11.9833 7.04877 11.998C6.8999 12.0126 6.75223 11.9593 6.64642 11.8535L3.64642 8.85352C3.4512 8.65826 3.45119 8.34174 3.64642 8.14649C3.84169 7.95133 4.15822 7.95128 4.35346 8.14649L6.92182 10.7148L11.5839 3.72266Z' fill='white'/%3E%3C/svg%3E");
   --icon-16-reset: url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='black' fill-rule='evenodd' d='M6.354 2.146a.5.5 0 0 1 0 .708L5.207 4H8.5a5 5 0 1 1-5 5 .5.5 0 0 1 1 0 4 4 0 1 0 4-4H5.207l1.147 1.146a.5.5 0 1 1-.708.708l-2-2a.5.5 0 0 1 0-.708l2-2a.5.5 0 0 1 .708 0' clip-rule='evenodd'/%3E%3C/svg%3E");
   --icon-24-reset: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.22473 5.08203C8.41872 4.9541 8.68285 4.97586 8.85364 5.14648C9.0244 5.31725 9.046 5.58134 8.91809 5.77539L8.85364 5.85352L7.70715 7H12.0001C15.3136 7.00005 17.9999 9.68652 18.0001 13C18.0001 16.3137 15.3138 19 12.0001 19C8.68641 19 6.00012 16.3137 6.00012 13C6.00036 12.7241 6.22413 12.5 6.50012 12.5C6.77608 12.5 6.99989 12.7241 7.00012 13C7.00012 15.7614 9.2387 18 12.0001 18C14.7615 18 17.0001 15.7614 17.0001 13C16.9999 10.2388 14.7614 8.00005 12.0001 8H7.70715L8.85364 9.14648L8.91809 9.22461C9.04619 9.41859 9.02426 9.68264 8.85364 9.85352C8.68277 10.0244 8.41881 10.0461 8.22473 9.91797L8.14661 9.85352L6.14661 7.85352C5.95152 7.65824 5.9514 7.34169 6.14661 7.14648L8.14661 5.14648L8.22473 5.08203Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
@@ -384,13 +385,20 @@
   --icon-16-settings: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.31951 2.0081C8.63957 2.02541 8.95246 2.06727 9.25717 2.13234C9.2583 2.13285 9.36317 2.16083 9.37434 2.16381C9.86377 2.31521 10.1341 2.72145 10.2216 3.10097C10.2215 3.11507 10.2503 3.27344 10.2503 3.27344C10.2503 3.2735 10.2738 3.39069 10.2738 3.39069C10.311 3.50552 10.3889 3.60576 10.5002 3.67049C10.5021 3.67258 10.5989 3.71411 10.6088 3.71839C10.7275 3.75177 10.8515 3.74099 10.9611 3.68991C10.9645 3.68638 11.1103 3.63071 11.1242 3.6254C11.4964 3.51228 11.9813 3.54148 12.3574 3.88434C12.3628 3.8861 12.4389 3.96209 12.4452 3.96834C12.4453 3.96838 12.6484 4.21056 12.6484 4.21056C13.1165 4.78066 13.4804 5.44161 13.7121 6.16246C13.7149 6.17767 13.7423 6.28045 13.7425 6.28125C13.8537 6.7773 13.638 7.21289 13.353 7.47774C13.3387 7.48737 13.219 7.58594 13.219 7.58594C13.1002 7.66994 13.0226 7.79446 13.0041 7.93741C13.0003 7.9375 13.0003 8.0625 13.0003 8.0625C13.0209 8.20342 13.0968 8.3265 13.2097 8.40716C13.2124 8.40722 13.3418 8.50782 13.3513 8.5152C13.6316 8.78218 13.8484 9.21484 13.7414 9.7107C13.7401 9.71973 13.7112 9.82812 13.7112 9.82812C13.4814 10.5549 13.1173 11.2176 12.6503 11.7903C12.6345 11.806 12.4456 12.0312 12.4456 12.0312C12.0587 12.4531 11.5262 12.4978 11.1256 12.374C11.1113 12.3697 10.9612 12.3125 10.9612 12.3125C10.8714 12.2692 10.774 12.2547 10.6802 12.267C10.669 12.2686 10.594 12.2891 10.594 12.2891C10.5828 12.2912 10.5702 12.2967 10.5546 12.3038C10.535 12.3127 10.5177 12.3209 10.5007 12.329C10.4925 12.3337 10.4456 12.3672 10.4456 12.3672C10.3352 12.4513 10.2694 12.5733 10.2536 12.703C10.2503 12.7031 10.2503 12.8359 10.2503 12.8359C10.2442 13.3005 9.95141 13.6315 9.61658 13.7713C9.60265 13.7784 9.47686 13.8203 9.47686 13.8203C9.11934 13.9072 8.75211 13.9651 8.37555 13.9884C8.34697 13.9856 8.0003 14 8.0003 14C7.6749 13.9999 7.35708 13.9743 7.04672 13.9247C7.0243 13.9178 6.74249 13.8672 6.74249 13.8672C6.09697 13.7294 5.78931 13.1754 5.74986 12.7268C5.73805 12.5892 5.67401 12.4628 5.56973 12.375C5.55432 12.368 5.54439 12.3624 5.53419 12.3567C5.49568 12.335 5.45758 12.3137 5.42943 12.2979C5.29224 12.2472 5.15454 12.2569 5.03853 12.3107C4.65161 12.4919 4.06725 12.5131 3.63238 12.1102C3.62614 12.1024 3.54717 12.0234 3.54717 12.0234C3.05356 11.4759 2.65946 10.8398 2.39223 10.1401C2.38729 10.1297 2.28936 9.83594 2.28936 9.83594C2.085 9.21085 2.41443 8.66774 2.78342 8.41082C2.79058 8.39903 2.86592 8.33596 2.8745 8.32879C2.95214 8.24176 2.99865 8.12765 2.99971 8.00029C3.00029 8 2.9853 7.87997 2.98469 7.87515C2.96344 7.79641 2.92483 7.72547 2.87233 7.66672C2.86594 7.65626 2.78155 7.58594 2.78155 7.58594C2.41249 7.3283 2.08643 6.78669 2.2855 6.16347C2.29278 6.15352 2.38586 5.87456 2.39073 5.85997C2.65941 5.15978 3.05409 4.52282 3.54692 3.97763C3.54759 3.97618 3.62427 3.89947 3.63241 3.89132C4.01092 3.54098 4.50075 3.51189 4.87356 3.62734C4.87942 3.62669 5.02584 3.68236 5.03849 3.68717C5.03847 3.68718 5.14785 3.72624 5.14785 3.72624C5.26334 3.75075 5.38729 3.7341 5.49848 3.67092C5.50161 3.67079 5.54722 3.63835 5.55412 3.63343C5.66764 3.54677 5.73526 3.41922 5.74777 3.28141C5.75102 3.27518 5.77244 3.11146 5.77368 3.10199C5.86963 2.69196 6.17657 2.25047 6.74082 2.13122C6.75426 2.13063 7.02637 2.08186 7.04605 2.07833C7.3559 2.02585 7.67443 2.00001 7.99878 2C8.01175 2.00028 8.29947 2.0073 8.31951 2.00779L8.31951 2.0081ZM7.72576 3.0081C7.45937 3.02159 7.19902 3.05647 6.94759 3.10961C6.82933 3.13709 6.75511 3.24295 6.74474 3.35958C6.70491 3.83399 6.44257 4.27973 6.00147 4.53524C5.55557 4.79143 5.03756 4.79553 4.611 4.59522C4.50004 4.54497 4.37104 4.55747 4.29216 4.64445C3.8193 5.1675 3.45727 5.78594 3.23829 6.46713C3.20344 6.58123 3.25696 6.69751 3.35141 6.765C3.74158 7.03654 3.9959 7.48327 3.99971 7.99219C3.99964 8.50887 3.74503 8.96046 3.35586 9.23077C3.26732 9.29396 3.21553 9.39274 3.22898 9.4919C3.22812 9.49846 3.23467 9.53125 3.23467 9.53125C3.45757 10.2146 3.81993 10.8334 4.29239 11.3566C4.37514 11.4448 4.50317 11.4563 4.60905 11.4076C4.99448 11.2266 5.44844 11.2119 5.86557 11.397C5.87329 11.4006 5.878 11.403 5.88258 11.4055C5.93014 11.4321 6.12689 11.5425 6.13257 11.5463C6.45081 11.7791 6.65504 12.1186 6.72476 12.4848C6.72758 12.4916 6.74249 12.6406 6.74249 12.6406C6.75672 12.757 6.83123 12.8627 6.94501 12.8887C7.20079 12.9434 7.46048 12.9784 7.72575 12.9927C7.72694 12.9922 7.98043 12.9994 7.9992 13C8.42545 12.9999 8.8382 12.9467 9.23265 12.8482C9.23643 12.8471 9.23915 12.8458 9.24139 12.8441C9.24245 12.8437 9.24846 12.8318 9.24996 12.8288C9.24952 12.8159 9.2501 12.795 9.24995 12.7828C9.24458 12.2581 9.51191 11.749 9.99339 11.4646C9.99762 11.4621 9.99686 11.4624 9.99919 11.4612C10.0003 11.4609 10.1273 11.3974 10.1399 11.3911C10.1399 11.391 10.2805 11.3363 10.2805 11.3363C10.6508 11.216 11.0457 11.2461 11.388 11.4061C11.4725 11.4442 11.5655 11.4457 11.6399 11.4067C11.6409 11.4062 11.6951 11.3656 11.7026 11.36C12.1759 10.8367 12.5388 10.2173 12.7554 9.53102C12.783 9.44305 12.7587 9.35546 12.7042 9.28847C12.6966 9.28221 12.6409 9.22656 12.6409 9.22656C12.3005 8.99086 12.0652 8.61779 12.0115 8.18821C12.0082 8.18749 12.0006 8.00777 12.0003 8.00024C12.0012 7.49012 12.2547 7.04097 12.645 6.76749C12.7326 6.70328 12.7824 6.60607 12.7692 6.50857C12.766 6.5078 12.7585 6.47058 12.7581 6.46881C12.5396 5.78254 12.1753 5.16178 11.7042 4.6439C11.6206 4.55669 11.4943 4.54567 11.3896 4.59351C11.01 4.7706 10.5697 4.78846 10.1706 4.62098C10.1545 4.60915 10.0003 4.53906 10.0003 4.53906C9.55722 4.28004 9.29427 3.83328 9.25301 3.36095C9.24274 3.25618 9.1845 3.16342 9.09421 3.12463C9.08637 3.12244 9.04717 3.10938 9.04717 3.10938C8.79259 3.05581 8.53203 3.02103 8.26596 3.00712C8.24594 3.00722 8.0003 3 8.0003 3C7.99919 3.00003 7.72575 3.00784 7.72575 3.00784L7.72576 3.0081ZM10.4445 12.3519L10.4758 12.344C10.4804 12.3378 10.4863 12.3346 10.4928 12.3309C10.4773 12.3403 10.4616 12.3481 10.4474 12.3551L10.4445 12.3519ZM8.20232 6.0081C9.21117 6.1121 9.99877 6.96407 9.99877 8C9.99861 9.10458 9.10347 9.99977 7.99919 10C6.89429 10 5.99892 9.10473 5.99877 8.00029C5.99919 8.00029 6.00701 7.79716 6.00701 7.79716C6.11047 6.78796 6.9626 6 7.99877 6C7.99919 6.00029 8.20232 6.0081 8.20232 6.0081ZM7.89763 7.0081C7.39268 7.05592 6.99877 7.48196 6.99877 8C6.99927 8.00656 7.00658 8.10156 7.00658 8.10156C7.0517 8.57298 7.42607 8.94726 7.89693 8.99488C7.90839 8.99305 7.99877 9 7.99877 9C8.51682 8.99978 8.9425 8.60628 8.99362 8.10208C8.9916 8.09411 8.99833 8.00564 8.99875 8.00026C8.99877 7.48225 8.60529 7.0564 8.10105 7.00517C8.09279 7.00714 8.0062 7.00057 7.99921 7.00003C7.99919 7.00029 7.89763 7.0081 7.89763 7.0081Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-more: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.5 12C7.5 12.8284 6.82843 13.5 6 13.5C5.17157 13.5 4.5 12.8284 4.5 12C4.5 11.1716 5.17157 10.5 6 10.5C6.82843 10.5 7.5 11.1716 7.5 12ZM13.5 12C13.5 12.8284 12.8284 13.5 12 13.5C11.1716 13.5 10.5 12.8284 10.5 12C10.5 11.1716 11.1716 10.5 12 10.5C12.8284 10.5 13.5 11.1716 13.5 12ZM18 13.5C18.8284 13.5 19.5 12.8284 19.5 12C19.5 11.1716 18.8284 10.5 18 10.5C17.1716 10.5 16.5 11.1716 16.5 12C16.5 12.8284 17.1716 13.5 18 13.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-16-more: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M5 8C5 8.55228 4.55228 9 4 9C3.44772 9 3 8.55228 3 8C3 7.44772 3.44772 7 4 7C4.55228 7 5 7.44772 5 8ZM9 8C9 8.55228 8.55228 9 8 9C7.44772 9 7 8.55228 7 8C7 7.44772 7.44772 7 8 7C8.55228 7 9 7.44772 9 8ZM12 9C12.5523 9 13 8.55228 13 8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8C11 8.55228 11.4477 9 12 9Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
-
+  --icon-24-send: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11.7246 5.58203C11.9187 5.45387 12.1827 5.47562 12.3535 5.64648L16.8535 10.1465C17.0488 10.3417 17.0488 10.6583 16.8535 10.8535C16.6583 11.0488 16.3417 11.0488 16.1465 10.8535L12.5 7.20703V18C12.5 18.2761 12.2761 18.5 12 18.5C11.7239 18.5 11.5 18.2761 11.5 18V7.20703L7.85352 10.8535C7.65825 11.0488 7.34175 11.0488 7.14648 10.8535C6.95122 10.6583 6.95122 10.3417 7.14648 10.1465L11.6465 5.64648L11.7246 5.58203Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-16-send: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M8 12.0002C7.72386 12.0002 7.5 11.7764 7.5 11.5002L7.50001 4.70735L4.35355 7.8538C4.15829 8.04906 3.84171 8.04906 3.64645 7.8538C3.45118 7.65853 3.45118 7.34195 3.64645 7.14669L7.64645 3.14669C7.74022 3.05292 7.8674 3.00024 8.00001 3.00024C8.13261 3.00024 8.25979 3.05292 8.35356 3.14669L12.3536 7.14669C12.5488 7.34195 12.5488 7.65854 12.3536 7.8538C12.1583 8.04906 11.8417 8.04906 11.6464 7.8538L8.50001 4.70735L8.5 11.5002C8.5 11.7764 8.27615 12.0002 8 12.0002Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-download: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M17.5 13C17.7761 13 18 13.2239 18 13.5V16.5C18 17.3284 17.3284 18 16.5 18H7.5C6.67157 18 6 17.3284 6 16.5V13.5C6 13.2239 6.22386 13 6.5 13C6.77614 13 7 13.2239 7 13.5V16.5C7 16.7761 7.22386 17 7.5 17H16.5C16.7761 17 17 16.7761 17 16.5V13.5C17 13.2239 17.2239 13 17.5 13ZM12 6C12.2761 6 12.5 6.22386 12.5 6.5V12.293L14.6465 10.1465C14.8417 9.95122 15.1583 9.95122 15.3535 10.1465C15.5488 10.3417 15.5488 10.6583 15.3535 10.8535L12.3535 13.8535C12.1583 14.0488 11.8417 14.0488 11.6465 13.8535L8.64648 10.8535C8.45122 10.6583 8.45122 10.3417 8.64648 10.1465C8.84175 9.95122 9.15825 9.95122 9.35352 10.1465L11.5 12.293V6.5C11.5 6.22386 11.7239 6 12 6Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-upload: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12.3536 6.14645C12.1583 5.95118 11.8417 5.95118 11.6464 6.14645L8.64645 9.14645C8.45118 9.34171 8.45118 9.65829 8.64645 9.85355C8.84171 10.0488 9.15829 10.0488 9.35355 9.85355L11.5 7.70711V13.5C11.5 13.7761 11.7239 14 12 14C12.2761 14 12.5 13.7761 12.5 13.5V7.70711L14.6464 9.85355C14.8417 10.0488 15.1583 10.0488 15.3536 9.85355C15.5488 9.65829 15.5488 9.34171 15.3536 9.14645L12.3536 6.14645ZM7 13.5C7 13.2239 6.77614 13 6.5 13C6.22386 13 6 13.2239 6 13.5V16.5C6 17.3284 6.67157 18 7.5 18H16.5C17.3284 18 18 17.3284 18 16.5V13.5C18 13.2239 17.7761 13 17.5 13C17.2239 13 17 13.2239 17 13.5V16.5C17 16.7761 16.7761 17 16.5 17H7.5C7.22386 17 7 16.7761 7 16.5V13.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-sun: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5C12.2761 5 12.5 5.22386 12.5 5.5V6.5C12.5 6.77614 12.2761 7 12 7C11.7239 7 11.5 6.77614 11.5 6.5V5.5C11.5 5.22386 11.7239 5 12 5ZM16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12ZM12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15ZM7.75687 7.05026C7.56161 6.85499 7.24503 6.85499 7.04977 7.05026C6.8545 7.24552 6.8545 7.5621 7.04977 7.75736L7.75687 8.46447C7.95214 8.65973 8.26872 8.65973 8.46398 8.46447C8.65924 8.26921 8.65924 7.95262 8.46398 7.75736L7.75687 7.05026ZM19 12C19 12.2761 18.7761 12.5 18.5 12.5H17.5C17.2239 12.5 17 12.2761 17 12C17 11.7239 17.2239 11.5 17.5 11.5H18.5C18.7761 11.5 19 11.7239 19 12ZM16.9502 7.75736C17.1455 7.5621 17.1455 7.24552 16.9502 7.05026C16.755 6.85499 16.4384 6.85499 16.2431 7.05026L15.536 7.75736C15.3408 7.95262 15.3408 8.26921 15.536 8.46447C15.7313 8.65973 16.0479 8.65973 16.2431 8.46447L16.9502 7.75736ZM12 17C12.2761 17 12.5 17.2239 12.5 17.5V18.5C12.5 18.7761 12.2761 19 12 19C11.7239 19 11.5 18.7761 11.5 18.5V17.5C11.5 17.2239 11.7239 17 12 17ZM16.2422 15.5356C16.047 15.3403 15.7304 15.3403 15.5351 15.5356C15.3399 15.7309 15.3399 16.0475 15.5351 16.2427L16.2422 16.9498C16.4375 17.1451 16.7541 17.1451 16.9493 16.9498C17.1446 16.7546 17.1446 16.438 16.9493 16.2427L16.2422 15.5356ZM7 12C7 12.2761 6.77614 12.5 6.5 12.5H5.5C5.22386 12.5 5 12.2761 5 12C5 11.7239 5.22386 11.5 5.5 11.5H6.5C6.77614 11.5 7 11.7239 7 12ZM8.46488 16.2427C8.66014 16.0475 8.66014 15.7309 8.46488 15.5356C8.26962 15.3403 7.95304 15.3403 7.75777 15.5356L7.05067 16.2427C6.85541 16.438 6.85541 16.7546 7.05067 16.9498C7.24593 17.1451 7.56251 17.1451 7.75777 16.9498L8.46488 16.2427Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-moon: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M15 14.9999C15.3647 14.9999 15.7224 14.9672 16.0703 14.9045C15.1624 16.1743 13.677 16.9997 12 16.9997C9.23858 16.9997 7 14.7611 7 11.9997C7 10.3226 7.82546 8.8371 9.09542 7.92923C9.03267 8.27722 9 8.63509 9 8.99986C9 12.3136 11.6863 14.9999 15 14.9999ZM17.3039 14.8075C17.6193 14.2129 16.8933 13.678 16.2412 13.8446C15.8443 13.946 15.4285 13.9999 15 13.9999C12.2386 13.9999 10 11.7613 10 8.99986C10 8.57132 10.0539 8.15537 10.1553 7.75842C10.3219 7.10631 9.78711 6.38032 9.19252 6.6957C7.29348 7.70298 6 9.70029 6 11.9997C6 15.3134 8.68629 17.9997 12 17.9997C14.2993 17.9997 16.2965 16.7064 17.3039 14.8075ZM16 7.49993C16 7.22379 15.7761 6.99993 15.5 6.99993C15.2239 6.99993 15 7.22379 15 7.49993V7.99993H14.5C14.2239 7.99993 14 8.22379 14 8.49993C14 8.77607 14.2239 8.99993 14.5 8.99993H15V9.49993C15 9.77607 15.2239 9.99993 15.5 9.99993C15.7761 9.99993 16 9.77607 16 9.49993V8.99993H16.5C16.7761 8.99993 17 8.77607 17 8.49993C17 8.22379 16.7761 7.99993 16.5 7.99993H16V7.49993Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-24-adjust: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8.5 18C8.77614 18 9 17.7761 9 17.5V15.9492C10.141 15.7175 11 14.7094 11 13.5C11 12.2905 10.1411 11.2814 9 11.0498V6.5C9 6.22386 8.77614 6 8.5 6C8.22386 6 8 6.22386 8 6.5V11.0498C6.85886 11.2814 6 12.2905 6 13.5C6 14.7094 6.85895 15.7175 8 15.9492V17.5C8 17.7761 8.22386 18 8.5 18ZM15.5 18C15.7761 18 16 17.7761 16 17.5V12.9502C17.1411 12.7186 18 11.7095 18 10.5C18 9.29057 17.141 8.28247 16 8.05078V6.5C16 6.22386 15.7761 6 15.5 6C15.2239 6 15 6.22386 15 6.5V8.05078C13.859 8.28247 13 9.29057 13 10.5C13 11.7095 13.8589 12.7186 15 12.9502V17.5C15 17.7761 15.2239 18 15.5 18ZM15.5 12C14.6716 12 14 11.3284 14 10.5C14 9.67157 14.6716 9 15.5 9C16.3284 9 17 9.67157 17 10.5C17 11.3284 16.3284 12 15.5 12ZM8.5 15C7.67157 15 7 14.3284 7 13.5C7 12.6716 7.67157 12 8.5 12C9.32843 12 10 12.6716 10 13.5C10 14.3284 9.32843 15 8.5 15Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
   --icon-16-adjust: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M5.5 13C5.77614 13 6 12.7761 6 12.5V11.5C6 11.478 5.99591 11.4568 5.99316 11.4355C6.85886 11.2156 7.5 10.4341 7.5 9.5C7.5 8.56581 6.85898 7.7833 5.99316 7.56348C5.99583 7.54257 6 7.52163 6 7.5V3.5C6 3.22386 5.77614 3 5.5 3C5.22386 3 5 3.22386 5 3.5V7.5C5 7.52158 5.00321 7.54261 5.00586 7.56348C4.14051 7.78362 3.5 8.56614 3.5 9.5C3.5 10.4338 4.14063 11.2153 5.00586 11.4355C5.00313 11.4567 5 11.4781 5 11.5V12.5C5 12.7761 5.22386 13 5.5 13ZM10.5 13C10.7761 13 11 12.7761 11 12.5V8.5C11 8.47837 10.9958 8.45743 10.9932 8.43652C11.859 8.2167 12.5 7.43419 12.5 6.5C12.5 5.56589 11.8589 4.78435 10.9932 4.56445C10.9959 4.54324 11 4.52196 11 4.5V3.5C11 3.22386 10.7761 3 10.5 3C10.2239 3 10 3.22386 10 3.5V4.5C10 4.52192 10.0031 4.54328 10.0059 4.56445C9.14063 4.78468 8.5 5.56622 8.5 6.5C8.5 7.43386 9.14051 8.21638 10.0059 8.43652C10.0032 8.45739 10 8.47842 10 8.5V12.5C10 12.7761 10.2239 13 10.5 13ZM10.5 7.5C9.94772 7.5 9.5 7.05228 9.5 6.5C9.5 5.94772 9.94772 5.5 10.5 5.5C11.0523 5.5 11.5 5.94772 11.5 6.5C11.5 7.05228 11.0523 7.5 10.5 7.5ZM5.5 10.5C4.94772 10.5 4.5 10.0523 4.5 9.5C4.5 8.94772 4.94772 8.5 5.5 8.5C6.05228 8.5 6.5 8.94772 6.5 9.5C6.5 10.0523 6.05228 10.5 5.5 10.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-globe: url("data:image/svg+xml,%3Csvg%20width%3D'24'%20height%3D'24'%20viewBox%3D'0%200%2024%2024'%20fill%3D'none'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M12%205C15.866%205%2019%208.13401%2019%2012C19%2015.866%2015.866%2019%2012%2019C8.13401%2019%205%2015.866%205%2012C5%208.13401%208.13401%205%2012%205ZM10.0107%2012.5C10.063%2014.1231%2010.364%2015.5434%2010.7979%2016.5557C11.0375%2017.1149%2011.2977%2017.5039%2011.5352%2017.7383C11.7682%2017.9681%2011.924%2018%2012%2018C12.076%2018%2012.2318%2017.9681%2012.4648%2017.7383C12.7023%2017.5039%2012.9625%2017.1149%2013.2021%2016.5557C13.636%2015.5434%2013.937%2014.1231%2013.9893%2012.5H10.0107ZM6.02246%2012.5C6.22856%2014.9975%207.96276%2017.0599%2010.2891%2017.751C9.56496%2016.5758%209.07556%2014.675%209.00977%2012.5H6.02246ZM14.9902%2012.5C14.9244%2014.6756%2014.4334%2016.5759%2013.709%2017.751C16.0362%2017.0605%2017.7714%2014.9981%2017.9775%2012.5H14.9902ZM10.29%206.24805C7.96315%206.93875%206.2286%209.00212%206.02246%2011.5H9.00879C9.0746%209.32423%209.56549%207.42306%2010.29%206.24805ZM12%206C11.924%206%2011.7682%206.03186%2011.5352%206.26172C11.2977%206.49608%2011.0375%206.88507%2010.7979%207.44434C10.364%208.4566%2010.063%209.87694%2010.0107%2011.5H13.9893C13.937%209.87694%2013.636%208.4566%2013.2021%207.44434C12.9625%206.88507%2012.7023%206.49608%2012.4648%206.26172C12.2318%206.03186%2012.076%206%2012%206ZM13.709%206.24805C14.4337%207.42303%2014.9254%209.32396%2014.9912%2011.5H17.9775C17.7714%209.00179%2016.0363%206.93848%2013.709%206.24805Z'%20fill%3D'black'%20fill-opacity%3D'0.9'%2F%3E%3C%2Fsvg%3E");
+  --icon-16-globe: url("data:image/svg+xml,%3Csvg%20width%3D'16'%20height%3D'16'%20viewBox%3D'0%200%2016%2016'%20fill%3D'none'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%3E%3Cpath%20d%3D'M8%203C10.7614%203%2013%205.23858%2013%208C13%2010.7614%2010.7614%2013%208%2013C5.23858%2013%203%2010.7614%203%208C3%205.23858%205.23858%203%208%203ZM7.01172%208.5C7.05823%209.57496%207.25084%2010.5045%207.51465%2011.1641C7.66771%2011.5467%207.82478%2011.7894%207.94824%2011.9199C7.96779%2011.9406%207.98583%2011.9553%208%2011.9678C8.01417%2011.9553%208.03221%2011.9406%208.05176%2011.9199C8.17522%2011.7894%208.33229%2011.5467%208.48535%2011.1641C8.74916%2010.5045%208.94177%209.57496%208.98828%208.5H7.01172ZM4.03223%208.5C4.22306%2010.0299%205.27727%2011.2898%206.69238%2011.7793C6.31652%2010.965%206.06265%209.80685%206.01074%208.5H4.03223ZM9.98926%208.5C9.93735%209.80705%209.68259%2010.965%209.30664%2011.7793C10.7222%2011.29%2011.7769%2010.0302%2011.9678%208.5H9.98926ZM9.30664%204.21973C9.6828%205.0341%209.93733%206.19252%209.98926%207.5H11.9678C11.7769%205.96968%2010.7223%204.70898%209.30664%204.21973ZM7.94824%204.08008C7.82478%204.21063%207.66771%204.45329%207.51465%204.83594C7.25084%205.49547%207.05823%206.42504%207.01172%207.5H8.98828C8.94177%206.42504%208.74916%205.49547%208.48535%204.83594C8.33229%204.45329%208.17522%204.21063%208.05176%204.08008C8.03198%204.05917%208.01427%204.04375%208%204.03125C7.98573%204.04375%207.96802%204.05917%207.94824%204.08008ZM6.69238%204.21973C5.27711%204.7092%204.22308%205.96999%204.03223%207.5H6.01074C6.06266%206.19272%206.31632%205.03408%206.69238%204.21973Z'%20fill%3D'black'%20fill-opacity%3D'0.9'%2F%3E%3C%2Fsvg%3E");
+  --icon-24-warning: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M10.2568 6.0595C11.0214 4.7002 12.9785 4.70024 13.7431 6.0595L18.7832 15.0195C19.5331 16.3527 18.5697 17.9999 17.04 17.9999H6.95994C5.43033 17.9999 4.46687 16.3526 5.21677 15.0195L6.08787 15.5097C5.73649 16.1347 6.13844 16.8974 6.82029 16.9902L6.95994 16.9999H17.04C17.8048 16.9999 18.2868 16.1763 17.9121 15.5097L17.9111 15.5087L12.8711 6.54973C12.4887 5.87012 11.5112 5.87009 11.1289 6.54973L6.08787 15.5087L5.21677 15.0195L10.2568 6.0595ZM12 14.0029C12.414 14.0029 12.7497 14.3388 12.75 14.7529C12.75 15.1671 12.4142 15.5029 12 15.5029C11.5858 15.5028 11.25 15.1671 11.25 14.7529C11.2502 14.3389 11.5859 14.0029 12 14.0029ZM12 8.49993C12.4252 8.49993 12.7607 8.8609 12.7304 9.28508L12.499 12.5351C12.4803 12.7967 12.2623 12.9999 12 12.9999C11.7377 12.9999 11.5197 12.7967 11.501 12.5351L11.2695 9.28508C11.2392 8.86091 11.5747 8.49995 12 8.49993Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-16-warning: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M6.28478 2.91494C7.06157 1.62043 8.93759 1.62052 9.71446 2.91494L13.9488 9.9706C14.7487 11.3037 13.7876 12.9999 12.233 12.9999H3.76622C2.21173 12.9998 1.2506 11.3036 2.0504 9.9706L6.28478 2.91494ZM8.85704 3.42861C8.46851 2.78202 7.53064 2.78191 7.1422 3.42861H7.14122L2.90782 10.4853H2.9088C2.53393 11.11 2.93205 11.8944 3.62364 11.9901L3.76622 11.9999H12.233C13.0103 11.9999 13.4904 11.1518 13.0904 10.4853L8.85704 3.42861ZM7.99962 9.4999C8.41375 9.4999 8.74948 9.83581 8.74962 10.2499C8.74962 10.6641 8.41383 10.9999 7.99962 10.9999C7.58545 10.9999 7.24962 10.6641 7.24962 10.2499C7.24976 9.83584 7.58554 9.49995 7.99962 9.4999ZM8.07872 5.00381C8.46732 5.04556 8.76038 5.39199 8.72716 5.79092L8.49669 8.54092C8.47503 8.80006 8.25869 8.99996 7.99864 8.9999C7.73876 8.99965 7.52212 8.79994 7.5006 8.54092L7.27208 5.78994C7.23715 5.36476 7.57294 5.00004 7.99962 4.9999L8.07872 5.00381Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-24-copy: url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M7.5 6C6.67157 6 6 6.67157 6 7.5V13.5C6 14.3284 6.67157 15 7.5 15H13.5C14.3284 15 15 14.3284 15 13.5V7.5C15 6.67157 14.3284 6 13.5 6H7.5ZM7 7.5C7 7.22386 7.22386 7 7.5 7H13.5C13.7761 7 14 7.22386 14 7.5V13.5C14 13.7761 13.7761 14 13.5 14H7.5C7.22386 14 7 13.7761 7 13.5V7.5ZM9 16.5C9 16.2239 9.22386 16 9.5 16C9.77614 16 10 16.2239 10 16.5C10 16.7761 10.2239 17 10.5 17H16.5C16.7761 17 17 16.7761 17 16.5V10.5C17 10.2239 16.7761 10 16.5 10C16.2239 10 16 9.77614 16 9.5C16 9.22386 16.2239 9 16.5 9C17.3284 9 18 9.67157 18 10.5V16.5C18 17.3284 17.3284 18 16.5 18H10.5C9.67157 18 9 17.3284 9 16.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
+  --icon-16-copy: url("data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12.5 5C13.3284 5 14 5.67157 14 6.5V12.5C14 13.3284 13.3284 14 12.5 14H6.5C5.67157 14 5 13.3284 5 12.5C5 12.2239 5.22386 12 5.5 12C5.74171 12 5.94371 12.1714 5.99023 12.3994L6.00977 12.6006C6.05629 12.8286 6.25829 13 6.5 13H12.5C12.7761 13 13 12.7761 13 12.5V6.5C13 6.25829 12.8286 6.05629 12.6006 6.00977L12.3994 5.99023C12.1714 5.94371 12 5.74171 12 5.5C12 5.22386 12.2239 5 12.5 5ZM9.5 2C10.3284 2 11 2.67157 11 3.5V9.5C11 10.3284 10.3284 11 9.5 11H3.5C2.67157 11 2 10.3284 2 9.5V3.5C2 2.67157 2.67157 2 3.5 2H9.5ZM3.5 3C3.22386 3 3 3.22386 3 3.5V9.5C3 9.77614 3.22386 10 3.5 10H9.5C9.77614 10 10 9.77614 10 9.5V3.5C10 3.22386 9.77614 3 9.5 3H3.5Z' fill='black' fill-opacity='0.9'/%3E%3C/svg%3E");
 
   --tip-pointer: path("M8 6L2 0H14L8 6Z");
 
@@ -798,6 +806,74 @@ fig-button {
     }
   }
 
+  /* Variant: Destructive */
+  &[variant="destructive"] {
+    background-color: var(--figma-color-bg-danger);
+    color: var(--figma-color-text-ondanger);
+
+    &:hover {
+      background-color: var(--figma-color-bg-danger-hover);
+    }
+
+    &:active,
+    &:hover:active {
+      background-color: var(--figma-color-bg-danger-pressed);
+      color: var(--figma-color-text-ondanger-secondary);
+    }
+  }
+
+  /* Variant: Destructive Secondary */
+  &[variant="destructiveSecondary"] {
+    box-shadow: inset 0 0 0 1px var(--figma-color-border-danger);
+    padding: 0 calc(var(--spacer-2) - 1px);
+    background: none;
+    color: var(--figma-color-text-danger);
+
+    &:hover {
+      background-color: var(--figma-color-bg-danger-tertiary);
+    }
+
+    &:active,
+    &:hover:active {
+      box-shadow: inset 0 0 0 1px var(--figma-color-border-danger-strong);
+      background-color: var(--figma-color-bg-danger-tertiary);
+      color: var(--figma-color-text-danger-secondary);
+    }
+  }
+
+  /* Variant: Destructive Ghost */
+  &[variant="destructiveGhost"] {
+    box-shadow: none;
+    background: none;
+    color: var(--figma-color-text-danger);
+
+    &:hover:not(:active) {
+      background-color: var(--figma-color-bg-danger-tertiary);
+    }
+
+    &:active {
+      background-color: var(--figma-color-bg-danger-tertiary);
+      color: var(--figma-color-text-danger-secondary);
+    }
+  }
+
+  /* Variant: Destructive Link */
+  &[variant="destructiveLink"] {
+    box-shadow: none;
+    background: none;
+    color: var(--figma-color-text-danger);
+
+    &:hover:not(:active) {
+      background-color: transparent;
+    }
+
+    &:active {
+      outline: 0;
+      background-color: var(--figma-color-bg-danger-tertiary);
+      color: var(--figma-color-text-danger-secondary);
+    }
+  }
+
   /* Variant: Link */
   &[variant="link"] {
     box-shadow: none;
@@ -905,11 +981,20 @@ fig-button {
     background-color: var(--figma-color-bg-disabled);
     pointer-events: none;
     cursor: not-allowed;
-    &:not([variant="secondary"]) {
+    &:not([variant="secondary"]):not([variant="destructiveSecondary"]):not(
+        [variant="destructiveGhost"]
+      ):not(
+        [variant="destructiveLink"]
+      ):not(
+        [variant="ghost"]
+      ) {
       color: var(--figma-color-text-ondisabled);
       box-shadow: none;
     }
     &[variant="secondary"],
+    &[variant="destructiveSecondary"],
+    &[variant="destructiveGhost"],
+    &[variant="destructiveLink"],
     &[variant="ghost"] {
       color: var(--figma-color-text-disabled);
       background-color: transparent;
@@ -1150,7 +1235,8 @@ fig-tabs,
 .tabs {
   --fig-overflow-size: calc(var(--spacer-4) + var(--spacer-2));
   --fig-tabs-inline-padding: 0;
-  --fig-tabs-inline-margin: var(--spacer-2-5);
+  --fig-tabs-margin-left: var(--spacer-1);
+  --fig-tabs-margin-right: var(--spacer-2);
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
@@ -1158,11 +1244,14 @@ fig-tabs,
   gap: var(--spacer-1);
   min-width: 0;
   overflow: auto hidden;
-  padding: var(--spacer-2) var(--fig-tabs-inline-padding);
-  margin: 0 var(--fig-tabs-inline-margin);
+  padding: var(--spacer-1) 0;
+  padding-inline: var(--fig-tabs-inline-padding);
+  margin: 0;
+  margin-left: var(--fig-tabs-margin-left);
+  margin-right: var(--fig-tabs-margin-right);
   position: relative;
   scrollbar-width: none;
-  width: calc(100% - var(--fig-tabs-inline-margin) * 2);
+  width: calc(100% - var(--fig-tabs-margin-left) - var(--fig-tabs-margin-right));
 
   > fig-tab {
     flex-shrink: 0;
@@ -1217,6 +1306,7 @@ fig-avatar,
   contain: layout paint;
   --size: 1.5rem;
   width: var(--size);
+  flex-shrink: 0;
   display: inline-grid;
   place-items: center;
   height: var(--size);
@@ -1245,6 +1335,7 @@ fig-avatar,
   }
   &::after {
     content: attr(initials);
+    font-size: var(--body-medium-fontSize);
   }
   &[size="large"] {
     --size: 3rem;
@@ -1319,7 +1410,7 @@ input[type="color"] {
   }
 }
 
-fig-swatch {
+:is(fig-swatch, fig-chit) {
   --size: 1.5rem;
   --padding: 5px;
   --width: var(--size);
@@ -1558,6 +1649,16 @@ fig-video {
     width: 100%;
   }
 
+  &[aspect-ratio] {
+    width: 100%;
+  }
+
+  /* An explicit size wins over full/aspect-ratio stretching, which would
+     otherwise collapse to 0 inside a shrink-to-fit parent (e.g. fig-choice). */
+  &[size]:not([size=""]):not([size="auto"]) {
+    width: var(--fig-media-size);
+  }
+
   > fig-preview {
     --fig-preview-fit: var(--fig-media-fit);
     width: 100%;
@@ -1594,7 +1695,15 @@ fig-video {
     z-index: 0;
   }
 
-  &:is(:not([src]), [src=""]):is(:not([poster]), [poster=""])
+  > fig-spinner[slot="overlay"][data-loading-indicator][data-generated] {
+    place-self: center;
+    max-width: none;
+    z-index: 1;
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  &:not(:has(> fig-preview > video.fig-media-element[data-generated][src]:not([src=""]))):is(:not([poster]), [poster=""])
     > fig-preview > video.fig-media-element[data-generated] {
     opacity: 0;
     pointer-events: none;
@@ -1613,7 +1722,7 @@ fig-video {
     z-index: 2;
     max-width: calc(100% - var(--spacer-4));
   }
-  &:not(:has(> fig-preview > img.fig-media-element[data-generated][src]:not([src=""]))) > fig-preview > fig-input-file:is([data-generated], [variant="overlay"]),
+  &:not(:has(> fig-preview > :is(img, video).fig-media-element[data-generated][src]:not([src=""]))) > fig-preview > fig-input-file:is([data-generated], [variant="overlay"]),
   > fig-preview:hover > fig-input-file:is([data-generated], [variant="overlay"]),
   > fig-preview:focus-within > fig-input-file:is([data-generated], [variant="overlay"]) {
     opacity: 1;
@@ -1628,13 +1737,17 @@ fig-video {
     max-width: calc(100% - var(--spacer-4));
   }
 
-  &:not(:has(> fig-preview > img.fig-media-element[data-generated][src]:not([src=""]))) > :is([slot="overlay"], fig-input-file[variant="overlay"]),
+  &:not(:has(> fig-preview > :is(img, video).fig-media-element[data-generated][src]:not([src=""]))) > :is([slot="overlay"], fig-input-file[variant="overlay"]),
   &:has(> fig-preview:hover) > :is([slot="overlay"], fig-input-file[variant="overlay"]),
   &:has(> fig-preview:focus-within) > :is([slot="overlay"], fig-input-file[variant="overlay"]),
   &:has(> [slot="overlay"]:is(:focus, :focus-within, :active)) > [slot="overlay"],
   &:has(> fig-input-file[variant="overlay"]:is(:focus, :focus-within, :active)) > fig-input-file[variant="overlay"],
   > [slot="overlay"]:focus-within,
-  > fig-input-file[variant="overlay"]:focus-within {
+  > fig-input-file[variant="overlay"]:focus-within,
+  /* The overlay is a sibling of fig-preview, so hovering it drops the
+     preview's :hover. Keep it shown to avoid a show/hide flicker loop. */
+  > [slot="overlay"]:hover,
+  > fig-input-file[variant="overlay"]:hover {
     opacity: 1;
     pointer-events: all;
   }
@@ -2223,7 +2336,7 @@ fig-combo-input fig-button[type="select"] {
     color: var(--figma-color-text);
   }
 
-  & > *:not(fig-swatch){
+  & > *:not(fig-swatch):not(fig-chit){
     &:first-child:not(:last-child),
     &:first-child:not(:last-child) > * {
       border-top-right-radius: 0;
@@ -2256,6 +2369,10 @@ fig-combo-input fig-button[type="select"] {
   min-width: 0;
   user-select: none;
   margin-left: -1px;
+}
+
+input[type="checkbox"] {
+  flex-shrink: 0;
 }
 
 /* Switch */
@@ -2595,6 +2712,7 @@ fig-slider {
   --slider-stepper-padding: calc(
     (var(--slider-height) / 2) - var(--slider-tick-width) / 2
   );
+  --slider-track-color: var(--figma-color-bg-secondary);
   --slider-percent: calc(var(--slider-complete) * 100%);
   --start-percent: calc(var(--default, 0) * 100%);
   --slider-tick-width: calc(var(--slider-height) / 4);
@@ -2639,7 +2757,7 @@ fig-slider {
     flex: 1 1 0;
     min-width: 0;
     transition: var(--slider-transition);
-    background: var(--figma-color-bg-secondary);
+    background: var(--slider-track-color);
     border-radius: var(--slider-border-radius);
     box-shadow: inset 0 0 0 1px var(--figma-color-bordertranslucent);
 
@@ -2662,6 +2780,13 @@ fig-slider {
       max-width: 100%;
     }
   }
+
+  /* Disabled: progress fill blends into the track so the bar stays legible */
+  &:has(input[type="range"]:disabled) .fig-slider-input-container::before {
+    background: var(--slider-track-color);
+    box-shadow: none;
+  }
+
   &[type="stepper"] {
     .fig-slider-input-container {
       &::before {
@@ -2775,12 +2900,7 @@ fig-slider {
     }
 
     &:disabled::-webkit-slider-runnable-track {
-      background: linear-gradient(
-        to right,
-        var(--figma-color-bg-secondary) 0%,
-        var(--figma-color-bg-secondary) var(--slider-percent),
-        var(--figma-color-bg) var(--slider-percent)
-      );
+      background-color: transparent;
     }
 
     &.hue::-webkit-slider-runnable-track {
@@ -2830,12 +2950,7 @@ fig-slider {
     }
 
     &:disabled::-moz-range-track {
-      background: linear-gradient(
-        to right,
-        var(--figma-color-bg-secondary) 0%,
-        var(--figma-color-bg-secondary) var(--slider-percent),
-        var(--figma-color-bg) var(--slider-percent)
-      );
+      background-color: transparent;
     }
 
     &.hue::-moz-range-track {
@@ -2901,6 +3016,7 @@ fig-slider {
       0 0 0 0.75px rgba(0, 0, 0, 0.075), inset 0 0 0 5px rgba(0, 0, 0, 0.1),
       var(--figma-elevation-100);
     --slider-checkerboard: var(--checkerboard-slider);
+    --slider-track-color: var(--figma-color-bg-tertiary);
 
     background-color: var(--figma-color-bg-secondary);
     border-radius: var(--radius-medium);
@@ -2916,7 +3032,7 @@ fig-slider {
       display: block;
       width: 100%;
       box-shadow: none;
-      background-color: var(--figma-color-bg-tertiary);
+      background-color: var(--slider-track-color);
     }
     fig-input-text,
     fig-input-number {
@@ -2954,7 +3070,7 @@ dialog,
   background: var(--figma-color-bg);
   min-width: min(var(--popover-min-width), var(--dialog-max-width));
   box-shadow: var(--figma-elevation-500-modal-window);
-  max-height: calc(60vh - var(--spacer-4));
+  max-height: calc(100vh - var(--spacer-4) * 2);
   max-width: min(var(--dialog-max-width), 30rem);
   height: max-content;
   & > fig-content,
@@ -3161,12 +3277,15 @@ fig-tooltip {
 
 fig-preview {
   --fig-preview-fit: contain;
+  --fig-preview-background: var(--figma-color-bg-secondary);
+  --fig-preview-aspect-ratio: 4/3;
 
   display: block;
+  aspect-ratio: var(--fig-preview-aspect-ratio);
   place-items: center;
   min-width: 0;
   max-width: 100%;
-  background-color: var(--figma-color-bg-secondary);
+  background-color: var(--fig-preview-background);
   border-radius: var(--radius-medium);
   position: relative;
   overflow: hidden;
@@ -3232,8 +3351,6 @@ fig-dropdown {
 
 fig-checkbox,
 fig-radio {
-  
-  align-items: center;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 
@@ -3242,8 +3359,16 @@ fig-radio {
   }
 }
 
-fig-switch {
+fig-checkbox {
+  align-items: flex-start;
+}
+
+fig-radio {
   align-items: center;
+}
+
+fig-switch {
+  align-items: flex-start;
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
 }
@@ -3400,7 +3525,7 @@ fig-footer {
   justify-content: flex-end;
   gap: var(--spacer-2);
   padding: var(--spacer-2-5);
-  box-shadow: inset 0 1px 0 0 var(--figma-color-border);
+  box-shadow: 0 -1px 0 0 var(--figma-color-border);
 
   & h3 {
     font-weight: var(--body-medium-strong-fontWeight);
@@ -3452,6 +3577,7 @@ fig-footer {
     z-index: 10;
     margin-top: auto;
     background: var(--figma-color-bg);
+    border-radius: 0 0 var(--radius-large) var(--radius-large)
   }
 }
 
@@ -3467,10 +3593,18 @@ fig-content {
   &:has(>fig-group[name]:last-child){
     padding-bottom: 0;
   }
+  &>p{
+    padding-inline: var(--spacer-3);
+  }
 }
 
-fig-content[padding]:not([padding="false"]) {
+fig-content[padding]:not([padding="false"]):not(:empty) {
   padding-inline: var(--spacer-3);
+}
+
+fig-content:empty,
+fig-content:not(:has(*)) {
+  padding: 0;
 }
 
 vstack,
@@ -3676,14 +3810,14 @@ fig-input-fill {
     outline-offset: -1px !important;
   }
 
-  & > .input-combo > fig-swatch:not(:only-child),
-  & > .input-combo > fig-swatch:not(:only-child) input,
+  & > .input-combo > :is(fig-swatch, fig-chit):not(:only-child),
+  & > .input-combo > :is(fig-swatch, fig-chit):not(:only-child) input,
   & > .input-combo > fig-fill-picker:not(:only-child),
-  & > .input-combo > fig-fill-picker:not(:only-child) > fig-swatch > input,
+  & > .input-combo > fig-fill-picker:not(:only-child) > :is(fig-swatch, fig-chit) > input,
   & > .input-combo > label,
   & fig-fill-picker:not(:only-child),
   fig-input-text,
-  fig-swatch {
+  :is(fig-swatch, fig-chit) {
     &,
     &:focus,
     &:hover {
@@ -3694,8 +3828,8 @@ fig-input-fill {
       --selected: 0;
     }
   }
-  fig-swatch ~ fig-input-text > input,
-  fig-swatch ~ label,
+  :is(fig-swatch, fig-chit) ~ fig-input-text > input,
+  :is(fig-swatch, fig-chit) ~ label,
   fig-fill-picker ~ fig-input-text > input {
     padding-left: 0 !important;
   }
@@ -3830,20 +3964,20 @@ fig-input-gradient {
     --fig-input-gradient-swatch-border-radius: var(--radius-medium);
   }
 
-  &[edit="false"],
-  &[edit="picker"] {
+  &[edit="false"] {
     pointer-events: none;
     --fig-input-gradient-swatch-border-radius: var(--radius-medium);
-
   }
 
   &[edit="picker"] {
+    --fig-input-gradient-swatch-border-radius: var(--radius-medium);
+
     & > fig-fill-picker {
       display: contents;
     }
   }
-  & > fig-swatch,
-  & > fig-fill-picker > fig-swatch {
+  & > :is(fig-swatch, fig-chit),
+  & > fig-fill-picker > :is(fig-swatch, fig-chit) {
     --width: 100%;
     width: var(--width);
     --border-radius: var(--fig-input-gradient-swatch-border-radius);
@@ -3855,6 +3989,9 @@ fig-input-gradient {
     
     .fig-input-gradient-track {
       inset: 0;
+    }
+    > :is(fig-swatch, fig-chit){
+      --size: var(--fig-input-gradient-height);
     }
   }
 
@@ -3931,7 +4068,7 @@ fig-input-palette {
         &:focus-within {
           outline: 0 !important;
         }
-        fig-swatch {
+        :is(fig-swatch, fig-chit) {
           --border-radius: 0px;
           --width: 100%;
           --padding: 0px;
@@ -3952,7 +4089,7 @@ fig-input-palette {
           }
         }
         &:first-child{
-          & fig-swatch::after{
+          & :is(fig-swatch, fig-chit)::after{
             box-shadow: none;
           }
         }
@@ -4005,7 +4142,7 @@ fig-input-palette {
       grid-column: button;
     }
 
-    fig-swatch {
+    :is(fig-swatch, fig-chit) {
       --border-radius: var(--radius-medium);
       width: auto !important;
       height: var(--size);
@@ -4027,6 +4164,7 @@ fig-field {
   --fig-field-right-padding: var(--spacer-3);
   --fig-field-top-padding: var(--spacer-1);
   --fig-field-bottom-padding: var(--spacer-1);
+  --fig-field-label-max-height: var(--spacer-4);
   --fig-field-label-ratio: 1fr;
   --fig-field-input-ratio: 2fr;
   display: grid;
@@ -4107,6 +4245,14 @@ fig-field {
     min-width: 0;
   }
 
+  &:not([direction="vertical"]) > label {
+    align-self: start;
+    align-content: center;
+    box-sizing: border-box;
+    height: min(100%, var(--fig-field-label-max-height));
+    padding-block: 0;
+  }
+
   & > *:not(.fig-field-chevron):not(label) {
     grid-area: input;
   }
@@ -4174,6 +4320,7 @@ fig-field {
 fig-spinner {
   width: var(--spacer-4);
   height: var(--spacer-4);
+  flex-shrink: 0;
   display: inline-flex;
   background-color: var(--figma-color-icon-tertiary);
   mask-image: var(--icon-24-spinner);
@@ -4186,52 +4333,6 @@ fig-spinner {
     width: var(--spacer-3);
     height: var(--spacer-3);
     mask-image: var(--icon-16-spinner);
-  }
-}
-
-fig-interpolation-swatch {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  flex: 0 0 auto;
-  color: var(--figma-color-bordertranslucent);
-  overflow: visible;
-
-  &[size="large"] {
-    width: 2rem;
-    height: 2rem;
-
-    .fig-interpolation-swatch-svg,
-    .fig-interpolation-swatch-fill {
-      width: 1.25rem;
-      height: 1.25rem;
-    }
-  }
-
-  .fig-interpolation-swatch-svg {
-    display: block;
-    width: 1rem;
-    height: 1rem;
-    overflow: visible;
-  }
-
-  .fig-interpolation-swatch-fill {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 1rem;
-    height: 1rem;
-    background: linear-gradient(90deg, #ff0000, #4f9eff);
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
   }
 }
 
@@ -4598,6 +4699,7 @@ fig-joystick {
 /* Shimmer */
 fig-shimmer {
   display: contents;
+  color: var(--figma-color-text-secondary);
   --fig-shimmer-angle: 90deg;
   --fig-shimmer-bright-fill-color: var(--figma-color-bg-tertiary);
   --fig-shimmer-bright-text-color: var(--figma-color-text);
@@ -4773,8 +4875,11 @@ fig-icon {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
 
+  /* Slotted SVGs paint themselves, so the mask/background pipeline must be
+     fully disabled — including the inline background-color set by [color]. */
   &:has(> svg) {
-    background: transparent;
+    background: transparent !important;
+    color: var(--icon-color, inherit);
     mask-image: none;
     -webkit-mask-image: none;
   }
@@ -4975,7 +5080,7 @@ fig-chooser {
   }
 
   &[full]:not([full="false"]) {
-    width: 100%;
+    width: calc(100% - var(--fig-chooser-inline-margin) * 2);
   }
 
   &[disabled]:not([disabled="false"]) {
@@ -4987,68 +5092,70 @@ fig-chooser {
 fig-card {
   --fig-card-label-line-clamp: 1;
   --fig-card-media-radius: var(--radius-medium);
-  display: block;
+  --fig-card-padding: var(--spacer-1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacer-1);
   width: 100%;
   min-width: 0;
+  padding: var(--fig-card-padding);
+  border-radius: 0.5625rem;
+  box-sizing: border-box;
 
   &[full]:not([full="false"]) {
     width: 100%;
   }
 
-  .fig-card-link {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacer-1);
-    padding: var(--spacer-1);
-    border-radius: 0.5625rem;
-    text-decoration: none;
-    color: inherit;
-    outline: none;
-    box-sizing: border-box;
-    width: 100%;
-    min-width: 0;
+  &[size="large"] {
+    --fig-card-padding: var(--spacer-2);
+
+    > fig-footer {
+      margin-top: var(--spacer-1);
+    }
+
+    .fig-card-label,
+    .fig-card-sublabel {
+      padding-inline: 0;
+    }
   }
 
-  .fig-card-link:focus-visible {
-    outline: var(--figma-focus-outline);
-    outline-offset: var(--figma-focus-outline-offset);
-  }
-
-  .fig-card-media {
-    position: relative;
-    border-radius: var(--fig-card-media-radius);
-    background: var(--figma-color-bg-secondary);
-    overflow: hidden;
-    min-width: 0;
-  }
-
-  .fig-card-media > fig-image,
-  .fig-card-media > fig-media,
-  .fig-card-media > fig-preview {
-    display: block;
+  > fig-image,
+  > fig-media,
+  > fig-preview {
     width: 100%;
     max-width: none;
     gap: 0;
     border-radius: var(--fig-card-media-radius);
   }
 
-  .fig-card-media > fig-image > fig-preview,
-  .fig-card-media > fig-media > fig-preview,
-  .fig-card-media > fig-preview {
+  > fig-preview {
+    display: grid;
+  }
+
+  > fig-image > fig-preview,
+  > fig-media > fig-preview,
+  > fig-preview {
     width: 100%;
     max-width: none;
     border-radius: var(--fig-card-media-radius);
     min-height: auto;
   }
 
-  .fig-card-text {
+  > fig-footer {
     display: flex;
     flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
     gap: 0;
+    width: auto;
+    padding: 0;
+    box-shadow: none;
+    box-sizing: border-box;
     min-width: 0;
   }
 
-  .fig-card-text[hidden] {
+  > fig-footer[hidden] {
     display: none;
   }
 
@@ -5057,7 +5164,10 @@ fig-card {
     line-height: var(--line-height);
     color: var(--figma-color-text);
     min-width: 0;
+    min-height: 0;
     padding-inline: var(--spacer-1);
+    justify-content: flex-start;
+    text-align: start;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: var(--fig-card-label-line-clamp);
@@ -5070,11 +5180,18 @@ fig-card {
   }
 
   .fig-card-sublabel {
+    box-sizing: border-box;
+    display: block;
     font-size: var(--font-size-small);
     line-height: var(--line-height);
     color: var(--figma-color-text-secondary);
     padding-inline: var(--spacer-1);
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
+    min-height: 0;
+    justify-content: flex-start;
+    text-align: start;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -5084,27 +5201,25 @@ fig-card {
     display: none;
   }
 
-  &:hover:not([selected]:not([selected="false"])):not(
-      [disabled]:not([disabled="false"])
-    ):not([aria-disabled="true"])
-    .fig-card-link {
+  &:hover:not(
+      [selected]:not([selected="false"])
+    ):not([disabled]:not([disabled="false"])):not([aria-disabled="true"]) {
     background: var(--figma-color-bg-secondary);
   }
 
-  &[selected]:not([selected="false"]) .fig-card-link {
+  &[selected]:not([selected="false"]) {
     background: var(--figma-color-bg-selected);
   }
 
-  &[selected]:not([selected="false"]) .fig-card-media {
+  &[selected]:not([selected="false"]) > :is(fig-image, fig-media, fig-preview) {
     outline: var(--figma-focus-outline);
     outline-offset: var(--figma-focus-outline-offset);
   }
 
   &[selected]:not([selected="false"])
-    .fig-card-media
     > :is(fig-image, fig-media)
     > fig-preview::after,
-  &[selected]:not([selected="false"]) .fig-card-media > fig-preview::after {
+  &[selected]:not([selected="false"]) > fig-preview::after {
     box-shadow: inset 0 0 0 1px var(--figma-color-border-selected);
   }
 
@@ -5358,7 +5473,7 @@ fig-color-tip {
     cursor: pointer;
   }
 
-  fig-swatch {
+  :is(fig-swatch, fig-chit) {
     input[type="color"] {
       background: transparent;
     }
@@ -5400,273 +5515,8 @@ fig-menu {
   display: contents;
 
   & > fig-menu-item,
-  & > fig-menu-separator {
+  & > :is(fig-separator, fig-menu-separator) {
     display: none;
-  }
-}
-
-/* Select — host chrome; trigger/listbox live in shadow (options slotted) */
-fig-select {
-  display: inline-flex;
-  position: relative;
-  align-items: center;
-  min-width: 0;
-  height: var(--spacer-4);
-  border-radius: var(--radius-medium);
-  background-color: var(--figma-color-bg);
-  color: var(--figma-color-text);
-  box-shadow: inset 0 0 0 1px var(--figma-color-border);
-
-  &[full]:not([full="false"]) {
-    display: flex;
-    width: 100%;
-  }
-
-  &[disabled]:not([disabled="false"]) {
-    pointer-events: none;
-    color: var(--figma-color-text-tertiary);
-
-    &::after {
-      background-color: var(--figma-color-icon-disabled);
-    }
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 0.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1rem;
-    height: 1rem;
-    mask-image: var(--icon-16-chevron);
-    mask-size: contain;
-    mask-repeat: no-repeat;
-    mask-position: center;
-    background-color: var(--figma-color-icon);
-    pointer-events: none;
-    z-index: 1;
-  }
-}
-
-/*
- * Internal listbox is a fig-popup inside fig-select's shadow, so document
- * dialog[is="fig-popup"] rules don't apply. Expose part=listbox and mirror
- * the menu-theme popup chrome (same tokens as components.css).
- */
-fig-select::part(listbox) {
-  --z-index: 999999;
-  --fig-popup-radius: var(--radius-large);
-  --fig-popup-bg-color: var(--figma-color-bg-menu);
-
-  z-index: var(--z-index);
-  position: fixed;
-  /* Do not set inset here — ::part inset beats inline left/top and
-     prevents edge clamping from moving the menu back into view. */
-  margin: 0;
-  border: 0;
-  outline: 0;
-  padding: 0;
-  overflow: hidden;
-  border-radius: var(--fig-popup-radius);
-  background-color: var(--fig-popup-bg-color);
-  color: var(--figma-color-text-menu);
-  color-scheme: dark;
-  box-shadow: var(--figma-elevation-400-menu-panel);
-  /* width/min/max set in JS — ::part width rules override element.style. */
-  max-height: calc(100vh - 1rem);
-  height: max-content;
-}
-
-/* Vertical option panels own their scroller and shared top/bottom paging buttons. */
-fig-select-options,
-.fig-menu-options {
-  --fig-vertical-overflow-size: var(--spacer-4);
-
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  width: 100%;
-  max-width: 100%;
-  max-height: calc(100vh - 1rem);
-  /* No block padding — sticky overflow buttons must sit flush to the popup edges. */
-  padding: 0;
-  overflow: hidden auto;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  & > :not(.fig-overflow) {
-    flex-shrink: 0;
-  }
-
-  /* List breathing room (not on the scroller itself). */
-  & > :not(.fig-overflow):first-child,
-  & > .fig-overflow-start + :not(.fig-overflow) {
-    margin-top: var(--spacer-2);
-  }
-
-  & > :not(.fig-overflow):last-child,
-  & > :not(.fig-overflow):has(+ .fig-overflow-end) {
-    margin-bottom: var(--spacer-2);
-  }
-
-  & > .fig-overflow {
-    position: sticky;
-    left: 0;
-    flex: 0 0 var(--fig-vertical-overflow-size);
-    width: 100%;
-    height: var(--fig-vertical-overflow-size);
-    margin: 0;
-    z-index: 3;
-    /* Menu chrome — not option hover (bg-menu-hover is brand blue). */
-    color: var(--figma-color-text-menu);
-    background: var(--figma-color-bg-menu) !important;
-
-    &::before {
-      inset: 0;
-      border-radius: 0;
-      background: var(--figma-color-bg-menu) !important;
-    }
-
-    &:hover::before {
-      background: light-dark(
-          rgba(0, 0, 0, 0.06),
-          rgba(255, 255, 255, 0.08)
-        )
-        !important;
-    }
-
-    &:hover {
-      color: var(--figma-color-text-menu);
-    }
-  }
-
-  & > .fig-overflow-start {
-    order: -1;
-    top: 0;
-    margin-block-end: calc(-1 * var(--fig-vertical-overflow-size));
-
-    &::before {
-      border-radius: var(--radius-large) var(--radius-large) 0 0;
-    }
-
-    .fig-overflow-chevron {
-      rotate: 180deg;
-    }
-  }
-
-  & > .fig-overflow-end {
-    order: 1;
-    bottom: 0;
-    margin-block-start: calc(-1 * var(--fig-vertical-overflow-size));
-
-    &::before {
-      border-radius: 0 0 var(--radius-large) var(--radius-large);
-    }
-  }
-
-}
-
-fig-select-options > fig-menu-separator {
-  /* Align labels with select option text after the checkmark column. */
-  &[label]:not([label=""]) {
-    padding-left: var(--spacer-5);
-    padding-right: var(--spacer-2);
-
-    &::before {
-      margin-inline: unset;
-      margin-left: calc(-1 * var(--spacer-5));
-      margin-right: calc(-1 * var(--spacer-2));
-    }
-  }
-}
-
-fig-select-option {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  position: relative;
-  min-height: var(--spacer-4);
-  height: auto;
-  padding: var(--spacer-1) var(--spacer-2);
-  padding-right: var(--spacer-3);
-  border-radius: var(--radius-medium);
-  color: var(--figma-color-text-menu);
-  cursor: default;
-  user-select: none;
-  white-space: nowrap;
-
-  &::before {
-    content: "";
-    display: block;
-    position: absolute;
-    inset: 0 var(--spacer-2);
-    border-radius: var(--radius-medium);
-    z-index: -1;
-    background-color: transparent;
-  }
-
-  &::after {
-    content: "";
-    display: block;
-    flex: 0 0 1rem;
-    order: -1;
-    width: 1rem;
-    height: 1rem;
-    margin-left: var(--spacer-1);
-    margin-right: var(--spacer-1);
-    background-color: currentColor;
-    -webkit-mask-image: var(--icon-16-checkmark);
-    mask-image: var(--icon-16-checkmark);
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-    visibility: hidden;
-  }
-
-  & > [slot="prepend"] {
-    margin-top: calc(var(--spacer-1) * -1);
-    margin-bottom: calc(var(--spacer-1) * -1);
-    margin-right: var(--spacer-1);
-  }
-
-
-  & > :not([slot="prepend"]):not([slot="append"]) {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  & > [slot="append"] {
-    flex: 0 0 auto;
-    margin-inline-start: auto;
-    color: var(--figma-color-text-tertiary);
-  }
-
-  &:hover,
-  &:focus-visible {
-    outline: none;
-
-    &::before {
-      background-color: var(--figma-color-bg-menu-hover);
-    }
-  }
-
-  &[selected]:not([selected="false"])::after,
-  &[aria-selected="true"]::after {
-    visibility: visible;
-  }
-
-  &[disabled]:not([disabled="false"]),
-  &[aria-disabled="true"] {
-    opacity: 0.4;
-    pointer-events: none;
   }
 }
 
@@ -5683,6 +5533,10 @@ fig-menu-item {
   font-weight: var(--body-medium-fontWeight);
   position: relative;
 
+  h3{
+    margin: 0 0 var(--spacer-1) 0;
+  }
+
   &::before {
     content: "";
     display: block;
@@ -5708,24 +5562,37 @@ fig-menu-item {
   }
 }
 
-fig-menu-separator {
-  --fig-menu-separator-color: var(--figma-color-border);
-  --fig-menu-separator-label-color: var(--figma-color-text-secondary);
+:is(fig-separator, fig-menu-separator) {
+  --fig-separator-color: var(--figma-color-border);
+  --fig-separator-label-color: var(--figma-color-text-secondary);
+  --fig-menu-inline-padding: 0 var(--spacer-3);
 
   display: block;
+  box-sizing: border-box;
+  width: 100%;
   height: 1px;
   margin: var(--spacer-2) 0;
   padding: 0;
   border: 0;
-  background: var(--fig-menu-separator-color);
-  color: var(--fig-menu-separator-label-color);
+  background: var(--fig-separator-color);
+  color: var(--fig-separator-label-color);
   font-weight: var(--body-medium-fontWeight);
   pointer-events: none;
   user-select: none;
 
-  &:first-of-type{
+  &[direction="vertical"] {
+    align-self: stretch;
+    width: 1px;
+    height: auto;
+    min-height: var(--spacer-3);
+    margin: 0;
+  }
+
+  &[borderless]:not([borderless="false"]) {
+    background: transparent;
+
     &[label]:not([label=""])::before {
-     display: none;
+      display: none;
     }
   }
 
@@ -5737,29 +5604,46 @@ fig-menu-separator {
     height: auto;
     margin: var(--spacer-2) 0;
     margin-bottom: var(--spacer-1);
-    padding: 0 var(--fig-menu-item-padding, var(--spacer-4));
+    padding: var(--fig-menu-inline-padding);
     background: transparent;
 
     &::before {
       content: "";
       display: block;
       height: 1px;
-      margin-inline: calc(-1 * var(--fig-menu-item-padding, var(--spacer-4)));
-      background: var(--fig-menu-separator-color);
+      margin-inline: calc(-1 * var(--spacer-3));
+      background: var(--fig-separator-color);
     }
 
     &::after {
       content: attr(label);
       display: block;
-      color: var(--fig-menu-separator-label-color);
+      color: var(--fig-separator-label-color);
       line-height: var(--spacer-4);
       min-height: var(--spacer-4);
     }
   }
 }
 
-dialog[is="fig-popup"][theme="menu"] fig-menu-separator,
-fig-select-options > fig-menu-separator {
-  --fig-menu-separator-color: var(--figma-color-border-menu);
-  --fig-menu-separator-label-color: var(--figma-color-text-menu-secondary);
+dialog[is="fig-popup"][theme="menu"]
+  :is(fig-separator, fig-menu-separator):first-child[label]:not([label=""])::before,
+fig-select-options > :is(fig-separator, fig-menu-separator):first-child[label]:not([label=""])::before {
+  display: none;
+}
+
+dialog[is="fig-popup"][theme="menu"] :is(fig-separator, fig-menu-separator),
+fig-select-options > :is(fig-separator, fig-menu-separator) {
+  --fig-separator-color: var(--figma-color-border-menu);
+  --fig-separator-label-color: var(--figma-color-text-menu-secondary);
+}
+
+dialog[is="fig-popup"][theme="menu"] :is(fig-separator, fig-menu-separator) {
+  --fig-menu-inline-padding: 0
+    var(--fig-menu-item-padding, var(--spacer-4));
+
+  &[label]:not([label=""])::before {
+    margin-inline: calc(
+      -1 * var(--fig-menu-item-padding, var(--spacer-4))
+    );
+  }
 }
