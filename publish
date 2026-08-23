@@ -39,10 +39,15 @@ ensure_clean_prereqs() {
     echo "Error: npx is required."
     exit 1
   fi
+  if ! command -v bun >/dev/null 2>&1; then
+    echo "Error: bun is required to build figui3."
+    exit 1
+  fi
 }
 
 sync_figui3() {
-  if [[ -d "$FIGUI3_TMP_DIR/.git" ]]; then
+  if [[ -d "$FIGUI3_TMP_DIR/.git" ]] &&
+    git -C "$FIGUI3_TMP_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     git -C "$FIGUI3_TMP_DIR" fetch origin
     git -C "$FIGUI3_TMP_DIR" reset --hard origin/HEAD
   else
@@ -77,9 +82,9 @@ build_figui3_dist_outputs() {
   npm ci --prefix "$FIGUI3_TMP_DIR"
   npm run build --prefix "$FIGUI3_TMP_DIR"
 
-  if [[ ! -d "$playground_dir/node_modules" ]]; then
-    npm ci --prefix "$playground_dir"
-  fi
+  # Keep playground dependencies and Vite transforms exact across upstream updates.
+  npm ci --prefix "$playground_dir"
+  rm -rf "$playground_dir/node_modules/.vite" "$playground_dir/node_modules/.vite-temp"
 
   (
     cd "$playground_dir"
@@ -128,7 +133,18 @@ updated_html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', r"\1./asse
 
 # Static demo pages can reference root files directly (fig.css/fig.js).
 # Normalize those to /<app>/assets so subpath hosting works reliably.
-for filename in ("fig.css", "fig.js", "fig-layer.css", "fig-layer.js", "components.css", "base.css"):
+for filename in (
+    "fig.css",
+    "fig.js",
+    "fig-layer.css",
+    "fig-layer.js",
+    "fig-editor.css",
+    "fig-editor.js",
+    "fig-lab.css",
+    "fig-lab.js",
+    "components.css",
+    "base.css",
+):
     pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
     replacement = rf'\1./assets/{filename}\1'
     updated_html = re.sub(pattern, replacement, updated_html)
@@ -144,9 +160,9 @@ PY
   cp -R "$source_dir/assets" "$target_assets_dir"
   echo "Synced assets into: $target_assets_dir"
 
-  for filename in fig.css fig.js fig-layer.css fig-layer.js components.css base.css; do
-    if [[ -f "$FIGUI3_TMP_DIR/$filename" ]]; then
-      cp "$FIGUI3_TMP_DIR/$filename" "$target_assets_dir/$filename"
+  for filename in fig.css fig.js fig-layer.css fig-layer.js fig-editor.css fig-editor.js fig-lab.css fig-lab.js components.css base.css; do
+    if [[ -f "$FIGUI3_DIST_ROOT/$filename" ]]; then
+      cp "$FIGUI3_DIST_ROOT/$filename" "$target_assets_dir/$filename"
       echo "Synced library file into assets: $target_assets_dir/$filename"
     fi
   done
@@ -189,7 +205,18 @@ for src in extra_html:
     html = re.sub(r'(["\'])/(?:figui3|propkit|propskit)/assets/', rf"\1{assets_rel}/", html)
 
     # Normalize root file references (e.g. /fig.css) for nested routes too.
-    for filename in ("fig.css", "fig.js", "fig-layer.css", "fig-layer.js", "components.css", "base.css"):
+    for filename in (
+        "fig.css",
+        "fig.js",
+        "fig-layer.css",
+        "fig-layer.js",
+        "fig-editor.css",
+        "fig-editor.js",
+        "fig-lab.css",
+        "fig-lab.js",
+        "components.css",
+        "base.css",
+    ):
         pattern = rf'(["\'])(?:/|\.?/)?{re.escape(filename)}\1'
         replacement = rf'\1{assets_rel}/{filename}\1'
         html = re.sub(pattern, replacement, html)
@@ -246,6 +273,13 @@ lab_index = Path(sys.argv[2])
 html = base_index.read_text(encoding="utf-8")
 # lab index sits one level deeper, so asset paths need ../assets.
 html = re.sub(r'(["\'])\./assets/', r"\1../assets/", html)
+# Lab exercises components from fig.js, fig-editor.js, and fig-lab.js.
+# Force the playground's existing loader to include the editor bundle too.
+editor_bootstrap = """    <script>
+      localStorage.setItem("includeEditorControls", "true");
+    </script>
+"""
+html = html.replace('    <script type="module"', editor_bootstrap + '    <script type="module"', 1)
 lab_index.write_text(html, encoding="utf-8")
 print(f"Updated {lab_index}")
 PY
