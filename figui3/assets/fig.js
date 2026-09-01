@@ -138,9 +138,9 @@ fig-icon[size="small"] {
           display: flex;
           border: 0;
           flex: 1;
-          text-align: center;
+          text-align: var(--fig-button-text-alignment, center);
           align-items: stretch;
-          justify-content: center;
+          justify-content: var(--fig-button-content-alignment, center);
           font: inherit;
           color: inherit;
           outline: 0;
