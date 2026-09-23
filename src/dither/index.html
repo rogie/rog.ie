@@ -886,8 +886,13 @@ headExtra: |
                 }
             }
 
-            // Load initial image
-            loadImageFromFigImage();
+            // Module-loaded FigUI components upgrade after this inline script.
+            // Wait for their value APIs before reading controls and rendering.
+            Promise.all([
+                customElements.whenDefined('fig-image'),
+                customElements.whenDefined('fig-slider'),
+                customElements.whenDefined('fig-switch')
+            ]).then(loadImageFromFigImage);
 
             // Debounce utility function
             function debounce(func, wait) {
@@ -929,6 +934,13 @@ headExtra: |
                 // Handle fig-image changes (uploads or src changes)
                 if (figImage) {
                     figImage.addEventListener('loaded', (e) => {
+                        const loadedMediaSrc = e.detail?.media?.currentSrc || e.detail?.media?.src;
+                        // Updating the generated dither preview also emits `loaded`.
+                        // Ignore that internal update so it cannot trigger a render loop.
+                        if (objectURL && loadedMediaSrc === objectURL) {
+                            return;
+                        }
+
                         // Use the event detail when available (e.g. uploads),
                         // since the src attribute may not be updated yet when loaded fires
                         const src = e.detail?.src || e.detail?.blob || e.detail?.base64 || figImage.getAttribute('src');

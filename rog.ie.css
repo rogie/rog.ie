@@ -1159,6 +1159,10 @@ rogie-music-list {
     gap: 0.5rem;
     fig-switch {
       gap: 0;
+
+      input.switch:is(:focus, :focus-within) {
+        outline: none;
+      }
     }
     label {
       font-size: 0.75rem;
