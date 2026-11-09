@@ -1,6 +1,6 @@
 ---
 name: publish
-description: Builds, verifies, and deploys rog.ie with the latest FigUI3, PropsKit, Lab, and editor playground assets. Use when the user invokes /publish or asks to publish this site.
+description: Builds, verifies, and deploys rog.ie with the latest PropsKit, Lab, and editor playground assets from FigUI3. Use when the user invokes /publish or asks to publish this site.
 disable-model-invocation: true
 ---
 
@@ -19,13 +19,13 @@ When the user invokes `/publish` without `confirm`:
 5. Verify:
    - `/propskit/`
    - `/propskit/lab/`
-   - `/figui3/`
-   - `/propkit/` redirects to `/propskit/`
+   - `/propkit/` and its known subroutes redirect to their `/propskit/` equivalents.
+   - `/figui3/` and its known subroutes redirect to their `/propskit/` equivalents.
    - Lab loads the generated `fig`, `fig-editor`, and `fig-lab` JS/CSS chunks.
-   - Standalone `fig.js`, `fig-editor.js`, and `fig-lab.js` assets return 200.
+   - Standalone `fig.js`, `fig-editor.js`, `fig-lab.js`, and `propskit.js` can be imported successfully with their relative dependencies.
 6. Report the synced upstream FigUI3 commit. Do not commit or push yet.
 
-The sync must build FigUI3's root package before the playground, copy both Vite's hashed chunks and the root package's built `dist` assets, enable Full editor for `/propskit/lab/`, and rebuild Eleventy.
+The sync must build FigUI3's root package before the playground, build only the canonical `/propskit/` output, copy Vite's hashed chunks, required public static directories, and the complete top-level JS/CSS inventory from the root package's built `dist`, verify that standalone relative module imports resolve, enable Full editor for `/propskit/lab/`, replace `/figui3/` and `/propkit/` with compatibility redirects, and rebuild Eleventy from a clean output directory.
 
 ## Cache or mismatch recovery
 
