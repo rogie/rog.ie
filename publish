@@ -163,7 +163,7 @@ PY
   echo "Synced assets into: $target_assets_dir"
 
   # Copy public static directories emitted alongside Vite assets.
-  for dirname in fonts; do
+  for dirname in fonts images; do
     rm -rf "$target_dir/$dirname"
     if [[ -d "$source_dir/$dirname" ]]; then
       cp -R "$source_dir/$dirname" "$target_dir/$dirname"
@@ -278,6 +278,7 @@ for src in extra_html:
 PY
 
   python3 - "$target_dir" <<'PY'
+import re
 import sys
 from pathlib import Path
 
@@ -303,6 +304,11 @@ for path in target_dir.rglob("*"):
     original = text
     for old, new in url_rewrites:
         text = text.replace(old, new)
+    text = re.sub(
+        r'(?P<quote>["\'])/images/',
+        r'\g<quote>/propskit/images/',
+        text,
+    )
     if text != original:
         path.write_text(text, encoding="utf-8")
         updated += 1
